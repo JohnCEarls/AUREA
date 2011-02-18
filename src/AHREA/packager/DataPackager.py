@@ -1,4 +1,4 @@
-from learner import dirac
+from AHREA.learner import dirac
 import pyBabel.Extensions
 class dataPackager:
     """
