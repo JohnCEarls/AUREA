@@ -1,8 +1,8 @@
 #! /usr/bin/env python
 import Tkinter
 
-from GUI.AHREAApp import AHREAApp
-from GUI.AHREAController import AHREAController
+from AHREA.GUI.AHREAApp import AHREAApp
+from AHREA.GUI.AHREAController import AHREAController
 import os.path
 root = Tkinter.Tk()
 root.minsize(width=350, height=300)
