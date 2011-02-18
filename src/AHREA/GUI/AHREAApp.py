@@ -1,6 +1,6 @@
 from Tkinter import *
 import Tkconstants, tkFileDialog
-import AHREA.GUI.AHREAPage
+import AHREA.GUI.AHREAPage as AHREAPage
 from AHREA.parser.SettingsParser import *
 
 class AHREAApp(Frame):
