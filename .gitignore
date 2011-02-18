@@ -1,0 +1,15 @@
+*.pkl
+*.csv
+*.soft.*
+*.o
+*.so
+*~
+*.swp
+*.swo
+tsp.py
+Ktsp.py
+ktsp.py
+tst.py
+dirac.py
+wilcoxon.py
+*.pyc
