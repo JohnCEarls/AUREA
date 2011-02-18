@@ -75,7 +75,7 @@ for mod_list in [GUI_mod, heuristic_mod, packager_mod, parser_mod, learner_mod]:
 
 
 #run setup
-setup (name = 'AHREA: Adaptive Heuristic Relative Expression Analizer',
+setup (name = 'AHREA: Adaptive Heuristic Relative Expression Analyser',
         version='1.0',
         author ='John C. Earls',
         description="""AHREA is a sofware suite that makes finding Relative Expression Learners easy.""",

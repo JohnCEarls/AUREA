@@ -6,10 +6,12 @@
 *~
 *.swp
 *.swo
+build/*
 tsp.py
 Ktsp.py
 ktsp.py
 tst.py
 dirac.py
 wilcoxon.py
+*_wrap.c*
 *.pyc
