@@ -5,12 +5,19 @@ Installed python27 (python-2.7.1.amd64-pdb) to c:/python27
 
 Installed swigwin-2.0.1 (http://sourceforge.net/projects/swig/files/swigwin/swigwin-2.0.1/swigwin-2.0.1.zip/download)
 copy 
-Add env uservariables
+Add env user variables
 PYTHON_INCLUDE: c:\Python27\include
 PYTHON_LIB: C:\Python27\libs\python27.lib
 
 Add python to path
 http://www.java.com/en/download/help/path.xml - notes
 Old path = %SystemRoot%\system32;%SystemRoot%;%SystemRoot%\System32\Wbem;%SYSTEMROOT%\System32\WindowsPowerShell\v1.0\;c:\Program Files (x86)\Microsoft SQL Server\100\Tools\Binn\;c:\Program Files\Microsoft SQL Server\100\Tools\Binn\;c:\Program Files\Microsoft SQL Server\100\DTS\Binn\
-New path = %SystemRoot%\system32;%SystemRoot%;%SystemRoot%\System32\Wbem;%SYSTEMROOT%\System32\WindowsPowerShell\v1.0\;c:\Program Files (x86)\Microsoft SQL Server\100\Tools\Binn\;c:\Program Files\Microsoft SQL Server\100\Tools\Binn\;c:\Program Files\Microsoft SQL Server\100\DTS\Binn\;c:\Python27\
+New path = %SystemRoot%\system32;%SystemRoot%;%SystemRoot%\System32\Wbem;%SYSTEMROOT%\System32\WindowsPowerShell\v1.0\;c:\Program Files (x86)\Microsoft SQL Server\100\Tools\Binn\;c:\Program Files\Microsoft SQL Server\100\Tools\Binn\;c:\Program Files\Microsoft SQL Server\100\DTS\Binn\;c:\Python27\;C:\Program Files (x86)\Swig\
+
+Fix error: Unable to find vcvarsall.bat
+http://nukeit.org/compile-python-2-7-packages-with-visual-studio-2010-express/
+
+For now I have added a pythonpath to the build.
+
+Move data (need to add data to the setup file the config.xml file needs to be available)
 
