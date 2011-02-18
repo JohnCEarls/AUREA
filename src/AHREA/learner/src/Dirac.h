@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <string>
-#include "Matrix.h"
+#include "dir_Matrix.h"
 
 using std::vector;
 

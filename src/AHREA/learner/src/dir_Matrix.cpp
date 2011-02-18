@@ -1,4 +1,4 @@
-#include "Matrix.h"
+#include "dir_Matrix.h"
 #include <iostream>
 using std::vector;
 using std::cout;
