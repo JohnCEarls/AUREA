@@ -3,7 +3,7 @@
 #include <iostream>
 using std::cout;
 using std::endl;
-extern "C" {
+//extern "C" {
 vector< vector<double> > learn_tst_classifier(vector<double> & data,int dsSize, vector<int> & classSizes, vector<int> & nvec, vector<int> & I1LIST, vector<int> & I2LIST, vector<int> & I3LIST)
 {
 
@@ -194,4 +194,4 @@ vector< vector<double> > learn_tst_classifier(vector<double> & data,int dsSize, 
     return xmat;
   
 }
-}
+//}
