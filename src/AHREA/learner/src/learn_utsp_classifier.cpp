@@ -6,7 +6,7 @@
 
 
 
-extern "C" {
+//extern "C" {
     // replace dmat with double vector
     // add nGenes
     // blah is the class size so in blabptr create mask
@@ -204,4 +204,4 @@ extern "C" {
 
 
 }
-}
+//}
