@@ -1,7 +1,7 @@
 from Queue import PriorityQueue
-from ResourceEstimate import ResourceEstimate
-from learner.wilcoxon import Wilcoxon
-from learner import tsp, tst, ktsp, dirac
+from AHREA.heuristic.ResourceEstimate import ResourceEstimate
+from AHREA.learner.wilcoxon import Wilcoxon
+from AHREA.learner import tsp, tst, ktsp, dirac
 import time
 class LearnerQueue:
     dirac = 0

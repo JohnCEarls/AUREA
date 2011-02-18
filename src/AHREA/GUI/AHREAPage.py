@@ -1,7 +1,7 @@
 from Tkinter import *
 import tkFileDialog
 import tkMessageBox
-from AHREAResults import *
+from AHREA.GUI.AHREAResults import *
 class AHREAPage(Frame):
     """
     Base class for data input frames

@@ -1,14 +1,15 @@
-from .learner import ktsp, tst, dirac, tsp
-from .heuristic.LearnerQueue import LearnerQueue 
-from .parser.SOFTParser import *
-from .parser.CSVParser import *
-from .parser.GMTParser import *
-from .parser.SettingsParser import *
-from .packager.DataCleaner import *
-from .packager.DataPackager import *
-from GUI.AHREAPage import InputError
+from AHREA.learner import ktsp, tst, dirac, tsp
+from AHREA.heuristic.LearnerQueue import LearnerQueue 
+from AHREA.parser.SOFTParser import *
+from AHREA.parser.CSVParser import *
+from AHREA.parser.GMTParser import *
+from AHREA.parser.SettingsParser import *
+from AHREA.packager.DataCleaner import *
+from AHREA.packager.DataPackager import *
+from AHREA.GUI.AHREAPage import InputError
 from Tkinter import *
 import time
+
 class AHREAController:
     def __init__(self, configFile ):
         self.softFile = []

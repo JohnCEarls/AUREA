@@ -1,4 +1,4 @@
-from learner import wilcoxon
+from AHREA.learner import wilcoxon
 import math
 class ResourceEstimate:
     """

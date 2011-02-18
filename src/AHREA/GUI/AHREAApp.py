@@ -1,7 +1,7 @@
 from Tkinter import *
 import Tkconstants, tkFileDialog
-import AHREAPage
-from .parser.SettingsParser import *
+import AHREA.GUI.AHREAPage
+from AHREA.parser.SettingsParser import *
 
 class AHREAApp(Frame):
     def __init__(self, root, controller):
