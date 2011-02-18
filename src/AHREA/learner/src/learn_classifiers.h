@@ -15,7 +15,7 @@
 #include "wilcoxon.h"
 #include "matrix.h"
 
-extern "C" {
+//extern "C" {
   void learn_utsp_classifier(std::vector<double> & data,int dsSize, std::vector<int> & classSizes, std::vector<int> & nvec,  vector<int> & I1LIST, vector<int> & I2LIST );
 
 //    SEXP learn_mtsp_classifier(SEXP,SEXP,SEXP);
@@ -25,5 +25,5 @@ extern "C" {
     // tsp and tst will get
   void wilcoxon_test(std::vector<double>& data,int numGenes, int size_c1, int size_c2, std::vector<double> & scores); 
 
-}
+//}
 #endif
