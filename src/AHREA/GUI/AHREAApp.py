@@ -2,14 +2,17 @@ from Tkinter import *
 import Tkconstants, tkFileDialog
 import AHREA.GUI.AHREAPage as AHREAPage
 from AHREA.parser.SettingsParser import *
-
+import os.path
+import shutil
+import sys
 class AHREAApp(Frame):
     def __init__(self, root, controller):
         Frame.__init__(self, root)
-        self.root = root
+       self.root = root
         self.root.title( "AHREA - Adaptive Heuristic Relational Expression Analyser")
         self.controller = controller
         #start on welcome page
+
         self.curr_page = None
         self.pages = []
         self.menu = AHREAMenu(self)
@@ -39,7 +42,8 @@ class AHREAApp(Frame):
         self.pages.append(AHREAPage.addUnclassified(self))
         self.pages.append(AHREAPage.classificationPage(self))
 
- 
+       
+
     def displayPage(self, page_id):
         self.status.clear()
         if self.curr_page:

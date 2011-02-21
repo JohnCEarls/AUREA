@@ -9,14 +9,25 @@ from AHREA.packager.DataPackager import *
 from AHREA.GUI.AHREAPage import InputError
 from Tkinter import *
 import time
+import os
+import shutil
 
 class AHREAController:
-    def __init__(self, configFile ):
+    def __init__(self, installation_dir=None ):
         self.softFile = []
         self.geneNetworkFile = None
         self.geneSynonymFile = None
         self.softparser = []
         self.datatable = []
+        if installation_dir is None:
+            #get the installation path so we can copy the data files to
+            #the working directory
+            gui_dir = os.path.split(os.path.realpath(__file__))[0]
+            AHREA_dir = os.path.join(gui_dir, '..')
+            installation_dir = os.path.abspath(os.path.join(AHREA_dir,'..'))
+        self.install_dir = installation_dir
+        self.initWorkspace()
+        configFile = os.path.join(self.workspace, 'data', 'config.xml')
         self.config = SettingsParser(configFile)
         self.dirac = None
         self.tsp = None
@@ -39,6 +50,25 @@ class AHREAController:
 
     def setApp(self, app):
         self.app = app
+
+    def initWorkspace(self):
+        """
+        Initialize the workspace files.
+        Copy from the system any necessary files. (config, gene_syn, etc)
+        """
+        self.workspace = os.getcwd()
+        jpath =  os.path.join
+        if os.path.exists(os.path.join(self.workspace, 'data')):
+            self.data_dir = os.path.join(self.workspace, 'data')
+
+            if not os.path.exists(os.path.join( self.data_dir, 'config.xml')):
+                src_data_dir = jpath(self.install_dir, 'AHREA', 'data')
+                shutil.copy2(jpath(src_data_dir, 'config.xml'), self.data_dir)
+        else:
+            #copy workspace from package data
+            src_data_dir = os.path.join(self.install_dir, 'AHREA', 'data')
+            dest_data_dir = os.path.join(self.workspace, 'data')
+            shutil.copytree(src_data_dir, dest_data_dir)
 
     def loadFiles(self):
         """

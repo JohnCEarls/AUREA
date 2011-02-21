@@ -1,6 +1,7 @@
 from Tkinter import *
 import tkFileDialog
 import tkMessageBox
+import os
 from AHREA.GUI.AHREAResults import *
 class AHREAPage(Frame):
     """
@@ -34,7 +35,8 @@ class WelcomePage(AHREAPage):
         AHREAPage.__init__(self, root, 'welcome')
 
     def setUpPage(self):
-        self.photo = photo = PhotoImage(file="data/grace.gif")
+        welcome_img = os.path.join(self.root.controller.install_dir,'AHREA', 'img', 'welcome.gif')
+        self.photo = photo = PhotoImage(file=welcome_img)
         self.label = Label(self, text="Welcome", image=photo) 
         
     def drawPage(self):
