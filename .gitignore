@@ -15,3 +15,6 @@ dirac.py
 wilcoxon.py
 *_wrap.c*
 *.pyc
+scripts/data/
+"src/AHREA/packager/\\"
+
