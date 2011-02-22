@@ -8,7 +8,7 @@ import sys
 class AHREAApp(Frame):
     def __init__(self, root, controller):
         Frame.__init__(self, root)
-       self.root = root
+        self.root = root
         self.root.title( "AHREA - Adaptive Heuristic Relational Expression Analyser")
         self.controller = controller
         #start on welcome page
