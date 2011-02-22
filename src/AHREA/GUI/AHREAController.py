@@ -56,14 +56,22 @@ class AHREAController:
         Initialize the workspace files.
         Copy from the system any necessary files. (config, gene_syn, etc)
         """
+        def chkFile(fname):
+            """
+            When the data directory exists, check that fname is there.
+            If not copy it to directory.
+            """
+            if not os.path.exists(os.path.join( self.data_dir, fname)):
+                src_data_dir = jpath(self.install_dir, 'AHREA', 'data')
+                shutil.copy2(jpath(src_data_dir, fname), self.data_dir)
+
         self.workspace = os.getcwd()
         jpath =  os.path.join
         if os.path.exists(os.path.join(self.workspace, 'data')):
             self.data_dir = os.path.join(self.workspace, 'data')
-
-            if not os.path.exists(os.path.join( self.data_dir, 'config.xml')):
-                src_data_dir = jpath(self.install_dir, 'AHREA', 'data')
-                shutil.copy2(jpath(src_data_dir, 'config.xml'), self.data_dir)
+            needed = ['config.xml', 'welcome.gif', 'Homo_sapiens.gene_info.gz', 'c2.biocarta.v2.5.symbols.gmt']
+            for req_file in needed:
+                chkFile(req_file)
         else:
             #copy workspace from package data
             src_data_dir = os.path.join(self.install_dir, 'AHREA', 'data')
