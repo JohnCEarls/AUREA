@@ -339,14 +339,20 @@ class AHREAController:
         maxTime = mtime
         target_accuracy = acc
         self._adaptiveSetup()
+        self.app.status.set("a")
         startTime = time.time()
+        self.app.status.set("b")
+
         endTime=maxTime + startTime
+        self.app.status.set("c")
 
         viewable = ['dirac', 'tsp', 'tst', 'ktsp']
         msg = ""
         tl_str = ""
         top_acc = .001
         for est, settings in self.learnerqueue:
+            self.app.status.set("d")
+
             str_learner = viewable[settings['learner']]
             self.app.status.set(tl_str + msg + " Trying " + str_learner)
             learner = self.learnerqueue.trainLearner(settings, est)
