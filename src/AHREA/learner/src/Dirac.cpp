@@ -507,7 +507,7 @@ Return a vector of the indices of the top scoring networks
 vector<int> Dirac::getTopNetworks(int numTopNets, vector<double> & rankMatchingScores, int class1Size, int class2Size ){
     vector<int> topNets;//a list of numTopNets, best networks
     //for each sample in 
-    int numNets = rankMatchingScores.size()/(class1Size+class2Size);
+    int numNets = rankMatchingScores.size()/(2*(class1Size+class2Size));
     vector<double> scores;
     vector<double> dist;
     for(int network=0; network<numNets; network++){
@@ -518,15 +518,15 @@ vector<int> Dirac::getTopNetworks(int numTopNets, vector<double> & rankMatchingS
         //compare class1 against rt1
         int class_offset = class1Size + class2Size;
         for(int sample=0;sample < class1Size; sample++){
-            v1 = rankMatchingScores[network*net_offset + sample];
-            v2 = rankMatchingScores[network*net_offset + class_offset + sample];
+            v1 = rankMatchingScores.at(network*net_offset + sample);
+            v2 = rankMatchingScores.at(network*net_offset + class_offset + sample);
             
             if( v1 - v2 > 0.0)score += class2Size;
             distance += class1Size*(v1-v2);           
         }
         for(int sample=class1Size;sample<class_offset; sample++){
-            v1 = rankMatchingScores[network*net_offset + sample];
-            v2 = rankMatchingScores[network*net_offset + class_offset + sample];
+            v1 = rankMatchingScores.at(network*net_offset + sample);
+            v2 = rankMatchingScores.at(network*net_offset + class_offset + sample);
             
             if( v2 - v1 > 0.0)score += class2Size;
             distance += class1Size*(v2-v1);           
@@ -540,7 +540,7 @@ vector<int> Dirac::getTopNetworks(int numTopNets, vector<double> & rankMatchingS
    std::partial_sort(scores_cp.begin(), scores_cp.begin() + numTopNets, scores_cp.end(), cmp );
     double part_score = scores_cp[numTopNets-1];//score of last top net
     vector<int> ties;
-    for(int i = 0; i<scores.size();i++){
+    for(int i = 0; i<(int)scores.size();i++){
         if(scores[i] > part_score){//add top
             topNets.push_back(i);
         } else if(scores[i] == part_score){ //store ties 
@@ -551,14 +551,14 @@ vector<int> Dirac::getTopNetworks(int numTopNets, vector<double> & rankMatchingS
     //manage ties
     vector<double> dist_cp;
     
-    for(int i = 0; i < ties.size();i++){
+    for(int i = 0; i < (int)ties.size();i++){
         dist_cp.push_back(dist[ties[i]]);
     }
     //partition ties on distance
     std::partial_sort(dist_cp.begin(), dist_cp.begin()+(numTopNets-topNets.size()), dist_cp.end(), cmp);
     double dist_part_score = dist_cp[numTopNets-topNets.size()];
-    for(int i = 0; i<ties.size();i++){
-        if(dist[ties[i]] >= dist_part_score && topNets.size() < numTopNets){//add top distances
+    for(int i = 0; i< (int)ties.size();i++){
+        if(dist[ties[i]] >= dist_part_score && (int)topNets.size() < numTopNets){//add top distances
                 topNets.push_back(ties[i]);
         } 
     } 
