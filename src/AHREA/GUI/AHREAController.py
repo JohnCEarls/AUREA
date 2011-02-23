@@ -339,12 +339,9 @@ class AHREAController:
         maxTime = mtime
         target_accuracy = acc
         self._adaptiveSetup()
-        self.app.status.set("a")
         startTime = time.time()
-        self.app.status.set("b")
 
         endTime=maxTime + startTime
-        self.app.status.set("c")
 
         viewable = ['dirac', 'tsp', 'tst', 'ktsp']
         msg = ""
