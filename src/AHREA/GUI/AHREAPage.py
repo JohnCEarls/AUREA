@@ -114,6 +114,7 @@ class FileBrowsePage(AHREAPage):
         self.gsynLabel.grid_forget()
         self.gsynPathE.grid_forget()
         self.gsynDialogButton.grid_forget()
+        self.pack_forget()
  
     def softFileDisplay(self, add=False):
         if len(self.softFilePath) == 0 or add:
@@ -234,6 +235,7 @@ class FileLoadPage(AHREAPage):
     def drawPage(self):
         self.pack()
         self.disable_next = True
+
         if len(self.root.controller.datatable) == 0:
             self.root.controller.loadFiles()
         self.displayResults()
