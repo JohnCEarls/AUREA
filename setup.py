@@ -75,7 +75,7 @@ for mod in learner_modules:
 ext_mod = [ buildExtension(name, src_dir, src_files) for name, src_files in getExtensionModuleSettings()]
 
 #run setup
-setup (name = 'AHREA: Adaptive Heuristic Relative Expression Analyser',
+setup (name = 'AHREA',
         version='1.0',
         author ='John C. Earls',
         author_email = 'earls3@illinois.edu',
