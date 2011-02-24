@@ -16,5 +16,6 @@ wilcoxon.py
 *_wrap.c*
 *.pyc
 scripts/data/
-"src/AHREA/packager/\\"
-
+src/AHREA/packager/\\
+dist/*
+MANIFEST

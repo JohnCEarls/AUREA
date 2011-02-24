@@ -17,7 +17,10 @@ New path = %SystemRoot%\system32;%SystemRoot%;%SystemRoot%\System32\Wbem;%SYSTEM
 Fix error: Unable to find vcvarsall.bat
 http://nukeit.org/compile-python-2-7-packages-with-visual-studio-2010-express/
 
-For now I have added a pythonpath to the build.
+#For now I have added a pythonpath to the build.
 
-Move data (need to add data to the setup file the config.xml file needs to be available)
+Move data (need to add data to the setup file the config.xml file needs to be available) #at the moment it appears that the data files are being put in the directory where the script is run from.  This may not be optimum.
+
+python setup.py bdist_wininst
+
 
