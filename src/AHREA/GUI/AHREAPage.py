@@ -83,6 +83,9 @@ class FileBrowsePage(AHREAPage):
         self.addButton.grid(row=r, column=2, pady=ypad)
         r += 1 
 
+        self.downloadButton.grid(row=r, column=2, pady=ypad)
+        r += 1
+
         self.gnLabel.grid(row=r, column=0, pady=ypad)
         self.gnPathE.grid(row=r, column=1, pady=ypad)
         self.gnDialogButton.grid(row=r, column = 2, pady=ypad)
@@ -98,6 +101,7 @@ class FileBrowsePage(AHREAPage):
         #there can be only 1
         if self.addButton is None:
             self.addButton = Button(self, text="Add another file",command=self.softfileadd)
+            self.downloadButton = Button(self, text="Download...", command=self.downloadSOFTdialog)
         self.geneSynonymDisplay()    
 
     def clearPage(self):
@@ -106,7 +110,7 @@ class FileBrowsePage(AHREAPage):
             self.softFilePathE[i].grid_forget()
             self.softFileDialogButton[i].grid_forget()  
             self.softFileDeleteButton[i].grid_forget()
-            
+        self.downloadButton.grid_forget()    
         self.gnLabel.grid_forget()
         self.gnPathE.grid_forget()
         self.gnDialogButton.grid_forget()
@@ -171,6 +175,29 @@ class FileBrowsePage(AHREAPage):
         response = tkFileDialog.askopenfilename(**options)
         if response:
             pathVariable.set(response)
+
+    def downloadSOFTdialog(self):
+        self.dsd = top = Toplevel(self)
+        Label(top, text="SOFT file name(GDS####.soft.gz)").pack()
+        self.dsd_value= e = Entry(top)
+        e.pack()
+        b = Button(top, text="Download", command=self.downloadSOFT)
+        b.pack()
+
+    def downloadSOFT(self):
+        result = self.root.controller.downloadSOFT(self.dsd_value.get().strip())
+        self.dsd.destroy()
+        if result is not None:
+            insert = True
+            for path in self.softFilePath:
+                if len(path.get().strip()) == 0:
+                    path.set(result)
+                    insert = False
+            if insert:#need to add a new browse box
+                self.softfileadd()
+                self.softFilePath[-1].set(result)
+        else:
+            tkMessageBox.showerror(message="Download unsuccessful.")
 
     def gnfiledialog(self):
         file_opt = options =  {}

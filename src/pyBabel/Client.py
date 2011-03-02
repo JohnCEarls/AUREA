@@ -132,11 +132,17 @@ def prettyPrint(table):
     return '\n'.join(['\t'.join([str(val) for val in row]) for row in table])
 
 if __name__ == "__main__":
+    f = open('commonpn.txt', 'r')
+    ids = []
+    for line in f.readlines():
+        ids.append(line.strip())
+    f.close()
     c = Client()
+    """
     for x in c.getIDTypes().keys():
-        print x
-    t =  c.translate(input_type='gene_entrez',
-          input_ids=[2983,1829,589,20383,293883],
-          output_types='protein_ensembl peptide_pepatlas reaction_ec function_go gene_symbol_synonym'.split(' ')
+        print x"""
+    t =  c.translate(input_type='probe_affy',
+          input_ids=ids,
+          output_types='gene_entrez gene_symbol'.split(' ')
         )
     print prettyPrint(t)

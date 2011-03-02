@@ -78,6 +78,10 @@ class AHREAController:
             dest_data_dir = os.path.join(self.workspace, 'data')
             shutil.copytree(src_data_dir, dest_data_dir)
 
+    def downloadSOFT(self, softfilename):
+        dl = SOFTDownloader(softfilename, output_directory=self.config.getSetting("datatable", "Data Folder")[0])
+        return dl.getFilePath()
+
     def loadFiles(self):
         """
         Loads all of the specified files

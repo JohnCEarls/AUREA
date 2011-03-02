@@ -32,7 +32,15 @@
 				
 				
 				
-            
+                <setting>
+                    <name>
+                        Data Folder
+                    </name>
+                    <value type="string">
+                        data
+                    </value>
+
+                </setting>            
 				
 				
 				

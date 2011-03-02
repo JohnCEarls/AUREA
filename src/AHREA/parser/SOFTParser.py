@@ -350,8 +350,51 @@ class entity:
         for key, value in self.attributes.iteritems():
             retstr += "\t %s : %s \n"% (key, ','.join(value))
         return retstr   
+import urllib2
+import time
+import os
+import socket
+class SOFTDownloader:
+    def __init__(self, filename, url="ftp://ftp.ncbi.nih.gov/pub/geo/DATA/SOFT/GDS/", output_directory="data", timeout=30):
+        self.timeout = timeout
+        file = self.getFile(url, filename)
+        if file is not None:
+            self.filePath = self.writeFile(file, output_directory, filename)
+        else:
+            self.filePath = None
+    
 
+    def getFile(self, url, filename):
+        counter = 0            
+        socket.setdefaulttimeout(self.timeout)
+        while counter < 3:
+            #sometimes the website rejects connections
+            #so try 3 times
+            try:
+                f = urllib2.urlopen(url + filename.strip())
+                counter = 4
+            except Exception, e:
+                time.sleep(30)
+                counter += 1
 
+        if counter == 4:
+            return f
+        else:
+            return None
+
+    def writeFile(self, file_obj, dir, filename):
+        if os.path.exists(dir):
+            fpath = os.path.join(dir, filename)
+            local = open(fpath, 'wb')
+            local.write(file_obj.read())
+            local.close()
+            return fpath
+        return None
+
+    def getFilePath(self):
+        return self.filePath
+        
+    
 
 if __name__ == "__main__":
     sp = SOFTParser("../data/GDS2545.soft.gz")
