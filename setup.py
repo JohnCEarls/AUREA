@@ -76,7 +76,7 @@ ext_mod = [ buildExtension(name, src_dir, src_files) for name, src_files in getE
 
 #run setup
 setup (name = 'AHREA',
-        version='1.0',
+        version='1.0.1',
         author ='John C. Earls',
         author_email = 'earls3@illinois.edu',
         url= 'https://github.com/JohnCEarls/AHREAPackage.git',
