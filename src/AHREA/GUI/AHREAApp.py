@@ -1,5 +1,7 @@
 from Tkinter import *
+import traceback, tkMessageBox
 import Tkconstants, tkFileDialog
+import AHREA
 import AHREA.GUI.AHREAPage as AHREAPage
 from AHREA.parser.SettingsParser import *
 import os.path
@@ -7,6 +9,7 @@ import shutil
 import sys
 class AHREAApp(Frame):
     def __init__(self, root, controller):
+        root.report_callback_exception = self.report_callback_exception
         Frame.__init__(self, root)
         self.root = root
         self.root.title( "AHREA - Adaptive Heuristic Relational Expression Analyser")
@@ -86,7 +89,17 @@ class AHREAApp(Frame):
         if prev:
             self.displayPage(prev)
 
-     
+
+    def report_callback_exception(self, *args):
+        """
+        displays exceptions
+        TYVM : http://stackoverflow.com/questions/4770993/silent-exceptions-in-python-tkinter-should-i-make-them-louder-how
+        """
+        err = traceback.format_exception(*args)
+        #please report
+        msg = "Go to https://github.com/JohnCEarls/AHREAPackage/issues to report this error."
+        err.append(msg)
+        tkMessageBox.showerror('AHREA: Error', err)
 
 
 class StatusBar(Frame):
@@ -136,8 +149,18 @@ class AHREAMenu(Menu):
         helpmenu = Menu(self)
         self.add_cascade(label="Help", menu=helpmenu)
         helpmenu.add_command(label="Content", command=self.unImplemented)
-        helpmenu.add_command(label="Report a Problem", command=self.unImplemented)
-        helpmenu.add_command(label="About", command=self.unImplemented)
+        helpmenu.add_command(label="Report a Problem", command=self.reportProblem)
+        helpmenu.add_command(label="About", command=self.about)
+
+    def reportProblem(self):
+        msg = "Please go to https://github.com/JohnCEarls/AHREAPackage/issues to report any bugs. Thank you for helping make AHREA better."
+        tkMessageBox.showinfo("AHREA: report error", msg)
+    
+    def about(self):
+        msg = "AHREA v. " + AHREA.__version__
+        msg += " Copyright (c) 2010-2011 John C. Earls"
+        tkMessageBox.showinfo("AHREA", msg)
+        
 
     def dirac_settings(self):
         if self.dialog is None:

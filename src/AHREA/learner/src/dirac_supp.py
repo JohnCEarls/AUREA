@@ -16,6 +16,8 @@ class Dirac:
         self.numGenes = numGenes
         self.classSizes = classSizes
         self.geneNet = geneNet
+        if len(self.geneNet) == 0:
+            raise Exception('invalid network size', 'Dirac was provided with a zero length network.')
         self.unclassified_data_vector = None
         self.unClassifiedRankMatrix = None
         self.geneNetSize = geneNetSize
@@ -382,17 +384,7 @@ class Dirac:
                 mismatch+=1 
             counter += 1
  
-        """
-                    if gene > self.classSizes[x]/2 and not drt[x][mycounter]:
-                        mismatch += 1
-                    elif not drt[x][mycounter]:
-                        mismatch +=1
-                    mycounter += 1  
-        """
         return (mismatch, len(drt[0]))
-                    
-                    
-        
 
     def nChooseTwo(self, n ):
         return (n*(n-1))/2
