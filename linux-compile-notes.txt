@@ -1,0 +1,4 @@
+swig
+python-dev
+g++
+python-tk
