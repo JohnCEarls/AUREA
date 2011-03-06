@@ -1,6 +1,5 @@
 %module tsp
 #define PySwigIterator tsp_PySwigIterator
-
 %{
     #include "TSP_pywrapper.h"
 %}

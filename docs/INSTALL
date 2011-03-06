@@ -1,11 +1,11 @@
 INSTALLATION
 ============
 
-General Requirements
+General Prerequisites
 --------------------
 Python 2.6 or 2.7 (http://www.python.org/download/)
 
-Requirements for Windows
+Prerequisites for Windows
 ---------------
 Microsoft Visual C++ 2010 Redistributable Package 
 (I cannot distribute this package, sry)
@@ -30,7 +30,7 @@ Install under Windows
 ---------------------
 
 
-After you have fulfilled the requirements, you will want to make sure that Python is added to your system path. (see http://docs.python.org/using/windows.html)
+After you have fulfilled the prerequisites, you will want to make sure that Python is added to your system path. (see http://docs.python.org/using/windows.html)
 
 In short you can add the location of Python to the system path by right-clicking on My Computer, selecting "Properties", then clicking "Advanced" in the resulting window and selecting Environmental variables.  You can then create a new variable called PYTHONPATH and set its value to the location of Python ("C:/Python2x" by default)
 
@@ -57,3 +57,5 @@ setuptools
 ----------
 
 Linux
+
+

@@ -68,9 +68,11 @@ src_dir = os.sep.join(path_dir)
 
 #copy swig generated pymodules to the learner directory
 print "running swig_helper"
-for mod in learner_modules:
-    swig_helper(mod,src_dir)
-
+try:
+    for mod in learner_modules:
+        swig_helper(mod,src_dir)
+except Exception as e:
+    print "Swig Helper did not run.  This is fine if building rpms."
 #Build extension instances
 ext_mod = [ buildExtension(name, src_dir, src_files) for name, src_files in getExtensionModuleSettings()]
 

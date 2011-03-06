@@ -1,6 +1,5 @@
 %module wilcoxon 
 #define PySwigIterator wilcoxon_PySwigIterator
-
 %{
     #include "WILCOXON_pywrapper.h"
 %}
