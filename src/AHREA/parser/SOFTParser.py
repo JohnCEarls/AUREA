@@ -20,14 +20,32 @@ Note the docs do not describe everything.
             f = open(filename,'r')
             self.raw_content = f.readlines()
             f.close()
-        self.getData()
+        self._getData()
 
 
-    def getData(s):
+    def _getData(s):
         """
         This is a private helper method that actually breaks the data up into manageable chunks.
-        Truly it is the primary worker/parser
-        NOTE: this should be broken up into subfunctions
+        It is the primary worker/parser
+        """
+        s._initContainers()
+        for line in s.raw_content:
+            if line[0] == '^': #^ entity indicator
+                state = s._addEntity(line)
+            elif line[0] == '!': #! entity attribute line
+                state = s._addEntityAttribute(line, state)           
+            elif line[0] == '#': ## data table header description line
+                state = s._addDataTableHeader(line, state)
+            elif len(line.strip()) == 0:
+                #one file I downloaded(GDS463.soft.gz) had an empty line in it.
+                #Just pass if line is empty
+                pass
+            else: #otherwise, data line
+                state = s._addDataLine(line, state)
+    
+    def _initContainers(s):
+        """
+        Build the various containers for the SOFTParser object
         """
         s.entities = [] 
         s.column_heading = []
@@ -36,46 +54,58 @@ Note the docs do not describe everything.
         s.row_heading_index = []
         s.id_ref_column = None
         s.identifier_column = None
-        
         s.tables = []
-        for line in s.raw_content:
-            if line[0] == '^':
-                ent = line[1:].split('=',1)
-                s.entities.append(entity(ent[0].strip(),ent[1].strip()))
-                state = 1
-            elif line[0] == '!':
-                att = line[1:].split('=',1)
-                if(len(att) == 2):
-                    if att[0].strip() not in s.entities[-1].attributes:
-                        s.entities[-1].attributes[att[0].strip()] = [att[1].strip()]
-                    else:
-                        s.entities[-1].attributes[att[0].strip()].append(att[1].strip())
-                    state = 2
-                    
-            elif line[0] == '#':
-                if state != 3:
-                    #these get set and created in getRowHeading and setRowHeading
-                    #s.row_heading.append([])
-                    #s.row_heading_index.append(None)
-                    s.column_heading.append([])
-                    s.column_heading_info.append([])
-                head = line[1:].split('=', 1)
-                s.column_heading[-1].append(head[0].strip())
-                s.column_heading_info[-1].append((head[0].strip(), head[1].strip()))
-                state = 3
-            elif len(line.strip()) == 0:
-                #one file I downloaded(GDS463.soft.gz) had an empty line in it.
-                #Just pass if line is empty
-                pass
+     
+    def _addEntity(s, line):
+        """
+        Parses an entity and adds it to the entities list
+        """
+        ent = line[1:].split('=',1)
+        s.entities.append(entity(ent[0].strip(),ent[1].strip()))
+        return 1
+
+    def _addEntityAttribute(s, line, curr_state):
+        """
+        Adds an attribute to the current entity
+        """
+        state = curr_state
+        att = line[1:].split('=',1)
+        if(len(att) == 2):
+            if att[0].strip() not in s.entities[-1].attributes:
+                s.entities[-1].attributes[att[0].strip()] = [att[1].strip()]
             else:
-                if state != 4:
-                    s.lock.append(False)
-                    s.tables.append([])
-                row = line.strip().split('\t') 
-                if row != s.column_heading[-1]:#dont add header column
-                    s.tables[-1].append(row)
-                state = 4
-    
+                s.entities[-1].attributes[att[0].strip()].append(att[1].strip())
+            state = 2
+        return state
+
+    def _addDataTableHeader(s, line, curr_state):
+        """
+        Parses and stores the data table header description
+        """
+        state = curr_state
+
+        if state != 3:
+            #these get set and created in getRowHeading and setRowHeading
+            s.column_heading.append([])
+            s.column_heading_info.append([])
+        head = line[1:].split('=', 1)
+        s.column_heading[-1].append(head[0].strip())
+        s.column_heading_info[-1].append((head[0].strip(), head[1].strip()))
+        return 3
+
+    def _addDataLine(s, line, curr_state):
+        """
+        Adds a data line to the table
+        """
+        state = curr_state
+        if state != 4:
+            s.lock.append(False)
+            s.tables.append([])
+        row = line.strip().split('\t') 
+        if row != s.column_heading[-1]:#dont add header column
+            s.tables[-1].append(row)
+        return 4
+
 
     def getEntities(self):
         """
@@ -224,9 +254,16 @@ exist in the table"""
         return [x.strip() for x in samples.split(',')]
 
     def getNumTables(self):
+        """
+        Returns the number of tables
+        NOTE: I have yet to find a softfile with multiple tables.  This needs to be tested.
+        """
         return len(self.tables)
 
     def printTable(self):
+        """
+        Helper function.
+        """
         for table in self.tables:
             for row in table:
                 for value in row:
@@ -235,6 +272,11 @@ exist in the table"""
                 print
 
     def addEntitiesToDatabase(self, host="localhost", dbName ="SOFTFile", user="AHREA", password="URDumb"):
+        """
+        A simple entity insertion function.
+        This is really a helper function that was used in testing AHREA.
+        It needs to be modified if used.
+        """
         import psycopg2
         import psycopg2.extensions
         import os.path

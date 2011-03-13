@@ -96,6 +96,10 @@ class AHREAApp(Frame):
         TYVM : http://stackoverflow.com/questions/4770993/silent-exceptions-in-python-tkinter-should-i-make-them-louder-how
         """
         err = traceback.format_exception(*args)
+        print "AHREAAPP.py-line 99 -debug"
+        for e in err:
+            print e
+       
         #please report
         msg = "Go to https://github.com/JohnCEarls/AHREAPackage/issues to report this error."
         err.append(msg)
