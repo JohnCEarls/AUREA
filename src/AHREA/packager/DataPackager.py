@@ -393,11 +393,11 @@ Adds a table of synonyms to allow cross referencing between geneNets and dataset
         Writes the current data from your chosen classes to csv format.
         With given key (gene/probe)
         Note: you must provide a valid path and filename to this function
-        and you 
+
         Thats on you        
         """
         csv_file = open(filename, 'w')
-        csv_file.write(self.getCSVHeader(key) + '\n')
+        csv_file.write(self._getCSVHeader(key) + '\n')
         dv, numGenes = self.getDataVector(type=key)
         numSamples = len(dv) /numGenes
         for i in range(numGenes):
@@ -411,7 +411,10 @@ Adds a table of synonyms to allow cross referencing between geneNets and dataset
             csv_file.write( str_buff + '\n') 
         csv_file.close()
        
-    def getCSVHeader(self, key='gene'):
+    def _getCSVHeader(self, key='gene'):
+        """
+        Creates the header row for writeToCSV
+        """
         classifications = self.getClassifications()
         if len(classifications) == 0:
             raise Exception, "You must add data to classes to print a CSV" 

@@ -32,14 +32,17 @@ class TSP:
         self.classSizes = classSizes
             
         if filter[1] < filter[0]:#need to be in order for c program
+            #so swap
             temp = filter[1]
             filter[1] = filter[0]
             filter[0] = filter[1]
-
         self.filter = filter
         self.unclassified_data_vector = None
 
     def train(self):
+        """
+        Trains on the given data.
+        """
         self.maxScore1 = IntVector()
         self.maxScore2 = IntVector()
 

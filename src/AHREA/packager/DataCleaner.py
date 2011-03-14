@@ -7,7 +7,7 @@ class DataTable:
     def __init__(self, probe_column='ID_REF', gene_column='IDENTIFIER', gene_collision_rule = 'MAX', bad_data = 0.0, max_bad_cell_percentage=.5):
         """
         gene_collision_rule = determines how we merge genes with multiple entries ('MAX','MIN','AVE' or None)
-        bad_date = the default value for bad data cells
+        bad_data = the default value for bad data cells
         max_bad_cell_percentage = is the percentage of cells in a column/sample that can be bad before we remove the column
         """
         self.dt_id = None #this is a unique name for this data table
@@ -51,6 +51,9 @@ class DataTable:
         self.sp = None #so garbage collection can pick it up
 
     def getCSVData(self, CSVParse):
+        """
+        Takes a CSVParser object and turns it into a DataTable object
+        """
         self.probe_column =CSVParse.probe_column_name
         self.gene_column = CSVParse.gene_column_name
         self.csv = CSVParse
