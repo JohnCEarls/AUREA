@@ -35,7 +35,7 @@ class WelcomePage(AHREAPage):
         AHREAPage.__init__(self, root, 'welcome')
 
     def setUpPage(self):
-        welcome_img = os.path.join(self.root.controller.install_dir,'AHREA', 'data', 'welcome.gif')
+        welcome_img = os.path.join(self.root.controller.install_dir,'AHREA', 'data', 'AHREA-logo.pgm')
         self.photo = photo = PhotoImage(file=welcome_img)
         self.label = Label(self, text="Welcome", image=photo) 
         
