@@ -337,7 +337,7 @@ class AHREAController:
             acc = float(target_accuracy)
         except Exception:
             acc = .9
-        if acc >= 1.0 or acc <= .0:
+        if acc > 1.0 or acc <= .0:
             acc = .9
         try:
             mtime = int(maxTime)
@@ -355,8 +355,6 @@ class AHREAController:
         tl_str = ""
         top_acc = .001
         for est, settings in self.learnerqueue:
-            self.app.status.set("d")
-
             str_learner = viewable[settings['learner']]
             self.app.status.set(tl_str + msg + " Trying " + str_learner)
             learner = self.learnerqueue.trainLearner(settings, est)
@@ -372,7 +370,7 @@ class AHREAController:
                 self.adaptive_settings = settings
                 tl_str = str_learner + " current best at " + str(top_acc) + " :"
                 msg += " new top learner : "
-            self.learnerqueue._adjWeight(settings['learner'], accuracy)
+            self.learnerqueue.feedback(settings['learner'], accuracy)
             if time.time() > endTime:
                 self.app.status.set(tl_str + "Adaptive Finished.  Out of time.")
                 break

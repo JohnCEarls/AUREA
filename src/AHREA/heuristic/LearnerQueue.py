@@ -57,6 +57,9 @@ class LearnerQueue:
         for i in range(4):
             self._queue.append(PriorityQueue())
 
+    def feedback(self, learner_id, apparent_accuracy):
+        self._adjWeight(learner_id, apparent_accuracy)
+
     def genDirac(self, min_network_size, numTopNetworks, data_type='gene'):
         """
         generates the pq for dirac.
