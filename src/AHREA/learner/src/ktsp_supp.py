@@ -24,7 +24,7 @@ class KTSP:
             f = self.filters[1]
         
         if 2*self.maximumK > f:
-            raise Exception, "A filter is set too low for this maximum K."
+            raise Exception, "A filter is set too low for this maximum K. filter value: " + str(f) + " maxK: " + str(self.maximumK)
 
     def train(self):
         topKPairsVector = IntVector()
