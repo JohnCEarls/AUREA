@@ -219,9 +219,9 @@ Given an index into either the probe or gene array(determined by the type parame
         """
         if len(self.data_tables) == 0:
             raise Exception("Attempt to create a data vector without a data table")
-         if self.genes == None:
+        if self.genes == None:
             self.mergeTables()
-       self.createProbeDataVector()
+        self.createProbeDataVector()
         self.createGeneDataVector()
 
     def buildDataVector(self, type):
