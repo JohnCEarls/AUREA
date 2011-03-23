@@ -217,11 +217,11 @@ Given an index into either the probe or gene array(determined by the type parame
         """
         Builds the probe and gene data vectors
         """
-        if self.genes == None and len(self.data_table) > 1:
-            self.mergeTables()
-        if len(self.data_table) == 0:
+        if len(self.data_tables) == 0:
             raise Exception("Attempt to create a data vector without a data table")
-        self.createProbeDataVector()
+         if self.genes == None:
+            self.mergeTables()
+       self.createProbeDataVector()
         self.createGeneDataVector()
 
     def buildDataVector(self, type):
