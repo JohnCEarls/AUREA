@@ -3,6 +3,7 @@ class SynonymParser:
     A parser for gene_info.gs from ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/
     This will may need to be expanded in order to allow other
     sources for synonyms, but this seems pretty comprehensive.
+    Note in version 2.0 we should use pyBabel.
     """
     def __init__(self):
         self.syn = None
@@ -13,11 +14,9 @@ class SynonymParser:
         you need to provide with the name and path to gene_info.gz
         see ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/README to see how it is
         layed out
+        For testing I used Homo_sapiens.gene_info.gz pretty much exclusively.
         """
         import gzip
-        #import os
-        #import os.path
-        #fpath = os.path.join("..", "data")
         f = gzip.open(fname, 'rb')
         line = f.readline()
         counter = 0
@@ -53,12 +52,16 @@ class SynonymParser:
         self.syn = graph
 
     def getSynonyms(self, geneName):
+        """
+        Returns a list of genes that are synonyms for the given gene Name
+        Returns None if it can't find geneName in its dictionary.
+        """
         if geneName in self.syn:
             return self.syn[geneName]
         else:
             return None
 
-    def testAll(self):
+    def _testAll(self):
         """
         For testing
         """
@@ -74,4 +77,4 @@ if __name__ == "__main__":
     print s.getSynonyms('CLC4')
     print s.getSynonyms('John Is Awesome')
     print s.getSynonyms('FLJ23393')
-    s.testAll()
+    s._testAll()

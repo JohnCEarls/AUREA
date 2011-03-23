@@ -248,7 +248,8 @@ exist in the table"""
         
     def getSubsetSamples(self, subset):
         """
-        Returns a list of the subset sample id's found in subset entity
+        Takes a entity object of type SUBSET
+        Returns a list of the subset sample id's found in subset entity 
         """
         samples = subset.attributes['subset_sample_id'][0]
         return [x.strip() for x in samples.split(',')]

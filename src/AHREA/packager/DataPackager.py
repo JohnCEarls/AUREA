@@ -31,7 +31,7 @@ This value is passed to pyBabel.
 
     def getDataVector(self, type):
         """
-This generates a tuple containing (a vector of floats, the size of the columns(number of samples in this context.
+This generates a tuple containing (a vector of floats, the size of the columns(number of genes/probes in this context.
 It uses the dirac library to form the floatVector.
         """
         numSamples = 0
@@ -51,6 +51,9 @@ It uses the dirac library to form the floatVector.
             return (dv, len(dv)/numSamples)
         else:               
             self.createDataVector()
+            if len(dv) % numSamples:
+                #check if something screwy went on with our data table
+                Exception, "The data vector is malformed: length: " + str(len(dv)) + " number of samples: " + numSamples
             return (dv, len(dv)/numSamples)
 
 
@@ -138,7 +141,7 @@ Given an index into either the probe or gene array(determined by the type parame
         
     def createClassification(self, className):
         """
-        This creates a new class we can add samples to.
+        This creates a new class we can add samples to that is identified by the string provided as className
         """
         self.classifications.append((className, []))
 
@@ -146,6 +149,9 @@ Given an index into either the probe or gene array(determined by the type parame
     def addToClassification(self, classToAddTo, data_table, sample):
         """
         Adds a sample to a class.
+        classToAddTo (string) is a string that was added with createClassification.
+        data_table (string) is the dt_id from a DataTable object
+        sample (string) is the name of the sample to be added.
         """
         for className, samples in self.classifications:
             if classToAddTo == className:
@@ -211,8 +217,10 @@ Given an index into either the probe or gene array(determined by the type parame
         """
         Builds the probe and gene data vectors
         """
-        if self.genes == None:
+        if self.genes == None and len(self.data_table) > 1:
             self.mergeTables()
+        if len(self.data_table) == 0:
+            raise Exception("Attempt to create a data vector without a data table")
         self.createProbeDataVector()
         self.createGeneDataVector()
 
