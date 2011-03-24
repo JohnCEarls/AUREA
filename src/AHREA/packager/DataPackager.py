@@ -161,8 +161,8 @@ Given an index into either the probe or gene array(determined by the type parame
         """
         Returns the set of classifications we are training on
         organized as
-        dict[className1] = [ (table, sample_id), (table, sample_id) ...]
-        dict[className2] = [ (table, sample_id), (table, sample_id) ...]
+        [(className1, [ (table, sample_id), (table, sample_id) ...]),
+         (className2, [ (table, sample_id), (table, sample_id) ...])]
          
         """
         return self.classifications
@@ -178,8 +178,8 @@ Given an index into either the probe or gene array(determined by the type parame
         prevTable = None
         t_obj = self.getTable(self.unclassified[0])
         for i, t in enumerate(self.data_tables):
-                         if t==t_obj:
-                            t_indx = i
+            if t==t_obj:
+                t_indx = i
         sample = self.unclassified[1]
         if type=='probe':
             for p in self.probes:

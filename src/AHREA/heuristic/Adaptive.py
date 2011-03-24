@@ -10,12 +10,18 @@ class Adaptive:
         self.lq = learnerQueue       
 
     def getLearner(self, target_acc, maxTime):
+        """
+        target_acc - float from (0,1] that says to stop when apparent accuracy of a model reaches that accuracy
+        maxTime - maximum time in seconds to search model space
+        Returns a tuple containing (achieved accuracy (float), settings(dict), learner (a learner object)) the best achieved accuracy for the given parameters
+        """
         startTime = time.time()
-        sekf.endTime = maxTime + startTime
+        self.endTime = maxTime + startTime
         self.target_accuracy = target_acc
         learners = [LearnerQueue.dirac, LearnerQueue.tsp, LearnerQueue.tst, LearnerQueue.ktsp]
         top_acc = .000001
         top_learner = None
+        top_settings = None
         for est_running_time, settings in self.lq:
             #train
             learner = self.learnerqueue.trainLearner(settings, est_running_time)
@@ -28,11 +34,14 @@ class Adaptive:
             if accuracy > top_acc:
                 top_acc = accuracy
                 top_learner = learner
+                top_settings = settings
             #let queue know how this learner did
             self.learnerqueue.feedback(settings['learner'], accuracy)
             if self._goodEnough(accuracy):
                 break
-        return (top_acc, top_learner)
+        if top_learner == None:
+            raise Exception("No Learner found, this should not happen")
+        return (top_acc, top_settings, top_learner)
 
        
     def _goodEnough(self, current_accuracy):

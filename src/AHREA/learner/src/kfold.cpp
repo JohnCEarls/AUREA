@@ -53,7 +53,48 @@ vector<int> kfold::generateSampleVector(){
         samples[i] = samples[j];
         samples[j] = temp;
     }
-    return samples;
+    
+    if (checkFoldsGood(samples)){
+        return samples;
+    } else {
+        //all our pigeons are in the same hole.
+        //shuffle shuffle
+        return generateSampleVector();
+    } 
+
+}
+/**
+Checks that we will not have a training set without any samples for a class.
+
+**/
+bool kfold::checkFoldsGood( vector<int> & sample){
+    int fsize = getFoldSize();
+    
+    bool good = true;
+
+    if (class1size > fsize && class2size > fsize) return good;//shortcircuit pigeon
+    int class1counter, class2counter;
+    for( int i = 0; i < sample.size();i++ ){
+        //the only way for this to happen is if all of one class ends up in a
+        //fold
+        if (i%fsize == 0){//new fold
+           class1counter = 0;
+           class2counter = 0;
+        }
+        //size of class[1||2] in this fold 
+        if(sample.at(i) < class1size){//class1sample
+            class1counter++;
+        } else {//class2sample
+            class2counter++;
+        }
+        if ((class1counter == class1size) 
+            || (class2counter == class2size)){
+            //Oh noes!!!!All our eggs are in one basket.
+            good == false;
+            break;
+        }
+     }
+     return good;
 }
 /**
 Returns a vector that contains the training set for the next set of learners

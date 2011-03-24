@@ -58,6 +58,11 @@ class LearnerQueue:
             self._queue.append(PriorityQueue())
 
     def feedback(self, learner_id, apparent_accuracy):
+        """
+        Adjusts the weights of a learner.
+        learner_id matching global data attribute
+        apparent_accuracy - percent accuracy of learner
+        """
         self._adjWeight(learner_id, apparent_accuracy)
 
     def genDirac(self, min_network_size, numTopNetworks, data_type='gene'):
@@ -87,6 +92,14 @@ class LearnerQueue:
         self._queue[LearnerQueue.dirac].put((self._est.Diractime(min_network_size), settings))
     
     def genTSP(self, r1, r2, equijoin=False, data_type='probe'):
+        """
+        generates the pq for tsp.
+        inputs: 
+            r1 - tuple describing the range for filter 1 (from, to, increment)
+            r2 - tuple describing the range for filter 2 (from, to, increment)
+            equijoin - boolean, should we restrict filters to [10,10] [20,20] etc.
+            
+        """
         _, nGenes = self.data_package.getDataVector(data_type)
         rest_check = {}
         for x in range(*r1):
@@ -124,6 +137,15 @@ class LearnerQueue:
         self._queue[LearnerQueue.tsp].put((self._est.TSPtime(restrictions), settings))
 
     def genTST(self, r1, r2, r3, equijoin=False, data_type='probe'):
+        """
+        generates the pq for tst
+        inputs: 
+            r1 - tuple describing the range for filter 1 (from, to, increment)
+            r2 - tuple describing the range for filter 2 (from, to, increment)
+            r3 - tuple describing the range for filter 3 (from, to, increment)
+            equijoin - boolean, should we restrict filters to [10,10] [20,20] etc.
+            
+        """
         _, nGenes = self.data_package.getDataVector(data_type)
         rest_check = {}
         for x in range(*r1):
@@ -164,6 +186,17 @@ class LearnerQueue:
         self._queue[LearnerQueue.tst].put((self._est.TSTtime(restrictions), settings))
 
     def genKTSP(self, maxK, ncv, nlo, r1, r2, equijoin=False, data_type='probe'):
+        """
+        generates the pq for tst
+        inputs:
+            maxK - tuple describing the range for the maximum k value
+            ncv - tuple describing the range for number of cross validations
+            nlo - tuple describing the range for number of elements to leave out of internal crossvalidation 
+            r1 - tuple describing the range for filter 1 (from, to, increment)
+            r2 - tuple describing the range for filter 2 (from, to, increment)
+            equijoin - boolean, should we restrict filters to [10,10] [20,20] etc.
+            
+        """
         _, nGenes = self.data_package.getDataVector(data_type)
         rest_check = {}
         for x in range(*r1):
@@ -270,6 +303,9 @@ class LearnerQueue:
 
  
     def getLearner(self, settings):
+        """
+        Returns a learner object corresponding to the provided settings dict.
+        """
         if settings['learner'] == LearnerQueue.tsp:
             data = settings['data']
             numGenes = settings['numGenes']

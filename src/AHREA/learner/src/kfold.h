@@ -21,5 +21,6 @@ class kfold{
         vector<int> generateSampleVector();
         int getFoldSize();
         bool trainingData( int sample );
+        bool checkFoldsGood( vector<int> & sample);
 };
 #endif

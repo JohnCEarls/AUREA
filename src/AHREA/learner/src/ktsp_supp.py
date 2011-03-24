@@ -1,6 +1,16 @@
 %pythoncode{
 class KTSP:
     def __init__(self, data, numGenes, classSizes, filters, maximumK, nleaveout, nValidationRuns):
+        """
+        Creates a ktsp learner object
+            data - DoubleVector with data
+            numgenes - number of genes per sample
+            classSizes = IntVector of size 2 where a[0] = class 1 size
+            filters - IntVector of size 2 used for wilcoxon filtering
+            maximumK - largest k to search against (running time increases linearly on this k)
+            nleaveout - number of samples to leave out on cross validation for finding optimal k
+            nValidationRuns - number of times to run cross validation for finding optimal k
+        """
         self.data = data
         self.numGenes = numGenes
         self.classSizes = classSizes
@@ -27,6 +37,9 @@ class KTSP:
             raise Exception, "A filter is set too low for this maximum K. filter value: " + str(f) + " maxK: " + str(self.maximumK)
 
     def train(self):
+        """
+        Trains the object
+        """
         topKPairsVector = IntVector()
         runKTSP(self.data, self.numGenes, self.classSizes,self.filters, self.maximumK, self.nleaveout, self.nValidationRuns, topKPairsVector)
         aPair = []
@@ -38,12 +51,21 @@ class KTSP:
         self.topKPairs.append((aPair[0], aPair[1]))
     
     def getMaxScores(self):
+        """
+        Get a list of tuples containing the chosen pairs
+        """
         return self.topKPairs
 
     def addUnclassified(self, unclassifiedVector):
+        """
+        Adds an unclassified vector for classification
+        """
         self.unclassified_data_vector = unclassifiedVector
 
     def classify(self):
+        """
+        classifies vector provided by addUnclassified method
+        """
         classification = []
         for pair in self.topKPairs:
             index1 = pair[0]
