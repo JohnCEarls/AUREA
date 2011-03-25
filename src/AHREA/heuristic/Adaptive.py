@@ -24,7 +24,7 @@ class Adaptive:
         top_settings = None
         for est_running_time, settings in self.lq:
             #train
-            learner = self.learnerqueue.trainLearner(settings, est_running_time)
+            learner = self.lq.trainLearner(settings, est_running_time)
             #cross validation
             if settings['learner'] != LearnerQueue.dirac:
                 accuracy = learner.crossValidate()
@@ -36,7 +36,7 @@ class Adaptive:
                 top_learner = learner
                 top_settings = settings
             #let queue know how this learner did
-            self.learnerqueue.feedback(settings['learner'], accuracy)
+            self.lq.feedback(settings['learner'], accuracy)
             if self._goodEnough(accuracy):
                 break
         if top_learner == None:
