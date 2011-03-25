@@ -123,7 +123,7 @@ Given an index into either the probe or gene array(determined by the type parame
         Clears the classification settings
         """
         self.classifications = []
-        self.class_vector = dirac.IntVector() 
+        self.class_vector = None 
 
     def clearClassSamples(self):
         """
