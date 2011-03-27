@@ -1,5 +1,6 @@
 from AHREA.learner import ktsp, tst, dirac, tsp
 from AHREA.heuristic.LearnerQueue import LearnerQueue 
+from AHREA.heuristic.Adaptive import Adaptive
 from AHREA.parser.SOFTParser import *
 from AHREA.parser.CSVParser import *
 from AHREA.parser.GMTParser import *
@@ -7,6 +8,7 @@ from AHREA.parser.SettingsParser import *
 from AHREA.packager.DataCleaner import *
 from AHREA.packager.DataPackager import *
 from AHREA.GUI.AHREAPage import InputError
+
 from Tkinter import *
 import time
 import os
@@ -333,6 +335,7 @@ class AHREAController:
 
     def trainAdaptive(self, target_accuracy, maxTime  ):
         self.app.status.set("Configuring adaptive training")
+        
         try:
             acc = float(target_accuracy)
         except Exception:
@@ -343,9 +346,20 @@ class AHREAController:
             mtime = int(maxTime)
         except:
             mtime = 2**20
+     
         maxTime = mtime
         target_accuracy = acc
+        #build learner queue
         self._adaptiveSetup()
+        #create adaptive object
+        adaptive = Adaptive(self.learnerqueue, app_status_bar = self.app.status)
+        top_acc, top_settings, top_learner = adaptive.getLearner(target_accuracy, maxTime)
+        #store adaptive results
+        self.adaptive = top_learner
+        self.adaptive_settings = top_settings
+
+
+        """
         startTime = time.time()
 
         endTime=maxTime + startTime
@@ -357,6 +371,7 @@ class AHREAController:
         for est, settings in self.learnerqueue:
             str_learner = viewable[settings['learner']]
             self.app.status.set(tl_str + msg + " Trying " + str_learner)
+            
             learner = self.learnerqueue.trainLearner(settings, est)
 
             if settings['learner'] != LearnerQueue.dirac:
@@ -377,7 +392,7 @@ class AHREAController:
             if accuracy >= target_accuracy:
                 self.app.status.set(tl_str + "Adaptive Finished.  Achieved Desired Accuracy.")
                 break
-            
+           """ 
         
 
 
