@@ -74,7 +74,7 @@ class Adaptive:
                 learner = self.lq.trainLearner(settings, est_running_time)
                 signal.alarm(0)#made it
             except AdaptiveTimeoutException: 
-                timeout = true
+                timeout = True
                 signal.alarm(0)
 
             #cross validation

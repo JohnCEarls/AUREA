@@ -161,6 +161,7 @@ class LearnerQueue:
                         adj = sorted([self.wilc.filterAdjust(a) for a in [x,y,z]])
                         x_adj, y_adj, z_adj = tuple(adj)
                         if (x_adj, y_adj, z_adj) not in rest_check:
+                            #rest_check (don't want duplicates)
                             rest_check[(x_adj, y_adj, z_adj)] = 1
                             rVec = tsp.IntVector()
                             rVec.push_back(x_adj)
@@ -209,7 +210,7 @@ class LearnerQueue:
                     x_adj = self.wilc.filterAdjust(x)
                     y_adj = self.wilc.filterAdjust(y)
                     if (x_adj, y_adj) not in rest_check:
-                        rest_check[(x_adj, y_adj)] = 1
+                        rest_check[(x_adj, y_adj)] = 1#keep unique
                         rVec = tsp.IntVector()
                         rVec.push_back(x_adj)
                         rVec.push_back(y_adj)
