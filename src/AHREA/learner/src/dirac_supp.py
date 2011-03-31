@@ -11,11 +11,12 @@ class Dirac:
     Published in PLoS Computational Biology May 2010 | Volume 6 |
     Issue 5.
     """
-    def __init__(self, data, numGenes,classSizes, geneNet, geneNetSize):
+    def __init__(self, data, numGenes,classSizes, geneNet, geneNetSize, numTopNetworks=None):
         self.data = data
         self.numGenes = numGenes
         self.classSizes = classSizes
         self.geneNet = geneNet
+        self.numTopNetworks = numTopNetworks
         if len(self.geneNet) == 0:
             raise Exception('invalid network size', 'Dirac was provided with a zero length network.')
         self.unclassified_data_vector = None
@@ -40,7 +41,12 @@ class Dirac:
         Call with classify(numTopNetworks = x).  The netStart and netEnd
         are where in the rank templates and unclassified rank vector the
         gene network you are interested in is located.
+
+        Update: you can now set numTopNetworks in the constructor.
+        Passing here should be deprecated.
         """
+        if self.numTopNetworks is not None and numTopNetworks == 1:
+            numTopNetworks = self.numTopNetworks
         classification_list = []
         rc = self.getRankDifference()
         for x in xrange(0,numTopNetworks):
@@ -316,8 +322,9 @@ class Dirac:
     def crossValidate(self,k=10, numTopNetworks=1):
         """
         Runs the C-based cross validation
-        K-Fold testing of the given data, returns the percent classified correctly.
+        K-Fold testing of the given data, returns Matthews correlation coefficient.
         """
+
         return crossValidate(self.data, self.numGenes, self.classSizes, self.geneNet, self.geneNetSize, numTopNetworks, k) 
 
     def testAll(self):

@@ -83,7 +83,7 @@ class TSP:
     def crossValidate(self, k=10):
         """
         Runs the C-based cross validation
-        K-fold testing of the given data, returns the percent classified correctly.
+        K-fold testing of the given data, returns the Matthews correlation coefficient [-1.0, 1.0].
         """
         return crossValidate(self.data, self.numGenes, self.classSizes, self.filter, k)
 }

@@ -1,6 +1,7 @@
 #include "KTSP_pywrapper.h"
 #include "kfold.h"
 #include "iostream"
+#include <math.h>
 using std::cout;
 using std::endl;
 
@@ -13,7 +14,15 @@ double crossValidate( std::vector<double> & data, int nGenes, std::vector<int> &
     kfold kfGen(data, nGenes, classSizes, kFoldk);
     vector<double> * ts;
     vector<double> * ls;
-    int numCorrect = 0;
+    //moving to a Matthews correlation coefficient
+    //let class 1 be positive [0]
+    int truePositive = 0;
+    int falsePositive = 0;
+    //let class 2 be negative [1]
+    int trueNegative = 0;
+    int falseNegative = 0;
+
+   int numCorrect = 0;
     ts = kfGen.getNextTrainingSet();
     while(ts!=NULL){//for each training set
         vector<int> topKPairs;
@@ -38,14 +47,29 @@ double crossValidate( std::vector<double> & data, int nGenes, std::vector<int> &
             if(2*sum > topKPairs.size()/2){
                 classifyAs = 1; 
             }
-            if (kfGen.getTestVectorClass() == classifyAs){
+            int actual_class = kfGen.getTestVectorClass();
+            if (actual_class == 0 && classifyAs == 0) truePositive++;
+            if (actual_class == 0 && classifyAs == 1) falseNegative++;
+            if (actual_class == 1 && classifyAs == 0) falsePositive++;
+            if (actual_class == 1 && classifyAs == 1) trueNegative++;
+            /**
+          if (kfGen.getTestVectorClass() == classifyAs){
                 numCorrect++;
-            }
+            }**/
             ls = kfGen.getNextTestVector();
 
 
         }
         ts = kfGen.getNextTrainingSet();
     }
-    return (double)numCorrect/(double)(classSizes[0] + classSizes[1]);
+    double numerator =  ((truePositive*trueNegative) - (falsePositive*falseNegative));
+    double denominator = sqrt((double)
+        ((truePositive+falsePositive )* (truePositive+falseNegative) *
+        (trueNegative+falsePositive ) * (trueNegative+falseNegative))
+    );
+    if (denominator == 0.0) denominator = 1;
+
+    return numerator/denominator; 
+
+    //return (double)numCorrect/(double)(classSizes[0] + classSizes[1]);
 }

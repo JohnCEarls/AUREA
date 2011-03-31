@@ -176,6 +176,10 @@ class TST:
             return 0
 
     def crossValidate(self, k=10):
+        """
+        Performs k-fold cross validation (k is an integer [2,samplesize])
+        Returns the Matthews correlation coefficient.(-1.0, 1.0)
+        """
         return crossValidate(self.data, self.numGenes, self.classSizes, self.filter, k)
 
     def distance(self, v1, v2):
