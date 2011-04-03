@@ -99,13 +99,15 @@ class Adaptive:
                 msg += " new top learner : "
             #let queue know how this learner did
             if settings is not None:
-                self.lq.feedback(settings['learner'], accuracy)
+                self.lq.feedback(settings['learner'], (1.0+accuracy)/2)
+                #shift accuracy to [0.0,1.0]
+                
             if self._goodEnough(accuracy):
                 #tell why we are done
                 if time.clock() > self.endTime:
                     self._progress_report(tl_str + "Adaptive Finished.  Out of time.")
                 if accuracy >= self.target_accuracy:
-                    self._progress_report(tl_str + "Adaptive Finished.  Achieved Desired Accuracy.")
+                    self._progress_report(tl_str + "Adaptive Finished.  Achieved Desired MCC.")
                 break
         return (top_acc, top_settings, top_learner)
 
