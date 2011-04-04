@@ -7,6 +7,7 @@ from AHREA.parser.SettingsParser import *
 import os.path
 import shutil
 import sys
+import platform
 class AHREAApp(Frame):
     def __init__(self, root, controller):
         root.report_callback_exception = self.report_callback_exception
@@ -256,7 +257,8 @@ class AHREAMenu(Menu):
     def save_settings(self):        
         options = {}
         options['defaultextension'] = '' # couldn't figure out how this works
-        options['filetypes'] = [('xml config', '.xml')]
+        if platform.platform()[0:3] != 'Dar':#mac does not like this
+            options['filetypes'] = [('xml config', '.xml')]
         options['initialdir'] = 'data'
         options['initialfile'] = ''
         options['parent'] = self
@@ -268,7 +270,8 @@ class AHREAMenu(Menu):
     def load_settings(self):
         options = {}
         options['defaultextension'] = '' # couldn't figure out how this works
-        options['filetypes'] = [('xml config', '.xml')]
+        if platform.platform()[0:3] != 'Dar':#mac does not like this
+            options['filetypes'] = [('xml config', '.xml')]
         options['initialdir'] = 'data'
         options['initialfile'] = 'config.xml'
         options['parent'] = self

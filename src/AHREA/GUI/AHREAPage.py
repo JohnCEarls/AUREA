@@ -3,6 +3,7 @@ import tkFileDialog
 import tkMessageBox
 import os
 from AHREA.GUI.AHREAResults import *
+import platform
 class AHREAPage(Frame):
     """
     Base class for data input frames
@@ -168,7 +169,8 @@ class FileBrowsePage(AHREAPage):
 
     def softfiledialog(self, pathVariable):
         file_opt = options =  {}
-        options['filetypes'] = [('gzipped SOFT', '.soft.gz'), ('SOFT', '.soft'),('Comma Separated', '.csv')]
+        if platform.platform()[0:3] != 'Dar':#mac no like 
+            options['filetypes'] = [('gzipped SOFT', '.soft.gz'), ('SOFT', '.soft'),('Comma Separated', '.csv')]
         options['parent'] = self
         options['initialdir'] = 'data'
         options['title'] = "AHREA - Select data file."
@@ -201,7 +203,8 @@ class FileBrowsePage(AHREAPage):
 
     def gnfiledialog(self):
         file_opt = options =  {}
-        options['filetypes'] = [('Gene Matrix Transposed file format', '.gmt')]
+        if platform.platform()[0:3] != 'Dar':#mac no like 
+            options['filetypes'] = [('Gene Matrix Transposed file format', '.gmt')]
         options['parent'] = self
         options['initialdir'] = 'data'
         options['title'] = "AHREA - Select network file."
@@ -211,7 +214,8 @@ class FileBrowsePage(AHREAPage):
 
     def gsynfiledialog(self):
         file_opt = options =  {}
-        options['filetypes'] = [('NCBI gene_info file', '.gz')]
+        if platform.platform()[0:3] != 'Dar':
+            options['filetypes'] = [('NCBI gene_info file', '.gz')]
         options['parent'] = self
         options['initialdir'] = 'data'
         options['initialfile'] = 'Homo_sapiens.gene_info.gz'
