@@ -71,7 +71,7 @@ class AHREAController:
         jpath =  os.path.join
         if os.path.exists(os.path.join(self.workspace, 'data')):
             self.data_dir = os.path.join(self.workspace, 'data')
-            needed = ['config.xml', 'welcome.gif', 'Homo_sapiens.gene_info.gz', 'c2.biocarta.v2.5.symbols.gmt']
+            needed = ['config.xml', 'AHREA-logo.pgm', 'Homo_sapiens.gene_info.gz', 'c2.biocarta.v2.5.symbols.gmt']
             for req_file in needed:
                 chkFile(req_file)
         else:
