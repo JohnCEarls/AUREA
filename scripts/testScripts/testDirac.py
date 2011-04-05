@@ -6,9 +6,12 @@ from AHREA.heuristic import LearnerQueue
 import random
 import string
 def getDataPackage():
-    softfile = "data/GDS2545.soft.gz"
-    gnfile  = "data/c2.biocarta.v2.5.symbols.gmt"
-    synfile = "data/Homo_sapiens.gene_info.gz"
+    dd = "/home/earls3/Price/AHREAPackage/src/AHREA/data/"
+    softfile = dd+"GDS2545.soft.gz"
+
+
+    gnfile  = dd+"c2.biocarta.v2.5.symbols.gmt"
+    synfile = dd+"Homo_sapiens.gene_info.gz"
     gnf = GMTParser.GMTParser(gnfile)
 
     sp = SOFTParser.SOFTParser(softfile)
@@ -33,12 +36,15 @@ def getDataPackage():
         dp.addToClassification("Tumor", dt.dt_id, samp)
 
 
-    for samp in normal:
+    for samp in normal[:-1]:
         dp.addToClassification("Normal", dt.dt_id, samp)
+    dp.setUnclassified(dt.dt_id, normal[-1])
     return dp
+
 from AHREA.learner import ktsp, tst, dirac, tsp
 dp = getDataPackage()
 min_net = 1
+
 row_key = 'gene'
 data_vector, num_genes = dp.getDataVector(row_key)
 class_vector = dp.getClassVector()
@@ -46,9 +52,14 @@ gene_net, gene_net_size = dp.getGeneNetVector(min_net)
 print "Making Dirac"
 d =dirac.Dirac(data_vector, num_genes,class_vector, gene_net, gene_net_size)
 print "dirac is made"
+d.train()
 d.crossValidate()
 print "done crossV"
-
+udv =dp.getUnclassifiedDataVector('gene')
+print "in addUnclassified"
+d.addUnclassified(dp.getUnclassifiedDataVector('gene'))
+print "in classify()"
+d.classify()
 
 
 

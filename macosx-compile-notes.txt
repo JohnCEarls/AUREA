@@ -1,0 +1,6 @@
+Upgraded OS X to snow leopard.
+    -this automatically updated python to 2.7, note that the prev version of OSX was 2.3~
+Installed X-Code, this was necessary to get the dev libraries.
+python setup build worked fine the first time :)
+    -code must come with the right version of swig (not sure)
+
