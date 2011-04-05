@@ -78,16 +78,13 @@ ext_mod = [ buildExtension(name, src_dir, src_files) for name, src_files in getE
 
 #run setup
 setup (name = 'AHREA',
-        version='1.0.1', #edit AHREA/__init__.py
+        version='1.0.2', #edit AHREA/__init__.py
         author ='John C. Earls',
         author_email = 'earls3@illinois.edu',
         url= 'https://github.com/JohnCEarls/AHREAPackage.git',
         description="""AHREA is a sofware suite that makes finding Relative Expression Learners easy.""",
         packages=['AHREA','AHREA.GUI', 'AHREA.learner', 'AHREA.packager', 'AHREA.parser','AHREA.heuristic', 'pyBabel'],
         package_dir={'AHREA': 'src/AHREA', 'pyBabel': 'src/pyBabel'},
-        package_data={'AHREA':['data/config.xml', 'data/Homo_sapiens.gene_info.gz','data/c2.biocarta.v2.5.symbols.gmt', 'data/AHREA-logo.pgm'],},
-        #data_files = [('img', ['img/welcome.gif'])],
-        scripts=['scripts/AHREAGUI.py'],
         ext_modules = ext_mod, 
         py_modules = getAHREApyModules(),
         classifiers=[
@@ -96,7 +93,6 @@ setup (name = 'AHREA',
             'Intended Audience :: Science/Research', 
             'Topic :: Scientific/Engineering :: Bio-Informatics', 
             'Topic :: Scientific/Engineering :: Medical Science Apps.'],
-
 )
 
 
