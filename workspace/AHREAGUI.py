@@ -6,9 +6,14 @@ import os.path
 import tkFileDialog
 from tkMessageBox import *
 
+# if you are running this somewhere other than the workspace folder
+# set workspace to the path of the directory that contains data/config.xml
+
+workspace = os.getcwd()
+
 root = Tkinter.Tk()
 root.minsize(width=350, height=300)
-cont = AHREAController()
+cont = AHREAController(workspace=workspace)
 app = AHREAApp(root, cont)
 cont.setApp(app)
 root.mainloop()

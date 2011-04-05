@@ -15,21 +15,25 @@ import os
 import shutil
 
 class AHREAController:
-    def __init__(self, installation_dir=None ):
+    def __init__(self, workspace )
+        """
+        This is the controller (MVC design pattern) for the GUI.
+        workspace is the folder that contains the config file and where
+        temporary files and data files will be brought.
+        """
         self.softFile = []
         self.geneNetworkFile = None
         self.geneSynonymFile = None
         self.softparser = []
         self.datatable = []
-        if installation_dir is None:
-            #get the installation path so we can copy the data files to
-            #the working directory
-            gui_dir = os.path.split(os.path.realpath(__file__))[0]
-            AHREA_dir = os.path.join(gui_dir, '..')
-            installation_dir = os.path.abspath(os.path.join(AHREA_dir,'..'))
-        self.install_dir = installation_dir
-        self.initWorkspace()
+        self.workspace = workspace
         configFile = os.path.join(self.workspace, 'data', 'config.xml')
+        logo = os.path.join(self.workspace, 'data', 'AHREA-logo.pgm')
+        if not os.path.exists(configFile):
+            raise Exception, configFile + " not found.  Exiting"
+        if not os.path.exists(logo):
+            raise Exception, logo + " not found.  Exiting"
+ 
         self.config = SettingsParser(configFile)
         self.dirac = None
         self.tsp = None
@@ -57,28 +61,9 @@ class AHREAController:
         """
         Initialize the workspace files.
         Copy from the system any necessary files. (config, gene_syn, etc)
+        DEPRECATED!!!!
         """
-        def chkFile(fname):
-            """
-            When the data directory exists, check that fname is there.
-            If not copy it to directory.
-            """
-            if not os.path.exists(os.path.join( self.data_dir, fname)):
-                src_data_dir = jpath(self.install_dir, 'AHREA', 'data')
-                shutil.copy2(jpath(src_data_dir, fname), self.data_dir)
-
-        self.workspace = os.getcwd()
-        jpath =  os.path.join
-        if os.path.exists(os.path.join(self.workspace, 'data')):
-            self.data_dir = os.path.join(self.workspace, 'data')
-            needed = ['config.xml', 'AHREA-logo.pgm', 'Homo_sapiens.gene_info.gz', 'c2.biocarta.v2.5.symbols.gmt']
-            for req_file in needed:
-                chkFile(req_file)
-        else:
-            #copy workspace from package data
-            src_data_dir = os.path.join(self.install_dir, 'AHREA', 'data')
-            dest_data_dir = os.path.join(self.workspace, 'data')
-            shutil.copytree(src_data_dir, dest_data_dir)
+        raise Exception, "initWorkspace is deprecated, download the workspace.zip file"
 
     def downloadSOFT(self, softfilename):
         self.app.status.clear()
