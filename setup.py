@@ -1,10 +1,12 @@
 #!/usr/bin/env python
-
 """
 setup.py 
 """
 
-from distutils.core import setup, Extension
+import ez_setup
+ez_setup.use_setuptools()
+#from distutils.core import setup, Extension
+from setuptools import setup, Extension
 import os
 import os.path
 import shutil
