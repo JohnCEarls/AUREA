@@ -73,6 +73,9 @@ try:
         swig_helper(mod,src_dir)
 except Exception as e:
     print "Swig Helper did not run.  This is fine if building rpms."
+    #Basically if the pymodules did not get copied over you are
+    #in trouble.  To get around this, try building and then running
+    #bdist_rpm.
 #Build extension instances
 ext_mod = [ buildExtension(name, src_dir, src_files) for name, src_files in getExtensionModuleSettings()]
 

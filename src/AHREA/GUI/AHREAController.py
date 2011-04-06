@@ -15,7 +15,7 @@ import os
 import shutil
 
 class AHREAController:
-    def __init__(self, workspace )
+    def __init__(self, workspace ):
         """
         This is the controller (MVC design pattern) for the GUI.
         workspace is the folder that contains the config file and where
