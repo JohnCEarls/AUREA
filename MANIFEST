@@ -1,4 +1,5 @@
 README
+ez_setup.py
 setup.py
 src/AHREA/__init__.py
 src/AHREA/parser/SOFTParser.py
