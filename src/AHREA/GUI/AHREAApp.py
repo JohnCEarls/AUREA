@@ -12,6 +12,7 @@ class AHREAApp(Frame):
     def __init__(self, root, controller):
         root.report_callback_exception = self.report_callback_exception
         Frame.__init__(self, root)
+        self.err_disp = False#only display one error
         self.root = root
         self.root.title( "AUREA - Adaptive Unified Relative Expression Analyser")
         self.controller = controller
@@ -67,40 +68,6 @@ class AHREAApp(Frame):
         self.curr_page.grid(column=1, row=0,sticky=N+S+E+W)
         self.root.update_idletasks()
 
-    def buildNextButton(self):       
-        return Button(self.root, text="Next >", command=self.next)
-
-    def buildPrevButton(self):
-        return Button(self.root, text="< Prev", command=self.prev)
-
-    def buildNav(self):
-        """
-        Create button objects
-        """
-        a=self.home_button = Button(self, text="Home", command=self.nullaction)
-        b=self.import_button = Button(self, text="Import Data", command=self.nav_importData)
-        c=self.class_button = Button(self, text="Class Definition", command=self.nullaction)
-        d=self.settings_button = Button(self, text="Learner Settings", command=self.nullaction)
-        e=self.train_button = Button(self, text="Train Classifiers", command=self.nullaction)
-        f=self.test_button = Button(self, text="Test Classifiers", command=self.nullaction)
-        g=self.evaluate_button = Button(self, text="Evaluate Performance", command=self.nullaction)
-        self.buttonList = [a,b,c,d,e,f,g]
-
-    def layoutNav(self):
-        """
-        Layout Button objects
-        """
-        stickyicky = E+W
-        for i,button in enumerate(self.buttonList):
-            #button.configure(state=DISABLED)
-            button.grid(row=i, column=0, sticky=stickyicky )
-
-    def nullaction(self):
-        pass
-
-    def nav_importData(self):
-        self.displayPage('filebrowse')
-
     def next(self):
         try:
             next = self.curr_page.next()
@@ -125,29 +92,22 @@ class AHREAApp(Frame):
         displays exceptions
         TYVM : http://stackoverflow.com/questions/4770993/silent-exceptions-in-python-tkinter-should-i-make-them-louder-how
         """
+        if self.err_disp:
+            return
             
         err = traceback.format_exception(*args)
-        #print "AHREAAPP.py-line 99 -debug"
-        #for e in err:
-            #print e
-       
-        #please report
         msg = "An Error has occurred."
-        #err.append(msg)
         t = Toplevel(self)
-        #t.protocol('WM_DELETE_WINDOW', t.close_window)
         t.title("Oh Noes!!!! Error!!!!!")
         Label(t,text=msg).pack()
         import os
-        errmsg = 'Please copy this error and go to https://github.com/JohnCEarls/AHREAPackage/issues to report it'+ os.linesep()
+        errmsg = 'Please copy this error and go to https://github.com/JohnCEarls/AHREAPackage/issues to report it'+ os.linesep
         errmsg += '(You may have to use Control-C or Apple-C to copy.)'+ os.linesep
         errmsg +=os.linesep.join(err)
         errBox = Text(t,wrap=WORD)
         errBox.pack()
         errBox.insert(END, errmsg) 
-        #errBox.config(state=DISABLED)
-        #Button(t,text="Copy Error", command=copyError)
-        #tkMessageBox.showerror('AHREA: Error', err)
+        self.err_disp = True
 
 
 class StatusBar(Frame):
@@ -180,28 +140,157 @@ class AHREARemote(Frame):
     TrainTSP = 4
     TrainTST = 5
     TrainKTSP = 6
-    
+    TrainAdaptive = 7
+    TrainAny = 8#specialCase
+    #end enum
+    NumStates = 9 #number of states in dependencies
     def __init__(self, master):
-        Frame.__init__(self, master)
+        """
+        Builds the left side controller of AUREA
+        master - the AHREAApp Frame
+        """
+        Frame.__init__(self, master, width=200)
         self.m = master
+        aa=AHREARemote
+        self.depGraph = [[0 for x in range(aa.NumStates)] for y in range(aa.NumStates)]
+        self.setNavDependencies()
         self.buildNav()
+        self.buildDependencyGraph()
         self.layoutNav()
+        self.stateChange()
+
+    def buildDependencyGraph(self):
+        """
+        The dependency graph stores direct dependencies
+        """
+        def depends(A,B):
+            for x in A:
+                for y in B:
+                    self.depGraph[x][y] = 1
+        aa= AHREARemote
+
+        depends([aa.TrainAdaptive,aa.TrainDirac,aa.TrainKTSP,aa.TrainTSP,aa.TrainTST], [aa.ClassCreation])
+        depends([aa.TrainAdaptive, aa.TrainDirac],[aa.NetworkImport])
+        depends([aa.ClassCreation], [aa.DataImport])
+
+
+    def getDepVector(self, dependencies):
+        """
+        Given a list of dependencies, return a list of 1s and 0s
+        showing associated dependencies
+        """
+        def setDep(dvector, dependency):
+            dvector[dependency] = 1
+        def traverse(node):
+            traversal = [node]
+            for i,x in enumerate(self.depGraph[node]):
+                if x == 1:
+                    traversal.append(i)
+                    for j in traverse(i):
+                        traversal.append(j)
+            return traversal
+        aa=AHREARemote
+        dvec = [0 for x in range(aa.NumStates)]
+        #basically unioning all dependency paths
+        for dep in dependencies:
+            t = traverse(dep)
+            for node in t:
+                setDep(dvec, node)
+        
+        return dvec
+
+    def dependenciesSatisfied(self,currState, depVector):
+        """
+        Given the current state and the dependency vector
+        Return True if all dependencies have been satisfied
+        """
+        aa = AHREARemote
+
+        if depVector[aa.TrainAny] == 1:
+            #special case for when any LA has run
+            for d in [self.getDepVector([x]) for x in [aa.TrainDirac, aa.TrainTSP, aa.TrainTST, aa.TrainKTSP]]:
+                if self.dependenciesSatisfied(currState, d):
+                    return True
+            return False
+
+        for i, on in enumerate(currState):
+            if depVector[i] == 1 and on != 1:
+                return False
+        return True
+
+    def stateChange(self):
+        """
+        Enables or disables buttons based on their dependencies
+        and the current state of controller
+        """
+        for i,button in enumerate(self.buttonList):
+            dvec = self.getDepVector(self.navDep[i])
+            if self.dependenciesSatisfied(self.m.controller.dependency_state,dvec ):
+               button.configure(state=NORMAL)
+            else:
+               button.configure(state=DISABLED)
+
+
+    def setNavDependencies(self):
+        """
+        Maps between buttons and dependencies
+        """
+        aa = AHREARemote
+        self.navDep = []
+        #home
+        self.navDep.append([])
+        #import data
+        self.navDep.append([])
+        #class definition
+        self.navDep.append([aa.DataImport])
+        #Learner Settings
+        self.navDep.append([])
+        #Train Classifiers
+        self.navDep.append([aa.ClassCreation])
+        #Test Classifiers
+        self.navDep.append([aa.TrainAny])
+        #Evaluate Performance
+        self.navDep.append([aa.TrainAny])
 
     def buildNav(self):
         """
         Create button objects
         """
+        import os
+        home_message = "Home:"+ 2*os.linesep + "View a summary of the current state of AUREA."
+        import_message = "Import Data:"+2*os.linesep+ "Import the data on which to base the models." + os.linesep + "Browse for or download the data files for training and classification." + os.linesep + "Select the network and synonym files for DiRaC and Adaptive algorithms."
+        class_message = "Label and partition the imported data into classes for training."
+        settings_message = "Configure the parameters of the learning algorithms."
+        train_message = "Train the learning algorithms according to your settings."
+        test_message = "Select a sample from the data and classify it."
+        evaluate_message = "Perform cross validation on the models."
+
         a=self.home_button = Button(self, text="Home", command=self.nullaction)
+        
         b=self.import_button = Button(self, text="Import Data", command=self.nullaction)
         c=self.class_button = Button(self, text="Class Definition", command=self.nullaction)
         d=self.settings_button = Button(self, text="Learner Settings", command=self.nullaction)
         e=self.train_button = Button(self, text="Train Classifiers", command=self.nullaction)
         f=self.test_button = Button(self, text="Test Classifiers", command=self.nullaction)
         g=self.evaluate_button = Button(self, text="Evaluate Performance", command=self.nullaction)
+        
+        bm = self.bindMessage
+        bm(a,home_message)
+        bm(b,import_message)
+        bm(c,class_message)
+        bm(d,settings_message)
+        bm(e,train_message)
+        bm(f,test_message)
+        bm(g,evaluate_message)
         self.buttonList = [a,b,c,d,e,f,g]
         welcome_img = os.path.join(self.m.controller.workspace, 'data', 'AUREA-logo-200.pgm')
         self.photo = photo = PhotoImage(file=welcome_img)
         self.plabel = Label(self,  image=photo)
+
+    def bindMessage(self, widget, msg):
+        widget.bind("<Enter>", lambda e: self.messageOn(msg))
+        widget.bind("<Leave>", lambda e: self.messageOff())
+
 
     def layoutNav(self):
         """
@@ -211,23 +300,22 @@ class AHREARemote(Frame):
             button.grid(row=i, column=0, sticky=E+W,padx=3, pady=4 )
         self.plabel.config(width=200)
         self.plabel.grid(row=len(self.buttonList), column=0)
-            
 
-        #self.pack()
 
+    def messageOn(self, msg):
+        #self.plabel.grid_forget()
+        self.plabel = Message(self, text=msg,relief=SUNKEN, width=200 )
+        self.plabel.grid(row=len(self.buttonList),column=0, sticky =N+S+E+W)
+    
+    def messageOff(self):
+        #self.plabel.grid_forget()
+        self.plabel = Label(self,  image=self.photo)
+        self.plabel.grid(row=len(self.buttonList), column=0, sticky=N+S+E+W)
+
+
+       
     def nullaction(self):
-        raise Exception("""sadfasf ssssssssssssssadfasf
-adfasadfasf adfasf adfasf adfasf adfasf 
-aaaaaaadfasf adfasf adfasf adfasf adfasf adfasf 
-dfasf adfasf adfasf adfasf adfasf adfasf 
-dfasf adfasf adfasf adfasf adfasf adfasf 
-dfasf adfasf adfasf adfasf adfasf adfasf 
-dfasf adfasf adfasf adfasf adfasf adfasf 
-dfasf adfasf adfasf adfasf adfasf adfasf 
-dfasf adfasf adfasf adfasf adfasf adfasf 
-adfasf  pass""")
-
-
+        print "Nothing"
 
 class AHREAMenu(Menu):
     def __init__(self, daRoot):

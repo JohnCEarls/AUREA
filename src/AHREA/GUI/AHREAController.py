@@ -8,6 +8,7 @@ from AHREA.parser.SettingsParser import *
 from AHREA.packager.DataCleaner import *
 from AHREA.packager.DataPackager import *
 from AHREA.GUI.AHREAPage import InputError
+from AHREA.GUI.AHREAApp import AHREARemote
 
 from Tkinter import *
 import time
@@ -40,7 +41,7 @@ class AHREAController:
         self.ktsp = None
         self.tst = None
         self.adaptive = None
-        self.dependency_state = [0 for x in range(7)]#see AHREAApp.AHREARemote for mappings
+        self.dependency_state = [0 for x in range(AHREARemote.NumStates)]#see AHREAApp.AHREARemote for mappings
 
     def setSOFTFile(self, softFile):
         raise Exception, "controller.setSOFTFile deprecated"
