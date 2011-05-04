@@ -40,6 +40,7 @@ class AHREAController:
         self.ktsp = None
         self.tst = None
         self.adaptive = None
+        self.dependency_state = [0 for x in range(7)]#see AHREAApp.AHREARemote for mappings
 
     def setSOFTFile(self, softFile):
         raise Exception, "controller.setSOFTFile deprecated"

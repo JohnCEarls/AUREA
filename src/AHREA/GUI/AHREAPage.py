@@ -10,6 +10,7 @@ class AHREAPage(Frame):
     """
     def __init__(self, root, id):
         Frame.__init__(self, root)
+        self.config(relief=GROOVE,padx=5, borderwidth=2)
         self.root = root
         self.id = id
 
@@ -44,6 +45,7 @@ class WelcomePage(AHREAPage):
         self.label.pack()
 
     def clearPage(self):
+        self.config( borderwidth=0)
         self.label.pack_forget()
 
     def next(self):
@@ -144,13 +146,13 @@ class FileBrowsePage(AHREAPage):
         for i in range(len(self.softFileLabel)):
             self.softFileDeleteButton[i].configure(command = lambda: self.softfiledelete(i))
         self.drawPage()
-        self.pack()
+        #self.pack()
 
     def softfileadd(self):
         self.softFileDisplay(add=True)
         self.clearPage()
         self.drawPage()
-        self.pack()
+        #self.pack()
         
     def geneNetworkDisplay(self):
         self.gnLabel = Label(self, text="Gene Network File : ")

@@ -13,28 +13,28 @@ class AHREAApp(Frame):
         root.report_callback_exception = self.report_callback_exception
         Frame.__init__(self, root)
         self.root = root
-        self.root.title( "AHREA - Adaptive Heuristic Relational Expression Analyser")
+        self.root.title( "AUREA - Adaptive Unified Relative Expression Analyser")
         self.controller = controller
         #start on welcome page
 
         self.curr_page = None
         self.pages = []
         self.menu = AHREAMenu(self)
+        self.remote = AHREARemote(self)
+        self.buttonList = self.remote.buttonList
+        #self.buildNav()
+        #self.layoutNav()
         self.root.config(menu = self.menu)
-        self.status = StatusBar(root)
-        #self.pack(fill=BOTH)
-        self.status.grid(row=3,sticky=W+E+S) #side=BOTTOM, fill=X)
-        self.next_button = self.buildNextButton()
-        self.next_button.grid(row=2, sticky=E+S)
-        self.prev_button = self.buildPrevButton()
-        self.prev_button.grid(row=2, sticky=W+S)
-        self.grid(row=1, sticky=W+N)
-        self.root.grid_rowconfigure(1, minsize=300)
-        self.root.grid_columnconfigure(0,minsize=350)
+        self.status = StatusBar(self)#root)
+        self.root.grid_columnconfigure(1,minsize=350)
+        self.remote.grid(row=0, column=0, sticky=N+E+W)
         self.initPages()
         self.displayPage('welcome')
+        numcolumns, numrows = self.grid_size()
+        self.status.grid(row=numrows,column=0, columnspan=numcolumns, sticky=W+E+S)
         self.update_idletasks()
         
+        self.pack(fill=BOTH)
         
     def initPages(self):
         self.pages.append(AHREAPage.WelcomePage(self))
@@ -63,7 +63,8 @@ class AHREAApp(Frame):
                 self.curr_page = page
                 break
         #I may need to change this to grid
-        self.curr_page.pack(side=LEFT)
+        
+        self.curr_page.grid(column=1, row=0,sticky=N+S+E+W)
         self.root.update_idletasks()
 
     def buildNextButton(self):       
@@ -71,6 +72,34 @@ class AHREAApp(Frame):
 
     def buildPrevButton(self):
         return Button(self.root, text="< Prev", command=self.prev)
+
+    def buildNav(self):
+        """
+        Create button objects
+        """
+        a=self.home_button = Button(self, text="Home", command=self.nullaction)
+        b=self.import_button = Button(self, text="Import Data", command=self.nav_importData)
+        c=self.class_button = Button(self, text="Class Definition", command=self.nullaction)
+        d=self.settings_button = Button(self, text="Learner Settings", command=self.nullaction)
+        e=self.train_button = Button(self, text="Train Classifiers", command=self.nullaction)
+        f=self.test_button = Button(self, text="Test Classifiers", command=self.nullaction)
+        g=self.evaluate_button = Button(self, text="Evaluate Performance", command=self.nullaction)
+        self.buttonList = [a,b,c,d,e,f,g]
+
+    def layoutNav(self):
+        """
+        Layout Button objects
+        """
+        stickyicky = E+W
+        for i,button in enumerate(self.buttonList):
+            #button.configure(state=DISABLED)
+            button.grid(row=i, column=0, sticky=stickyicky )
+
+    def nullaction(self):
+        pass
+
+    def nav_importData(self):
+        self.displayPage('filebrowse')
 
     def next(self):
         try:
@@ -96,18 +125,35 @@ class AHREAApp(Frame):
         displays exceptions
         TYVM : http://stackoverflow.com/questions/4770993/silent-exceptions-in-python-tkinter-should-i-make-them-louder-how
         """
+            
         err = traceback.format_exception(*args)
-        print "AHREAAPP.py-line 99 -debug"
-        for e in err:
-            print e
+        #print "AHREAAPP.py-line 99 -debug"
+        #for e in err:
+            #print e
        
         #please report
-        msg = "Go to https://github.com/JohnCEarls/AHREAPackage/issues to report this error."
-        err.append(msg)
-        tkMessageBox.showerror('AHREA: Error', err)
+        msg = "An Error has occurred."
+        #err.append(msg)
+        t = Toplevel(self)
+        #t.protocol('WM_DELETE_WINDOW', t.close_window)
+        t.title("Oh Noes!!!! Error!!!!!")
+        Label(t,text=msg).pack()
+        import os
+        errmsg = 'Please copy this error and go to https://github.com/JohnCEarls/AHREAPackage/issues to report it'+ os.linesep()
+        errmsg += '(You may have to use Control-C or Apple-C to copy.)'+ os.linesep
+        errmsg +=os.linesep.join(err)
+        errBox = Text(t,wrap=WORD)
+        errBox.pack()
+        errBox.insert(END, errmsg) 
+        #errBox.config(state=DISABLED)
+        #Button(t,text="Copy Error", command=copyError)
+        #tkMessageBox.showerror('AHREA: Error', err)
 
 
 class StatusBar(Frame):
+    """
+    Note the statusbar is a child of the root
+    """
     def __init__(self, master):
         Frame.__init__(self, master)
         self.label = Label(self, bd=1, relief=SUNKEN, anchor=W)
@@ -122,6 +168,65 @@ class StatusBar(Frame):
         self.label.update_idletasks()               
         
 
+class AHREARemote(Frame):
+    """
+    This frame acts as the remote control for the gui.
+    """
+    #Dependency enum, these should be static
+    DataImport = 0
+    NetworkImport = 1
+    ClassCreation = 2
+    TrainDirac = 3
+    TrainTSP = 4
+    TrainTST = 5
+    TrainKTSP = 6
+    
+    def __init__(self, master):
+        Frame.__init__(self, master)
+        self.m = master
+        self.buildNav()
+        self.layoutNav()
+
+    def buildNav(self):
+        """
+        Create button objects
+        """
+        a=self.home_button = Button(self, text="Home", command=self.nullaction)
+        b=self.import_button = Button(self, text="Import Data", command=self.nullaction)
+        c=self.class_button = Button(self, text="Class Definition", command=self.nullaction)
+        d=self.settings_button = Button(self, text="Learner Settings", command=self.nullaction)
+        e=self.train_button = Button(self, text="Train Classifiers", command=self.nullaction)
+        f=self.test_button = Button(self, text="Test Classifiers", command=self.nullaction)
+        g=self.evaluate_button = Button(self, text="Evaluate Performance", command=self.nullaction)
+        self.buttonList = [a,b,c,d,e,f,g]
+        welcome_img = os.path.join(self.m.controller.workspace, 'data', 'AUREA-logo-200.pgm')
+        self.photo = photo = PhotoImage(file=welcome_img)
+        self.plabel = Label(self,  image=photo)
+
+    def layoutNav(self):
+        """
+        Layout Button objects
+        """
+        for i,button in enumerate(self.buttonList):
+            button.grid(row=i, column=0, sticky=E+W,padx=3, pady=4 )
+        self.plabel.config(width=200)
+        self.plabel.grid(row=len(self.buttonList), column=0)
+            
+
+        #self.pack()
+
+    def nullaction(self):
+        raise Exception("""sadfasf ssssssssssssssadfasf
+adfasadfasf adfasf adfasf adfasf adfasf 
+aaaaaaadfasf adfasf adfasf adfasf adfasf adfasf 
+dfasf adfasf adfasf adfasf adfasf adfasf 
+dfasf adfasf adfasf adfasf adfasf adfasf 
+dfasf adfasf adfasf adfasf adfasf adfasf 
+dfasf adfasf adfasf adfasf adfasf adfasf 
+dfasf adfasf adfasf adfasf adfasf adfasf 
+dfasf adfasf adfasf adfasf adfasf adfasf 
+adfasf  pass""")
+
 
 
 class AHREAMenu(Menu):
@@ -129,7 +234,7 @@ class AHREAMenu(Menu):
         Menu.__init__(self, daRoot)
         self.root = daRoot
         self.buildFile()
-        self.buildSettings()
+        #self.buildSettings()
         self.buildHelp()
         self.dialog = None
 
