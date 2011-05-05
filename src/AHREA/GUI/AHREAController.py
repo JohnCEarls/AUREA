@@ -27,6 +27,7 @@ class AHREAController:
         self.geneSynonymFile = None
         self.softparser = []
         self.datatable = []
+        self.datapackage = None
         self.workspace = workspace
         configFile = os.path.join(self.workspace, 'data', 'config.xml')
         logo = os.path.join(self.workspace, 'data', 'AHREA-logo.pgm')
@@ -55,6 +56,17 @@ class AHREAController:
 
     def setSynonymFile(self, sFile):
         self.geneSynonymFile = sFile
+
+    def getNetworkInfo(self):
+        if self.datapackage is not None:
+            fname = self.geneNetworkFile
+            gnc = self.datapackage.getGeneNetCount()
+            if gnc is None:
+                return None
+            numGenes, numNetworks = gnc
+            return (fname, numNetworks, numGenes)
+        else:
+            return None
 
     def setApp(self, app):
         self.app = app
@@ -161,9 +173,27 @@ class AHREAController:
     def getDataPackagingResults(self):
         """
         Returns a list of tuples with
-        (table_id, %genes in merge, %probes in merge)
+        (genes in merge, probes in merge)
         """
-        return self.datapackage.getDataLoss()
+        return self.datapackage.getDataCount()
+
+    def getLearnerAccuracy(self):
+        """
+        Returns the apparent accuracy of the learners over the training set
+        (TSP,kTSP,TST,DiRaC, Adaptive)
+        """
+        #TODO
+        return (None,None,None,None,None)
+
+    def getCrossValidationResults(self):
+        """
+        Returns the cross validation accuracy of the learners over 
+        the training set
+        (TSP,kTSP,TST,DiRaC, Adaptive)
+        """
+        #TODO
+        return (None,None,None,None,None)
+
 
     def parseNetworkFile(self):
         """
@@ -184,6 +214,18 @@ class AHREAController:
         c2 = self.class2name = page.className2.get().strip()
         self.datapackage.createClassification(c1)
         self.datapackage.createClassification(c2)
+
+    def getClassificationInfo(self):
+        """
+        Returns the names and sizes of the partitioned classes 
+        (c1name, c1size, c2name, c2size)
+        None is returned if classifications have not been created
+        """
+        if self.datapackage is not None:
+            classinfo = self.datapackage.getClassifications()
+            if len(classinfo) > 0:
+                return (classinfo[0][0], len(classinfo[0][1]), classinfo[1][0], len(classinfo[1][1]))
+        return ('',0,'',0)
 
     def partitionClasses(self, class1List, class2List):
         """
@@ -241,11 +283,17 @@ class AHREAController:
 
         
     def addUnclassified(self, table, sample_name):
+        """
+        Adds an unclassified sample to the data package
+        """
         self.datapackage.setUnclassified(table, sample_name)
         
          
     def getSampleInfo(self, table, sample_id):
-        table = self.datapackage.getTable(table)
+        """
+        Gets the information about a sample if it is available
+        """
+        table = self.datapackage.getTable(table)        
         return table.getSampleDescription(sample_id)
  
     def trainDirac(self):
@@ -344,43 +392,6 @@ class AHREAController:
         #store adaptive results
         self.adaptive = top_learner
         self.adaptive_settings = top_settings
-
-
-        """
-        startTime = time.time()
-
-        endTime=maxTime + startTime
-
-        viewable = ['dirac', 'tsp', 'tst', 'ktsp']
-        msg = ""
-        tl_str = ""
-        top_acc = .001
-        for est, settings in self.learnerqueue:
-            str_learner = viewable[settings['learner']]
-            self.app.status.set(tl_str + msg + " Trying " + str_learner)
-            
-            learner = self.learnerqueue.trainLearner(settings, est)
-
-            if settings['learner'] != LearnerQueue.dirac:
-                accuracy = learner.crossValidate()
-            else:
-                accuracy = learner.crossValidate(numTopNetworks=settings['numTopNetworks'])
-            msg = str_learner + " achieved " + str(accuracy) + " : "
-            if accuracy > top_acc:
-                top_acc = accuracy
-                self.adaptive = learner
-                self.adaptive_settings = settings
-                tl_str = str_learner + " current best at " + str(top_acc) + " :"
-                msg += " new top learner : "
-            self.learnerqueue.feedback(settings['learner'], accuracy)
-            if time.time() > endTime:
-                self.app.status.set(tl_str + "Adaptive Finished.  Out of time.")
-                break
-            if accuracy >= target_accuracy:
-                self.app.status.set(tl_str + "Adaptive Finished.  Achieved Desired Accuracy.")
-                break
-           """ 
-        
 
 
     def _adaptiveSetup(self):

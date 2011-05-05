@@ -10,33 +10,50 @@ import sys
 import platform
 class AHREAApp(Frame):
     def __init__(self, root, controller):
+        
         root.report_callback_exception = self.report_callback_exception
         Frame.__init__(self, root)
+        root.rowconfigure( 0, weight = 1 )
+        root.columnconfigure( 0, weight = 1 )
+        self.grid(sticky=W+E+N+S )
         self.err_disp = False#only display one error
         self.root = root
         self.root.title( "AUREA - Adaptive Unified Relative Expression Analyser")
         self.controller = controller
-        #start on welcome page
-
         self.curr_page = None
         self.pages = []
+        self._initApp()
+        self.rowconfigure( 1, weight = 1 )
+        self.columnconfigure( 1, weight = 1 )
+
+    def _initApp(self):
+        """
+        Set up all of the App Frame components
+        """
         self.menu = AHREAMenu(self)
         self.remote = AHREARemote(self)
         self.buttonList = self.remote.buttonList
-        #self.buildNav()
-        #self.layoutNav()
         self.root.config(menu = self.menu)
-        self.status = StatusBar(self)#root)
-        self.root.grid_columnconfigure(1,minsize=350)
-        self.remote.grid(row=0, column=0, sticky=N+E+W)
+        self.status = StatusBar(self)
+        self.AppTitle = StringVar()
+        
+        self.AppTitleLabel = Label(self, textvariable=self.AppTitle)
+        import tkFont
+        font = tkFont.Font(font=self.AppTitleLabel['font'])
+        font.config(size=font.cget('size')*2, weight='bold', underline=1)
+        self.AppTitleLabel['font'] = font
+        self.AppTitle.set("Data Summary")
+        self.AppTitleLabel.grid(row=0, column=0, columnspan=2, sticky=N+W+E+S)
+        self.grid_columnconfigure(1,minsize=205)
+        self.remote.grid(row=1, column=0, sticky=N+E+W)
         self.initPages()
-        self.displayPage('welcome')
+        self.displayPage('Home')
         numcolumns, numrows = self.grid_size()
         self.status.grid(row=numrows,column=0, columnspan=numcolumns, sticky=W+E+S)
         self.update_idletasks()
-        
-        self.pack(fill=BOTH)
-        
+       
+
+       
     def initPages(self):
         self.pages.append(AHREAPage.WelcomePage(self))
         self.pages.append(AHREAPage.FileBrowsePage(self))
@@ -53,7 +70,7 @@ class AHREAApp(Frame):
         self.status.clear()
         if self.curr_page:
             self.curr_page.clearPage()
-            self.curr_page.pack_forget()
+            self.curr_page.grid_forget()
         for page in self.pages:
             if page.id == page_id:
                 try:
@@ -65,7 +82,9 @@ class AHREAApp(Frame):
                 break
         #I may need to change this to grid
         
-        self.curr_page.grid(column=1, row=0,sticky=N+S+E+W)
+        self.curr_page.grid(column=1, row=1,sticky=N+S+E+W)
+        self.curr_page.rowconfigure( 1, weight = 1 )
+        self.curr_page.columnconfigure( 1, weight = 1 )
         self.root.update_idletasks()
 
     def next(self):
@@ -98,7 +117,7 @@ class AHREAApp(Frame):
         err = traceback.format_exception(*args)
         msg = "An Error has occurred."
         t = Toplevel(self)
-        t.title("Oh Noes!!!! Error!!!!!")
+        t.title("AUREA Error!!!!!")
         Label(t,text=msg).pack()
         import os
         errmsg = 'Please copy this error and go to https://github.com/JohnCEarls/AHREAPackage/issues to report it'+ os.linesep
@@ -264,15 +283,17 @@ class AHREARemote(Frame):
         train_message = "Train the learning algorithms according to your settings."
         test_message = "Select a sample from the data and classify it."
         evaluate_message = "Perform cross validation on the models."
-
-        a=self.home_button = Button(self, text="Home", command=self.nullaction)
         
-        b=self.import_button = Button(self, text="Import Data", command=self.nullaction)
-        c=self.class_button = Button(self, text="Class Definition", command=self.nullaction)
-        d=self.settings_button = Button(self, text="Learner Settings", command=self.nullaction)
-        e=self.train_button = Button(self, text="Train Classifiers", command=self.nullaction)
-        f=self.test_button = Button(self, text="Test Classifiers", command=self.nullaction)
-        g=self.evaluate_button = Button(self, text="Evaluate Performance", command=self.nullaction)
+        dp = self.m.displayPage
+
+        a=self.home_button = Button(self, text="Home", command=lambda:dp('Home'))
+        
+        b=self.import_button = Button(self, text="Import Data", command=lambda:dp('Import'))
+        c=self.class_button = Button(self, text="Class Definition", command=lambda:dp('Class'))
+        d=self.settings_button = Button(self, text="Learner Settings", command=lambda:dp('Settings'))
+        e=self.train_button = Button(self, text="Train Classifiers", command=lambda:dp('Train'))
+        f=self.test_button = Button(self, text="Test Classifiers", command=lambda:dp('Test'))
+        g=self.evaluate_button = Button(self, text="Evaluate Performance", command=lambda:dp('Evaluate'))
         
         bm = self.bindMessage
         bm(a,home_message)
@@ -288,8 +309,10 @@ class AHREARemote(Frame):
         self.plabel = Label(self,  image=photo)
 
     def bindMessage(self, widget, msg):
-        widget.bind("<Enter>", lambda e: self.messageOn(msg))
-        widget.bind("<Leave>", lambda e: self.messageOff())
+        import random
+        i = random.randint(0,100)
+        widget.bind("<Enter>", lambda e: self.messageOn(msg,i))
+        widget.bind("<Leave>", lambda e: self.messageOff(i))
 
 
     def layoutNav(self):
@@ -302,20 +325,20 @@ class AHREARemote(Frame):
         self.plabel.grid(row=len(self.buttonList), column=0)
 
 
-    def messageOn(self, msg):
-        #self.plabel.grid_forget()
+    def messageOn(self, msg, rand):
+        self.tag = rand
         self.plabel = Message(self, text=msg,relief=SUNKEN, width=200 )
         self.plabel.grid(row=len(self.buttonList),column=0, sticky =N+S+E+W)
     
-    def messageOff(self):
-        #self.plabel.grid_forget()
-        self.plabel = Label(self,  image=self.photo)
-        self.plabel.grid(row=len(self.buttonList), column=0, sticky=N+S+E+W)
-
-
-       
+    def messageOff(self,rand):
+        from time import sleep
+        sleep(.1)
+        if self.tag == rand:
+            self.plabel = Label(self,  image=self.photo)
+            self.plabel.grid(row=len(self.buttonList), column=0, sticky=N+S+E+W)
+           
     def nullaction(self):
-        print "Nothing"
+        print self.m.pack_info()
 
 class AHREAMenu(Menu):
     def __init__(self, daRoot):

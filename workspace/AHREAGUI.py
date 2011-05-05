@@ -2,7 +2,7 @@
 import Tkinter
 from AHREA.GUI.AHREAApp import AHREAApp
 from AHREA.GUI.AHREAController import AHREAController
-import os.path
+import os
 import tkFileDialog
 from tkMessageBox import *
 
@@ -12,7 +12,6 @@ from tkMessageBox import *
 workspace = os.getcwd()
 
 root = Tkinter.Tk()
-root.minsize(width=350, height=300)
 cont = AHREAController(workspace=workspace)
 app = AHREAApp(root, cont)
 cont.setApp(app)

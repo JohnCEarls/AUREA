@@ -22,31 +22,167 @@ class AHREAPage(Frame):
 
     def clearPage(self):
         raise ImplementationError(self.id, 'clearPage')
+    
+    def _boldFont(self, w):
+        import tkFont
+        font = tkFont.Font(font=w['font'])
+        font.config(weight='bold')
+        w['font'] = font
 
-    def next(self):
-        raise ImplementationError(self.id, 'next')
-
-    def prev(self):
-        raise ImplementationError(self.id, 'prev')
 
 class WelcomePage(AHREAPage):
     """
-    Just some welcome text.  Prob add some copyright and such
+    Corresponds to the Data Summary/Home page
     """
+    
     def __init__(self, root):
-        AHREAPage.__init__(self, root, 'welcome')
+        AHREAPage.__init__(self, root, 'Home')
+        
 
     def setUpPage(self):
-        welcome_img = os.path.join(self.root.controller.workspace, 'data', 'AHREA-logo.pgm')
-        self.photo = photo = PhotoImage(file=welcome_img)
-        self.label = Label(self, text="Welcome", image=photo) 
-        
-    def drawPage(self):
-        self.label.pack()
+        pass
+ 
+    def setupDataFileFrame(self):
+        dff = self.dataFileFrame = Frame(self)
+        c = self.root.controller
+        if True or len(c.softFile) > 0:
+            for i,sf in enumerate(['/home/earls3/keys.txt','/home/earls3/keys.txt','/home/earls3/keys.txt','/home/earls3/keys.txt']):#enumerate(c.softFile):
+                _, fname = os.path.split(sf)
+                l = Label(dff, text="Data File:")
+                self._boldFont(l)
+                l.grid(row=i, column=0, sticky=E)
+                fl = Label(dff, text=fname)
+                fl.grid(row=i, column=1, sticky=W)
+            ngenes, nprobes =(100,100)# c.getDataPackagingResults()
+            l = Label(dff, text="Num. Genes:")
+            r = 4#len(c.softFile)
+            l.grid(row=r, column=0, sticky=E)
+            fl = Label(dff, text=ngenes)
+            fl.grid(row=r, column=1, sticky=W)
+            l = Label(dff, text="Num. Probes")
+            r += 1
+            l.grid(row=r, column=0, sticky=E)
+            fl = Label(dff, text=nprobes)
+            fl.grid(row=r, column=1, sticky=W)
+        else:
+            l = Label(dff, text="Data File:")
+            self._boldFont(l)
+            l.grid(row=0, column=0, sticky=E)
+            nf = Label(dff, text="Not specified", fg="red")
+            nf.grid(row=0, column=1, sticky=W)
+            
+       
+    def setupGeneNetworkFileFrame(self):
+        gnff = self.geneNetworkFileFrame = Frame(self)
+        c = self.root.controller
+        ni = ('/home/earls3/keys.txt', 25, 2000)#c.getNetworkInfo()
+        tfl = Label(gnff, text ="Gene Network File:" )
+        self._boldFont(tfl)
+        tnets = Label(gnff, text = "Num. networks:")
+        tgenes = Label(gnff, text="Num. genes:")
+        if ni is not None:
+            fl = Label(gnff, text = os.path.split(ni[0])[1])
+            nets = Label(gnff, text = ni[1])
+            genes = Label(gnff, text=ni[2])
+        else:
+            fl = Label(gnff, text ="Not specified", fg="red" )
+            nets = Label(gnff, text ="" )
+            genes = Label(gnff, text="")
+        tfl.grid(row=0,column=0, sticky=E) 
+        tnets.grid(row=1,column=0, sticky=E) 
+        tgenes.grid(row=2,column=0, sticky=E) 
+        fl.grid(row=0,column=1, sticky=W) 
+        nets.grid(row=1,column=1, sticky=W) 
+        genes.grid(row=2,column=1, sticky=W) 
+       
+    def setupClassFrame(self):
+        """
+        Builds the classes frame
+        """
+        cf = self.classFrame = Frame(self)
+        c = self.root.controller
+        ci =('cancer',100, 'non-cancer', 100)# c.getClassificationInfo()
+        tfl = Label(cf, text ="Classes:" )
+        self._boldFont(tfl)
+        tc1 = Label(cf, text = "Class 1 (size):")
+        tc2 = Label(cf, text="Class 2 (size):")
+        c1 = ci[0] + " (" + str(ci[1])+")"
+        c2 = ci[2] + " (" + str(ci[3])+")"
+           
+        lc1 = Label(cf, text=c1)
+        lc2 = Label(cf, text=c2)
+        if ci[1] == 0:
+            ns = Label(cf, text ="Not specified", fg="red" )
+            ns.grid(column=1, row=0, sticky=W)
+        tfl.grid(row=0,column=0, sticky=E) 
+        tc1.grid(row=1,column=0, sticky=E) 
+        tc2.grid(row=2,column=0, sticky=E) 
+        lc1.grid(row=1,column=1, sticky=W) 
+        lc2.grid(row=2,column=1, sticky=W) 
+        cf.columnconfigure( 0, weight = 1 )
+        cf.columnconfigure( 1, weight = 1 )
 
+    def setupLearningAlgorithmFrame(self):
+        def showResults(learner):
+            pass
+        c = self.root.controller
+        lf = self.learningAlgorithmFrame = Frame(self)
+        bc = Label(lf, text="Best Classifiers:")
+        cp = Label(lf, text="CV Performance:")
+        self._boldFont(cp)
+        self._boldFont(bc)
+
+        tp = Label(lf, text="TSP:")
+        kp = Label(lf, text="k-TSP:")
+        tt = Label(lf, text="TST:")
+        di = Label(lf, text="DiRaC:")
+        ad = Label(lf, text="Adaptive:")
+        lList = [tp, kp, tt, di, ad]
+
+        nt = Label(lf, text="Not trained", fg="red")
+        nc = Label(lf, text="Not calculated", fg="red")
+        bd = {}
+        acc = c.getLearnerAccuracy()
+        cv = c.getCrossValidationResults()
+        for i,l in enumerate(['tsp','ktsp','tst', 'dirac', 'ada']):
+            lList[i].grid(row=i+1, column=0, sticky=E)
+            bd[l]  = Button(lf, text="More info", command=lambda: showResults(l))
+            bd[l].grid(row=i+1, column=2,sticky=E+W, padx=5)
+            nt = Label(lf, text="Not trained", fg="red")
+            nc = Label(lf, text="Not calculated", fg="red")
+            #handle apparent accuracy
+            if acc[i] is None:
+                bd[l].configure(state=DISABLED)
+                nt.grid(row=i+1, column=1,sticky=W)
+            else:
+                l = Label(lf, text=acc[i])
+                l.grid(row=i+1, column=1,sticky=W)
+            #handle cross validation
+            if cv[i] is None:
+                nc.grid(row=i+1, column=3)
+            else:
+                l = Label(lf, text=cv[i])
+                l.grid(row=i+1, column=3)
+        bc.grid(row=0, column=0,columnspan=3, sticky=W)
+        cp.grid(row=0, column=3)
+        lf.rowconfigure( 0, weight = 1 )
+        lf.columnconfigure( 2, weight = 1 )
+
+       
+        
+
+
+    def drawPage(self):        
+        self.setupDataFileFrame()
+        self.setupGeneNetworkFileFrame()       
+        self.dataFileFrame.grid(column=0, row=0, sticky=N+W,padx=5)
+        self.geneNetworkFileFrame.grid(column=1, row=0, sticky=N+E,padx=5) 
+        self.setupClassFrame()
+        self.classFrame.grid(column=0, columnspan=2, row=1,  sticky=E+W, pady=10)
+        self.setupLearningAlgorithmFrame()
+        self.learningAlgorithmFrame.grid(column=0, columnspan=3, row=2, sticky=S+E+W)
     def clearPage(self):
-        self.config( borderwidth=0)
-        self.label.pack_forget()
+        self.grid_forget()
 
     def next(self):
         return 'filebrowse'
@@ -58,7 +194,7 @@ class FileBrowsePage(AHREAPage):
     Page to choose data files
     """
     def __init__(self, root):
-        AHREAPage.__init__(self, root, 'filebrowse')
+        AHREAPage.__init__(self, root, 'Import')
         self.gnPath = None
         self.softFilePath = None
         self.gsynPath = None
@@ -285,7 +421,7 @@ class FileLoadPage(AHREAPage):
 
     def displayResults(self):
         cont = self.root.controller
-        res = cont.getDataPackagingResults()
+        res = []#cont.getDataPackagingResults()
         strg = "Data merging results\n"
         strg += "Table\tGene\tProbes\n"
         for table, genes, probes in res:

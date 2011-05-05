@@ -172,7 +172,6 @@ Given an index into either the probe or gene array(determined by the type parame
         This takes the unclassified data list and converts it to a vector 
         of doubles.
         """
-        #TODO
         self.unclassified_data_vector = None
         self.unclassified_data_vector = dirac.DoubleVector()
         prevTable = None
@@ -345,18 +344,21 @@ This builds the geneNet Vector from the provided information.  It uses gene syno
         for i, gene in enumerate(self.genes):
             self.gene_index[gene] = i
 
-    def getDataLoss(self):
+    def getDataCount(self):
         """
-        Returns a list of tuples with
-        (table_id, %genes in merge, %probes in merge)
+        Returns a tuple with
+        (num genes in merge, numprobes in merge)
         """
         numgenes = len(self.genes)
         numprobes = len(self.probes)
-        loss = []
-        for table in self.data_tables:
-            loss.append( (table.dt_id, float(numgenes)/table.getNumGenes() , float(numprobes)/table.getNumProbes() ))
-        return loss
-            
+        return (numgenes, numprobes)
+           
+    def getGeneNetCount(self):
+        if self.gene_net_vector is not None:
+            ngenes =len(self.gene_net_vector)        
+            nnetworks = len(self.gene_net_size_vector)
+            return (ngenes, nnetworks)
+        return None
 
     def getGeneNetVectorRange(self, net_number):
         """
