@@ -3,6 +3,7 @@ import tkFileDialog
 import tkMessageBox
 import os
 from AHREA.GUI.AHREAResults import *
+#from AHREA.GUI.AHREAApp import AHREARemote
 import platform
 class AHREAPage(Frame):
     """
@@ -12,6 +13,7 @@ class AHREAPage(Frame):
         Frame.__init__(self, root)
         self.config(relief=GROOVE,padx=5, borderwidth=2)
         self.root = root
+        self.remote = root.remote
         self.id = id
 
     def drawPage(self):
@@ -29,6 +31,20 @@ class AHREAPage(Frame):
         font.config(weight='bold')
         w['font'] = font
 
+    def _italicFont(self, w):
+        import tkFont
+        font = tkFont.Font(font=w['font'])
+        font.config(slant=tkFont.ITALIC)
+        w['font'] = font
+
+
+
+    def setAppTitle(self, title):
+        self.root.setAppTitle(title)
+
+    def clearGrid(self):
+        for widget in self.grid_slaves():
+            widget.grid_forget()
 
 class WelcomePage(AHREAPage):
     """
@@ -45,21 +61,21 @@ class WelcomePage(AHREAPage):
     def setupDataFileFrame(self):
         dff = self.dataFileFrame = Frame(self)
         c = self.root.controller
-        if True or len(c.softFile) > 0:
-            for i,sf in enumerate(['/home/earls3/keys.txt','/home/earls3/keys.txt','/home/earls3/keys.txt','/home/earls3/keys.txt']):#enumerate(c.softFile):
+        if len(c.softFile) > 0:
+            for i,sf in enumerate(c.softFile):
                 _, fname = os.path.split(sf)
                 l = Label(dff, text="Data File:")
                 self._boldFont(l)
                 l.grid(row=i, column=0, sticky=E)
                 fl = Label(dff, text=fname)
                 fl.grid(row=i, column=1, sticky=W)
-            ngenes, nprobes =(100,100)# c.getDataPackagingResults()
-            l = Label(dff, text="Num. Genes:")
-            r = 4#len(c.softFile)
+            ngenes, nprobes =c.getDataPackagingResults()
+            l = Label(dff, text="Num. genes:")
+            r = len(c.softFile)
             l.grid(row=r, column=0, sticky=E)
             fl = Label(dff, text=ngenes)
             fl.grid(row=r, column=1, sticky=W)
-            l = Label(dff, text="Num. Probes")
+            l = Label(dff, text="Num. probes:")
             r += 1
             l.grid(row=r, column=0, sticky=E)
             fl = Label(dff, text=nprobes)
@@ -75,15 +91,16 @@ class WelcomePage(AHREAPage):
     def setupGeneNetworkFileFrame(self):
         gnff = self.geneNetworkFileFrame = Frame(self)
         c = self.root.controller
-        ni = ('/home/earls3/keys.txt', 25, 2000)#c.getNetworkInfo()
+        ni = c.getNetworkInfo()
         tfl = Label(gnff, text ="Gene Network File:" )
         self._boldFont(tfl)
         tnets = Label(gnff, text = "Num. networks:")
-        tgenes = Label(gnff, text="Num. genes:")
+        tgenes = Label(gnff, text="Network size:")
         if ni is not None:
             fl = Label(gnff, text = os.path.split(ni[0])[1])
             nets = Label(gnff, text = ni[1])
-            genes = Label(gnff, text=ni[2])
+            genestr = str(ni[4])+  '-' + str(ni[3]) + '(ave. ' + str(ni[2]) +')'
+            genes = Label(gnff, text=genestr)
         else:
             fl = Label(gnff, text ="Not specified", fg="red" )
             nets = Label(gnff, text ="" )
@@ -101,7 +118,7 @@ class WelcomePage(AHREAPage):
         """
         cf = self.classFrame = Frame(self)
         c = self.root.controller
-        ci =('cancer',100, 'non-cancer', 100)# c.getClassificationInfo()
+        ci =c.getClassificationInfo()
         tfl = Label(cf, text ="Classes:" )
         self._boldFont(tfl)
         tc1 = Label(cf, text = "Class 1 (size):")
@@ -172,7 +189,9 @@ class WelcomePage(AHREAPage):
         
 
 
-    def drawPage(self):        
+    def drawPage(self):       
+        
+        self.setAppTitle("Data Summary") 
         self.setupDataFileFrame()
         self.setupGeneNetworkFileFrame()       
         self.dataFileFrame.grid(column=0, row=0, sticky=N+W,padx=5)
@@ -182,6 +201,7 @@ class WelcomePage(AHREAPage):
         self.setupLearningAlgorithmFrame()
         self.learningAlgorithmFrame.grid(column=0, columnspan=3, row=2, sticky=S+E+W)
     def clearPage(self):
+        self.clearGrid()
         self.grid_forget()
 
     def next(self):
@@ -189,6 +209,7 @@ class WelcomePage(AHREAPage):
 
     def prev(self):
         pass
+
 class FileBrowsePage(AHREAPage):
     """
     Page to choose data files
@@ -201,14 +222,13 @@ class FileBrowsePage(AHREAPage):
         #init softfile lists
         self.softFileLabel = []
         self.softFilePath = []
-       
         self.softFilePathE = []
         self.softFileDialogButton = []
-
         self.softFileDeleteButton = []
         self.addButton = None    
 
     def drawPage(self):
+        self.setAppTitle("Import Data")
         ypad = 3
         r = 1
         for i in range( len(self.softFileLabel) ):
@@ -229,11 +249,23 @@ class FileBrowsePage(AHREAPage):
         self.gnPathE.grid(row=r, column=1, pady=ypad)
         self.gnDialogButton.grid(row=r, column = 2, pady=ypad)
         r += 1
-
+        self.gnText.grid(row=r, column=0, pady=ypad, columnspan=2, sticky=E+W)
+        r+=1
+        
         self.gsynLabel.grid(row=r, column=0, pady=ypad)
         self.gsynPathE.grid(row=r, column=1, pady=ypad)
         self.gsynDialogButton.grid(row=r, column = 2, pady=ypad)
-        
+        r+=1
+        self.gsynText.grid(row=r, column=0, pady=ypad, columnspan=2, sticky=E+W)
+        numcolumns, numrows = self.grid_size()
+        self.import_button.grid(row=numrows, column=numcolumns-1, padx=10, sticky=E)
+        self.grid(row=1,column=1, sticky=N+S+E+W)
+        numcolumns, numrows = self.grid_size()
+        #self.rowconfigure(numrows-1 , weight = 0 )
+        self.rowconfigure(numrows-1 , weight = 1 )
+        self.columnconfigure( 1, weight = 1 )
+
+
     def setUpPage(self):
         self.softFileDisplay()
         self.geneNetworkDisplay()
@@ -242,23 +274,17 @@ class FileBrowsePage(AHREAPage):
             self.addButton = Button(self, text="Add another file",command=self.softfileadd)
             self.downloadButton = Button(self, text="Download...", command=self.downloadSOFTdialog)
         self.geneSynonymDisplay()    
+        self.import_button = Button(self, text="Import Files", command=self.importFiles)
+        self.import_button.config(state=DISABLED)
 
+    def clearGrid(self):
+        for widget in self.grid_slaves():
+            widget.grid_forget()
+        
     def clearPage(self):
-        for i in range(len(self.softFileLabel)):
-            self.softFileLabel[i].grid_forget()
-            self.softFilePathE[i].grid_forget()
-            self.softFileDialogButton[i].grid_forget()  
-            self.softFileDeleteButton[i].grid_forget()
-        self.downloadButton.grid_forget()    
-        self.gnLabel.grid_forget()
-        self.gnPathE.grid_forget()
-        self.gnDialogButton.grid_forget()
+        self.clearGrid()
+        self.grid_forget()
 
-        self.gsynLabel.grid_forget()
-        self.gsynPathE.grid_forget()
-        self.gsynDialogButton.grid_forget()
-        self.pack_forget()
- 
     def softFileDisplay(self, add=False):
         if len(self.softFilePath) == 0 or add:
             index = len(self.softFileLabel)
@@ -282,13 +308,12 @@ class FileBrowsePage(AHREAPage):
         for i in range(len(self.softFileLabel)):
             self.softFileDeleteButton[i].configure(command = lambda: self.softfiledelete(i))
         self.drawPage()
-        #self.pack()
+        self.import_button.config(state=NORMAL)
 
     def softfileadd(self):
         self.softFileDisplay(add=True)
         self.clearPage()
         self.drawPage()
-        #self.pack()
         
     def geneNetworkDisplay(self):
         self.gnLabel = Label(self, text="Gene Network File : ")
@@ -296,6 +321,8 @@ class FileBrowsePage(AHREAPage):
             self.gnPath = StringVar()
         self.gnPathE = Entry(self, textvariable=self.gnPath,width=50)
         self.gnDialogButton = Button(self, text = "Browse ...",command=self.gnfiledialog)
+        self.gnText = Label(self, text="Required for DiRaC, Adaptive")
+        self._italicFont(self.gnText)
 
     def geneSynonymDisplay(self):
         self.gsynLabel = Label(self, text="Gene Synonym File : ")
@@ -303,7 +330,10 @@ class FileBrowsePage(AHREAPage):
             self.gsynPath = StringVar()
         self.gsynPathE = Entry(self, textvariable=self.gsynPath, width=50)
         self.gsynDialogButton = Button(self, text = "Browse ...",command=self.gsynfiledialog) 
- 
+        self.gsynText = Label(self, text="Recommended for DiRaC, Adaptive")
+        self._italicFont(self.gsynText)
+
+
 
     def softfiledialog(self, pathVariable):
         file_opt = options =  {}
@@ -314,15 +344,21 @@ class FileBrowsePage(AHREAPage):
         options['title'] = "AHREA - Select data file."
         response = tkFileDialog.askopenfilename(**options)
         if response:
+            self.import_button.config(state=NORMAL)
             pathVariable.set(response)
 
     def downloadSOFTdialog(self):
+        """
+        Popup a dialog box for users to enter the name of a soft file to download.
+        """
+
         self.dsd = top = Toplevel(self)
         Label(top, text="SOFT file name(GDS####.soft.gz)").pack()
         self.dsd_value= e = Entry(top)
         e.pack()
         b = Button(top, text="Download", command=self.downloadSOFT)
         b.pack()
+        self.import_button.config(state=NORMAL)
 
     def downloadSOFT(self):
         result = self.root.controller.downloadSOFT(self.dsd_value.get().strip())
@@ -348,7 +384,8 @@ class FileBrowsePage(AHREAPage):
         options['title'] = "AHREA - Select network file."
         response = tkFileDialog.askopenfilename(**options)
         if response:
-            self.gnPath.set(response)
+           self.import_button.config(state=NORMAL)
+           self.gnPath.set(response)
 
     def gsynfiledialog(self):
         file_opt = options =  {}
@@ -360,34 +397,38 @@ class FileBrowsePage(AHREAPage):
         options['title'] = "AHREA - Select synonym file."
         response = tkFileDialog.askopenfilename(**options)
         if response:
+            self.import_button.config(state=NORMAL)
             self.gsynPath.set(response)
 
-    def next(self):
+    def importFiles(self):
+        if self.checkFiles():
+            self.remote.disableAllButtons() 
+            self.root.controller.unloadFiles()
+            for path in self.softFilePath:
+                self.root.controller.addSOFTFile(path.get()) 
+            self.root.controller.setGeneNetworkFile(self.gnPath.get())
+            self.root.controller.setSynonymFile(self.gsynPath.get())
+            self.root.controller.loadFiles()
+            self.root.controller.updateState(self.remote.DataImport, 1)
+            self.import_button.config(state=DISABLED)
+            
+
+    def checkFiles(self):
         import os.path
         goodFiles = True
         for path in self.softFilePath:
             if not os.path.exists(path.get()):
                 goodFiles = False
-        if goodFiles:
-            for path in self.softFilePath:
-                self.root.controller.addSOFTFile(path.get()) 
-        else:
+        if not goodFiles:
            tkMessageBox.showerror(message="SOFT file path is invalid")
            return False
-        if os.path.exists(self.gnPath.get()):
-            self.root.controller.setGeneNetworkFile(self.gnPath.get())
-        elif len(self.gnPath.get()) > 0:
+        if not os.path.exists(self.gnPath.get()) and len(self.gnPath.get()) > 0:
             tkMessageBox.showerror(message="Gene Network file path is invalid")
             return False
-        if os.path.exists(self.gsynPath.get()):
-            self.root.controller.setSynonymFile(self.gsynPath.get())
-        elif len(self.gsynPath.get()) > 0:
+        if not os.path.exists(self.gsynPath.get()) and len(self.gsynPath.get()) > 0:
             tkMessageBox.showerror(message="Gene Synonym file path is invalid")
             return False
-        return 'fileload'
-
-    def prev(self):
-        return 'welcome'
+        return True
 
 class FileLoadPage(AHREAPage):
     """
