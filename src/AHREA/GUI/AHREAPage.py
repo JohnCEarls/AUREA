@@ -46,7 +46,7 @@ class AHREAPage(Frame):
         for widget in self.grid_slaves():
             widget.grid_forget()
 
-class WelcomePage(AHREAPage):
+class HomePage(AHREAPage):
     """
     Corresponds to the Data Summary/Home page
     """
@@ -210,7 +210,7 @@ class WelcomePage(AHREAPage):
     def prev(self):
         pass
 
-class FileBrowsePage(AHREAPage):
+class ImportDataPage(AHREAPage):
     """
     Page to choose data files
     """
@@ -225,12 +225,14 @@ class FileBrowsePage(AHREAPage):
         self.softFilePathE = []
         self.softFileDialogButton = []
         self.softFileDeleteButton = []
+        self.dataSettingButton=None
         self.addButton = None    
 
     def drawPage(self):
         self.setAppTitle("Import Data")
         ypad = 3
         r = 1
+        
         for i in range( len(self.softFileLabel) ):
             self.softFileLabel[i].grid(row=r, column=0, pady=ypad)
             self.softFilePathE[i].grid(row=r, column=1, pady=ypad)
@@ -238,11 +240,10 @@ class FileBrowsePage(AHREAPage):
             if len(self.softFileLabel) != 1:
                 self.softFileDeleteButton[i].grid(row=r, column=3, pady=ypad)
             r += 1
-        #wish I could put this in self.
-        self.addButton.grid(row=r, column=2, pady=ypad)
-        r += 1 
-
-        self.downloadButton.grid(row=r, column=2, pady=ypad)
+        #one off buttons
+        self.addButton.grid(row=r, column=2, pady=ypad, sticky=N)
+        self.downloadButton.grid(row=r, column=1, pady=ypad, sticky=E+N)
+        self.dataSettingsButton.grid(row=r, column=0, pady=ypad, sticky=W+N)
         r += 1
 
         self.gnLabel.grid(row=r, column=0, pady=ypad)
@@ -273,6 +274,7 @@ class FileBrowsePage(AHREAPage):
         if self.addButton is None:
             self.addButton = Button(self, text="Add another file",command=self.softfileadd)
             self.downloadButton = Button(self, text="Download...", command=self.downloadSOFTdialog)
+            self.dataSettingsButton = Button(self, text="Data Settings", command=self.root.menu.data_settings)
         self.geneSynonymDisplay()    
         self.import_button = Button(self, text="Import Files", command=self.importFiles)
         self.import_button.config(state=DISABLED)
@@ -353,18 +355,26 @@ class FileBrowsePage(AHREAPage):
         """
 
         self.dsd = top = Toplevel(self)
+        self.dsd.transient(self)
         Label(top, text="SOFT file name(GDS####.soft.gz)").pack()
         self.dsd_value= e = Entry(top)
         e.pack()
         b = Button(top, text="Download", command=self.downloadSOFT)
         b.pack()
-        self.import_button.config(state=NORMAL)
+
+        top.geometry("+%d+%d" % (self.winfo_rootx()+50,
+                                  self.winfo_rooty()+50))
+
+
+        top.wait_window(self)
+
 
     def downloadSOFT(self):
         result = self.root.controller.downloadSOFT(self.dsd_value.get().strip())
         self.dsd.destroy()
         if result is not None:
             insert = True
+            self.import_button.config(state=NORMAL)
             for path in self.softFilePath:
                 if len(path.get().strip()) == 0:
                     path.set(result)
@@ -430,100 +440,38 @@ class FileBrowsePage(AHREAPage):
             return False
         return True
 
-class FileLoadPage(AHREAPage):
+class ClassDefinitionPage(AHREAPage):
     """
-    Page that is displayed while files are being parsed
-    """
-    def __init__(self, root):
-        AHREAPage.__init__(self, root, 'fileload')
-
-    def setUpPage(self):
-        self.message = StringVar(value="Loading Files")
-        self.label = Label(self, textvariable=self.message)
-        self.label.pack()
-
-    def drawPage(self):
-        self.pack()
-        self.disable_next = True
-
-        if len(self.root.controller.datatable) == 0:
-            self.root.controller.loadFiles()
-        self.displayResults()
-        self.disable_next = False
-
-    def clearPage(self):
-        self.label.pack_forget()
-        self.pack_forget()
-
-    def next(self):
-        if self.disable_next:
-            return None
-        return 'classlabels'
-
-    def displayResults(self):
-        cont = self.root.controller
-        res = []#cont.getDataPackagingResults()
-        strg = "Data merging results\n"
-        strg += "Table\tGene\tProbes\n"
-        for table, genes, probes in res:
-            strg += table + '\t' + str(genes) + '\t' + str(probes) + '\n'
-        self.message.set(strg)
-
-    def prev(self):
-        if self.disable_next:
-            return None
-        self.root.controller.unloadFiles()
-        return 'filebrowse'
-
-class ClassLabelPage(AHREAPage):
-    """
-    Page to get class information.
+    Defines the Class Definition Layout
     """
     def __init__(self, root):
-        AHREAPage.__init__(self, root, 'classlabels')
+        AHREAPage.__init__(self, root, 'Class')
         self.className1 = None
         self.className2 = None
+        self.unclassified_listbox = None
+        self.sample_list = []
 
     def setUpPage(self):
+        self.define_button = Button(self, text="Define Class", command=self.buildClasses)
+        self.setUpClassLabelFrame()
+        self.setUpClassPartitionPage()
+        
+    def setUpClassLabelFrame(self):
+        def unlockDefine(e):
+            self.define_button.config(state=NORMAL)
         self.descriptiveText = Label(self, text="Create names for the classes you will be using.")
-        self.className1Label = Label(self, text="Class 1 name:")
-        self.className2Label = Label(self, text="Class 2 name:")
+        self.className1Label = Label(self, text="Class 1:")
+        self.className2Label = Label(self, text="Class 2:")
         if self.className1 is None:
             self.className1 = StringVar()
         self.className1E = Entry(self, textvariable=self.className1, width=50)
+        self.className1E.bind("<Key>", unlockDefine)
         if self.className2 is None:
             self.className2 = StringVar()
         self.className2E = Entry(self, textvariable=self.className2, width=50)
+        self.className2E.bind("<Key>", unlockDefine)
 
-    def drawPage(self):
-        self.descriptiveText.grid(row=0, columnspan=2)
-        self.className1Label.grid(row=1,column=0)
-        self.className2Label.grid(row=2,column=0)
-        self.className1E.grid(row=1,column=1) 
-        self.className2E.grid(row=2,column=1) 
-        self.pack()
-    def clearPage(self):
-        self.pack_forget()
-
-    def next(self):
-        if len(self.className1.get().strip()) == 0 or len(self.className2.get().strip()) == 0:
-            self.root.status.set("You must enter labels for the classes.")
-
-            return None
-        self.root.controller.createClassification(self)
-        return 'trainingset'
-
-    def prev(self):
-        return 'fileload'
-
-class BuildTrainingSetPage(AHREAPage):
-    def __init__(self, root):
-        AHREAPage.__init__(self, root, 'trainingset')
-        self.unclassified_listbox = None
-        self.sample_list = []
-    def setUpPage(self):
-        self.class1Label = Label(self, text=self.root.controller.class1name)
-        self.class2Label = Label(self, text=self.root.controller.class2name)
+    def setUpClassPartitionPage(self):
         if self._updatedSamples():
             self.sample_list = self.root.controller.getSamples()
             s1 = self.s1 = Scrollbar(self, orient=VERTICAL)
@@ -546,14 +494,55 @@ class BuildTrainingSetPage(AHREAPage):
             s3 = self.s3 = Scrollbar(self, orient=VERTICAL)
             self.class2listbox = Listbox(self, width=maxlen, yscrollcommand=s3.set)
             s3.config(command=self.class2listbox.yview)
-            self.class1Label = Label(self, text=self.root.controller.class1name)
-            self.class2Label = Label(self, text=self.root.controller.class2name)
             self.unclassifiedLabel = Label(self, text="Select Training Set")
             self.description=Text(self,height=10,width=50,background='white')
+            self.define_button.config(state=NORMAL)
+        else:
+            self.define_button.config(state=DISABLED)
+
+    def drawPage(self):
+        self.setAppTitle("Class Definition")
+        #draw Labels        
+        self.className1Label.grid(row=0,column=0, sticky=E)
+        self.className1E.grid(row=0,column=1, columnspan=2, sticky=W)
+        self.unclassifiedLabel.grid(row=0, column=4)
+        self.columnconfigure( 1, weight = 1 )
+        self.className2Label.grid(row=0, column=7, sticky=E)
+        self.className2E.grid(row=0,column=8,columnspan=2,sticky=W)
+        self.columnconfigure( 8, weight = 1 )
+        #draw partitioner
+        self.class1listbox.grid(row=1,rowspan=2, column=0, columnspan=2, sticky=N+S+E+W)
+        self.s2.grid(row=1, rowspan=2,column=2,sticky=N+S)
+        self.class1addbutton.grid(row=1, column=3)
+        self.unclassified_listbox.grid(row=1,rowspan=2, column=4, sticky=N+S+E+W)
+        self.s1.grid(row=1, rowspan=2,column=5,sticky=N+S)
+        self.class2addbutton.grid(row=1, column=6)
+        self.class2listbox.grid(row=1,rowspan=2, column=7, columnspan=2, sticky=N+S+E+W)
+        self.s3.grid(row=1, rowspan=2,column=9,sticky=N+S)
+        
+
+        self.class1removebutton.grid(row=2, column=3)
+        self.class2removebutton.grid(row=2, column=6)
+        #description
+        self.description.grid(row=3,column=0, columnspan=10, sticky=N+S+E+W)
+        self.description.config(state=DISABLED)
+        self.current = None
+        self.poll()
+
+        self.define_button.grid(row=4, column=8, columnspan=2, sticky=E )        
+        self.grid(row=1,column=1, sticky=N+S+E+W)
+        numcolumns, numrows = self.grid_size()
+        #self.rowconfigure(numrows-1 , weight = 0 )
+        self.rowconfigure(1, weight = 1 )
+        self.rowconfigure(2, weight = 1 )
+        self.columnconfigure( 4, weight = 1 )
+
+
 
     def _updatedSamples(self):
         """
         Check if the sample list has changed
+        Note this returns True on initialization
         """
         new_sample_list = self.root.controller.getSamples()
         if len(new_sample_list) != len(self.sample_list):
@@ -566,6 +555,7 @@ class BuildTrainingSetPage(AHREAPage):
         
  
     def move(self, origin, dest):
+        self.define_button.config(state=NORMAL)
         if len(origin.curselection()) > 0:
             f = origin.curselection()[0]
             val = origin.get(f)
@@ -585,28 +575,6 @@ class BuildTrainingSetPage(AHREAPage):
 
     def rem2(self):
         self.move( self.class2listbox,self.unclassified_listbox)
-
-
-    def drawPage(self):
-        self.unclassified_listbox.grid(row=2,rowspan=2, column=3)
-        self.s1.grid(row=2, rowspan=2,column=4,sticky=N+S)
-        self.s2.grid(row=2, rowspan=2,column=1,sticky=N+S)
-        self.s3.grid(row=2, rowspan=2,column=7,sticky=N+S)
-        
-        self.class1listbox.grid(row=2,rowspan=2, column=0)
-        self.class2listbox.grid(row=2,rowspan=2, column=6)
-        self.class1Label.grid(row=1, column=0)
-        self.class2Label.grid(row=1, column=6)
-        self.unclassifiedLabel.grid(row=1, column=3)
-        self.class1addbutton.grid(row=2, column=2)
-        self.class2addbutton.grid(row=2, column=5)
-        self.class1removebutton.grid(row=3, column=2)
-        self.class2removebutton.grid(row=3, column=5)
-        self.description.grid(row=4, columnspan=7, sticky=N+S+E+W)
-        self.description.config(state=DISABLED)
-        self.pack()
-        self.current = None
-        self.poll()
 
     def poll(self):
         now, lbox = self._currentList()   
@@ -646,6 +614,13 @@ class BuildTrainingSetPage(AHREAPage):
             self.description.config(state=DISABLED)
 
     def buildClasses(self):
+        if (len(self.className1.get().strip()) == 0 or len(self.className2.get().strip()) == 0):
+           tkMessageBox.showerror(message="You must enter labels for the classes.")
+           return False
+        if self.class1listbox.size() == 0 or self.class2listbox.size() == 0:
+           tkMessageBox.showerror(message="Each class must have at least one label.")
+           return False
+        self.root.controller.createClassification(self)
         class1 = []
         class2 = []
         for i in xrange(self.class1listbox.size()):
@@ -661,16 +636,42 @@ class BuildTrainingSetPage(AHREAPage):
             class2.append((table, sample_name))
         self.root.controller.partitionClasses(class1, class2)
         
-    
+        self.define_button.config(state=DISABLED)
+        self.root.controller.updateState(self.remote.ClassCreation, 1)
+
+        return True
+
     def clearPage(self):
-        self.pack_forget()
+        self.clearGrid()
+        self.grid_forget()
+        
 
-    def next(self):
-        self.buildClasses()
-        return 'training'
+class LearnerSettingsPage(AHREAPage):
+    def __init__(self, root):
+        AHREAPage.__init__(self, root, 'Settings')
 
-    def prev(self):
-        return 'classlabels'
+    def setUpPage(self):
+        m = self.root.menu
+        a = self.descLabel = Label(self, text="Choose the settings for the Learning algorithms.")
+        a1 = self.noteLabel = Label(self, text="Note: You can save your current settings or load previously saved settings from the File menu option.")
+        self._italicFont(a1)            
+        b = self.diracButton = Button(self, text="Dirac...", command=m.dirac_settings)
+        c = self.tspButton = Button(self, text="TSP...", command=m.tsp_settings)
+        d = self.ktspButton = Button(self, text="k-TSP...", command=m.ktsp_settings)
+        e = self.tstButton = Button(self, text="TST...", command=m.tst_settings)
+        f = self.adaptiveButton = Button(self, text="Adaptive...", command=m.adaptive_settings)
+        self.l = [a, a1,b,c,d,e,f]
+
+    def drawPage(self):
+        self.setAppTitle("Learner Settings")
+        for i, button in enumerate(self.l):
+            button.grid(row=i, column=0, padx=20, pady=10, sticky=E+W)
+            self.rowconfigure(i, weight = 1 )
+
+    def clearPage(self):
+        self.clearGrid()
+        self.grid_forget()
+ 
 
 class RunTraining(AHREAPage):
     def __init__(self, root):

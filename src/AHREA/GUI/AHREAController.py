@@ -63,13 +63,26 @@ class AHREAController:
             gnc = self.datapackage.getGeneNetCount()
             if gnc is None:
                 return None
-            numGenes, numNetworks = gnc
-            return (fname, numNetworks, numGenes)
+            count, ave, max, min = gnc
+            return (fname, count, ave, max, min)
         else:
             return None
 
     def setApp(self, app):
         self.app = app
+        self.remote = app.remote
+
+    def updateState(self, dependency, satisfied):
+        """
+        Given a dependency, update to satisfied in global dependencies, propagating change
+        """
+        #update provided state
+        self.dependency_state[dependency] = satisfied
+        #clear all dependents
+        for i,d in enumerate(self.remote.getDependents(dependency)):
+            if d == 1:
+                self.updateState(i, 0)
+        self.remote.stateChange()
 
     def initWorkspace(self):
         """
@@ -175,7 +188,10 @@ class AHREAController:
         Returns a list of tuples with
         (genes in merge, probes in merge)
         """
-        return self.datapackage.getDataCount()
+        if self.datapackage is not None:
+            return self.datapackage.getDataCount()
+        else:
+            return (None,None)
 
     def getLearnerAccuracy(self):
         """

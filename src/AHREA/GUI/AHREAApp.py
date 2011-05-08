@@ -53,16 +53,20 @@ class AHREAApp(Frame):
         self.update_idletasks()
        
 
+    def setAppTitle(self, title):
+        self.AppTitle.set(title)
        
     def initPages(self):
-        self.pages.append(AHREAPage.WelcomePage(self))
-        self.pages.append(AHREAPage.FileBrowsePage(self))
-        self.pages.append(AHREAPage.FileLoadPage(self))
-        self.pages.append(AHREAPage.ClassLabelPage(self))
-        self.pages.append(AHREAPage.BuildTrainingSetPage(self))
-        self.pages.append(AHREAPage.RunTraining(self))
-        self.pages.append(AHREAPage.addUnclassified(self))
-        self.pages.append(AHREAPage.classificationPage(self))
+        self.pages.append(AHREAPage.HomePage(self))
+        self.pages.append(AHREAPage.ImportDataPage(self))
+        self.pages.append(AHREAPage.ClassDefinitionPage(self))
+        self.pages.append(AHREAPage.LearnerSettingsPage(self))
+
+        #self.pages.append(AHREAPage.ClassLabelPage(self))
+        #self.pages.append(AHREAPage.BuildTrainingSetPage(self))
+        #self.pages.append(AHREAPage.RunTraining(self))
+        #self.pages.append(AHREAPage.addUnclassified(self))
+        #self.pages.append(AHREAPage.classificationPage(self))
 
        
 
@@ -73,15 +77,10 @@ class AHREAApp(Frame):
             self.curr_page.grid_forget()
         for page in self.pages:
             if page.id == page_id:
-                try:
-                    page.setUpPage()
-                    page.drawPage()
-                except AHREAPage.ImplementationError as e:
-                    print e.msg
+                page.setUpPage()
+                page.drawPage()
                 self.curr_page = page
                 break
-        #I may need to change this to grid
-        
         self.curr_page.grid(column=1, row=1,sticky=N+S+E+W)
         self.curr_page.rowconfigure( 1, weight = 1 )
         self.curr_page.columnconfigure( 1, weight = 1 )
@@ -113,6 +112,10 @@ class AHREAApp(Frame):
         """
         if self.err_disp:
             return
+        try:#clear buttons
+            self.remote.disableAllButtons()
+        except Exception, e:
+            print e
             
         err = traceback.format_exception(*args)
         msg = "An Error has occurred."
@@ -192,11 +195,15 @@ class AHREARemote(Frame):
         depends([aa.TrainAdaptive, aa.TrainDirac],[aa.NetworkImport])
         depends([aa.ClassCreation], [aa.DataImport])
 
+    def getDependents(self, dependency):
+        return [g[dependency] for g in self.depGraph]
+
 
     def getDepVector(self, dependencies):
         """
-        Given a list of dependencies, return a list of 1s and 0s
-        showing associated dependencies
+        Given a list of dependencies(A), return a list of 1s and 0s
+        showing associated dependencies(B)
+        Where A depends on B
         """
         def setDep(dvector, dependency):
             dvector[dependency] = 1
@@ -248,6 +255,14 @@ class AHREARemote(Frame):
                button.configure(state=NORMAL)
             else:
                button.configure(state=DISABLED)
+
+    def disableAllButtons(self):
+        """
+        Disables all buttons
+        """
+        for button in self.buttonList:
+            button.configure(state=DISABLED)
+
 
 
     def setNavDependencies(self):
@@ -357,6 +372,10 @@ class AHREAMenu(Menu):
         filemenu.add_command(label="Save Settings...", command=self.save_settings)
 
     def buildSettings(self):
+        """
+        Deprecated, they have their own AHREAPage now.
+        """
+        raise Exception("menu.buildSettings is deprecated. Use the AHREAPage.learnerSettings")
         settingsmenu = Menu( self )
         self.add_cascade(label="Settings", menu=settingsmenu)
         settingsmenu.add_command(label="Data...", command=self.data_settings)
@@ -401,6 +420,9 @@ class AHREAMenu(Menu):
         dialog = self.dialog = Toplevel(self.root)
         self.dialog.protocol('WM_DELETE_WINDOW', self.close_window)
         self.dialog.title(learner + " settings")
+        self.dialog.transient(self.root)
+        self.dialog.geometry("+%d+%d" % (self.root.winfo_rootx()+50,
+                                  self.root.winfo_rooty()+50))
         settings = self.root.controller.config.getSettings(learner)
         self.entries = []
         for i, setting in enumerate(settings):

@@ -354,10 +354,26 @@ This builds the geneNet Vector from the provided information.  It uses gene syno
         return (numgenes, numprobes)
            
     def getGeneNetCount(self):
-        if self.gene_net_vector is not None:
-            ngenes =len(self.gene_net_vector)        
-            nnetworks = len(self.gene_net_size_vector)
-            return (ngenes, nnetworks)
+        if self.gene_networks is not None and len(self.gene_networks) > 0:
+            self.createGeneNetVector(1)
+            numnetworks = len(self.gene_net_size_vector)
+            if numnetworks > 0:
+                min = 10000
+                max = 0
+                sum = 0
+                for geneset in self.gene_net_size_vector:
+                    if geneset > max:
+                        max = geneset
+                    if geneset < min:
+                        min = geneset
+                    sum += geneset
+                ave = float(sum)/numnetworks
+            else:
+                min = None
+                max = None
+                ave = None        
+            
+            return (numnetworks, ave, max, min)
         return None
 
     def getGeneNetVectorRange(self, net_number):
