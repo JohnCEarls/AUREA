@@ -42,6 +42,21 @@ class AHREAController:
         self.ktsp = None
         self.tst = None
         self.adaptive = None
+
+        self.tsp_acc = None
+        self.ktsp_acc = None
+        self.tst_acc = None
+        self.dirac_acc = None
+        self.adaptive_acc_tuple = None
+
+        self.tsp_cv = None
+        self.ktsp_cv = None
+        self.tst_cv = None
+        self.dirac_cv = None
+        self.adaptive_cv = None
+
+       
+
         self.dependency_state = [0 for x in range(AHREARemote.NumStates)]#see AHREAApp.AHREARemote for mappings
 
     def setSOFTFile(self, softFile):
@@ -122,6 +137,7 @@ class AHREAController:
         self.datapackage = None
         self.datatable = []
         self.softFile = []
+        self.clearLearningAlg()
 
     def parseSOFTFiles(self):
         """
@@ -198,8 +214,8 @@ class AHREAController:
         Returns the apparent accuracy of the learners over the training set
         (TSP,kTSP,TST,DiRaC, Adaptive)
         """
-        #TODO
-        return (None,None,None,None,None)
+        
+        return (self.tsp_acc, self.ktsp_acc,self.tst_acc,self.dirac_acc,self.adaptive_acc_tuple)
 
     def getCrossValidationResults(self):
         """
@@ -208,7 +224,7 @@ class AHREAController:
         (TSP,kTSP,TST,DiRaC, Adaptive)
         """
         #TODO
-        return (None,None,None,None,None)
+        return (self.tsp_cv,self.ktsp_cv,self.tst_cv,self.dirac_cv,self.adaptive_cv)
 
 
     def parseNetworkFile(self):
@@ -225,6 +241,7 @@ class AHREAController:
         """
         Gets and sets the class labels
         """
+        self.clearLearningAlg()
         self.datapackage.clearClassification()
         c1 = self.class1name = page.className1.get().strip()
         c2 = self.class2name = page.className2.get().strip()
@@ -313,6 +330,46 @@ class AHREAController:
         table = self.datapackage.getTable(table)        
         return table.getSampleDescription(sample_id)
  
+    def _getLearnerAccuracy(self, learner, row_key):
+        """
+        Takes a trained learner (and its row_key gene/probe)
+         and returns the results of
+        classifying the Trained Data
+        Returns a tuple (T0,F0, T1, F1, MCC)
+        Note T0 = True Positive = True class 1
+        """
+        import math
+        def MCC(TP,FP, TN, FN):
+            return float(TP*TN - FP*FN)/math.sqrt(float((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN)))
+        dp = self.datapackage
+        class1, class2 = dp.getClassifications()
+        T0 = 0
+        F0 = 0
+        T1 = 0
+        F1 = 0
+        for table, sample in class1[1]:
+            dp.clearUnclassified()
+            self.addUnclassified(table, sample)
+            learner.addUnclassified(dp.getUnclassifiedDataVector(row_key))
+            if learner.classify() == 0:
+                T0 += 1
+            else:
+                F1 += 1  
+
+        for table, sample in class2[1]:
+            dp.clearUnclassified()
+            self.addUnclassified(table, sample)
+            learner.addUnclassified(dp.getUnclassifiedDataVector(row_key))
+            if learner.classify() == 1:
+                T1 += 1
+            else:
+                F0 += 1  
+        dp.clearUnclassified()
+        
+        return (T0,F0, T1, F1, MCC(T0,F0, T1,F1))
+
+
+
     def trainDirac(self):
         self.app.status.clear()
         self.app.status.set("Preparing Dirac")
@@ -327,7 +384,10 @@ class AHREAController:
         self.app.status.set("Training Dirac")
         self.dirac = dirac.Dirac(data_vector, num_genes,class_vector, gene_net, gene_net_size, numTopNetworks, netMap)
         self.dirac.train()
-        self.app.status.set("Training Complete")
+        self.app.status.set("Training Complete, Checking Accuracy")
+        self.dirac_acc = self._getLearnerAccuracy(self.dirac, row_key)
+        self.app.status.set("Accuracy Check Complete")
+    
 
     def trainTSP(self):
         """
@@ -345,7 +405,10 @@ class AHREAController:
         self.app.status.set("Training TSP")
         self.tsp = tsp.TSP(data_vector, num_genes, class_vector, vecFilter)
         self.tsp.train()
-        self.app.status.set("Training Complete")
+        self.app.status.set("Training Complete, Checking Accuracy")
+        self.tsp_acc = self._getLearnerAccuracy(self.tsp, row_key)
+        self.app.status.set("Accuracy Check Complete")
+
 
     def trainTST(self):
         """
@@ -363,7 +426,10 @@ class AHREAController:
         self.app.status.set("Training TST")
         self.tst = tst.TST(data_vector, num_genes, class_vector, vecFilter)    
         self.tst.train()
-        self.app.status.set("Training Complete")
+        self.app.status.set("Training Complete, Checking Accuracy")
+        self.tst_acc = self._getLearnerAccuracy(self.tst, row_key)
+        self.app.status.set("Accuracy Check Complete")
+
 
     def trainkTSP(self):
         """
@@ -386,7 +452,10 @@ class AHREAController:
         self.app.status.set("Training k-TSP(this could take a while, get a Coke)")
         self.ktsp = ktsp.KTSP( data_vector, num_genes, class_vector, vecFilter, maxk, cross_remove, num_cross)
         self.ktsp.train()
-        self.app.status.set("Training Complete")
+        self.app.status.set("Training Complete, Checking Accuracy")
+        self.ktsp_acc = self._getLearnerAccuracy(self.ktsp, row_key)
+        self.app.status.set("Accuracy Check Complete")
+
 
     def trainAdaptive(self, target_accuracy, maxTime  ):
         self.app.status.set("Configuring adaptive training")
@@ -409,7 +478,7 @@ class AHREAController:
         #create adaptive object
         adaptive = Adaptive(self.learnerqueue, app_status_bar = self.app.status)
         top_acc, top_settings, top_learner = adaptive.getLearner(target_accuracy, maxTime)
-        #store adaptive results
+        #store adaptive results (really should be in adaptive)
         self.adaptive_history = adaptive.getHistory()
         self.adaptive_history.reverse()
         self.adaptive = top_learner
@@ -417,6 +486,10 @@ class AHREAController:
         self.adaptive_acc = top_acc
         self.adaptive_setting_string  = adaptive.getSettingString(top_settings)
 
+        row_key = top_settings['data_type']
+        self.app.status.set("Training Complete, Checking Accuracy")
+        self.adaptive_acc_tuple = self._getLearnerAccuracy(self.adaptive, row_key)
+        self.app.status.set("Accuracy Check Complete")
 
     def _adaptiveSetup(self):
         self._adaptiveSetupLearnerQueue()
@@ -477,6 +550,28 @@ class AHREAController:
         self.learnerqueue.genKTSP(tuple(k_maxK),tuple(k_ncv), tuple(k_nlo), tuple(k_filter_1), tuple(k_filter_2), k_equijoin, k_row_key)
  
        
+    def clearLearningAlg(self):
+        """
+        Set all learning algorithms to None.
+        Happens when we change something further up the dependency
+        """
+        self.dirac = None
+        self.tsp = None
+        self.tst = None
+        self.ktsp = None
+        self.adaptive = None
+        self.tsp_acc = None
+        self.ktsp_acc = None
+        self.tst_acc = None
+        self.dirac_acc = None
+        self.adaptive_acc_tuple = None
+        self.tsp_cv = None
+        self.ktsp_cv = None
+        self.tst_cv = None
+        self.dirac_cv = None
+        self.adaptive_cv = None
+
+
 
     def classifyDirac(self):
         dp = self.datapackage
@@ -513,7 +608,24 @@ class AHREAController:
         row_key = settings['data_type']
         learner.addUnclassified(dp.getUnclassifiedDataVector(row_key))
         self.adaptive_classification = learner.classify()
-       
+      
+    def crossValidateDirac(self):
+        self.dirac_cv = self.dirac.crossValidate()
+    def crossValidateTSP(self):
+        self.tsp_cv = self.tsp.crossValidate()
+
+    def crossValidateTST(self):
+        self.tst_cv = self.tst.crossValidate()
+
+    def crossValidateKTSP(self):
+        self.ktsp_cv = self.ktsp.crossValidate()
+
+    def crossValidateAdaptive(self):
+        self.adaptive_cv = self.adaptive.crossValidate()
+
+
+
+ 
     def _checkRowKey(self, row_key, srcStr="Not Given"):
         if row_key not in ['gene', 'probe']:
             raise InputError(srcStr, "Given key " + row_key + " is invalid" )

@@ -118,12 +118,20 @@ Given an index into either the probe or gene array(determined by the type parame
         self.data_tables.append( dataTable )
         self.genes = None
 
+    def clearUnclassified(self):
+        """
+        Clears out data relating to an 
+        unclassified sample (sample to be classified)
+        """
+        self.unclassified = None
+        self.unclassified_data_vector = None
     def clearClassification(self):
         """
         Clears the classification settings
         """
         self.classifications = []
         self.class_vector = None 
+        self.clearData()
 
     def clearClassSamples(self):
         """
@@ -171,6 +179,7 @@ Given an index into either the probe or gene array(determined by the type parame
         """
         This takes the unclassified data list and converts it to a vector 
         of doubles.
+        type is gene/probe
         """
         self.unclassified_data_vector = None
         self.unclassified_data_vector = dirac.DoubleVector()

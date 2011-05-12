@@ -62,13 +62,8 @@ class AHREAApp(Frame):
         self.pages.append(AHREAPage.ClassDefinitionPage(self))
         self.pages.append(AHREAPage.LearnerSettingsPage(self))
         self.pages.append(AHREAPage.TrainClassifiers(self))
-        #self.pages.append(AHREAPage.ClassLabelPage(self))
-        #self.pages.append(AHREAPage.BuildTrainingSetPage(self))
-        #self.pages.append(AHREAPage.RunTraining(self))
-        #self.pages.append(AHREAPage.addUnclassified(self))
-        #self.pages.append(AHREAPage.classificationPage(self))
-
-       
+        self.pages.append(AHREAPage.TestClassifiers(self))
+        self.pages.append(AHREAPage.EvaluateClassifiers(self)) 
 
     def displayPage(self, page_id):
         self.status.clear()
@@ -235,7 +230,7 @@ class AHREARemote(Frame):
 
         if depVector[aa.TrainAny] == 1:
             #special case for when any LA has run
-            for d in [self.getDepVector([x]) for x in [aa.TrainDirac, aa.TrainTSP, aa.TrainTST, aa.TrainKTSP]]:
+            for d in [self.getDepVector([x]) for x in [aa.TrainDirac, aa.TrainTSP, aa.TrainTST, aa.TrainKTSP, aa.TrainAdaptive]]:
                 if self.dependenciesSatisfied(currState, d):
                     return True
             return False

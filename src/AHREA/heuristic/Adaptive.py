@@ -86,13 +86,13 @@ class Adaptive:
                 settings = None
             else:
                 accuracy = learner.crossValidate()
-                msg = str_learner + " achieved " + str(accuracy)
+                msg = str_learner + " achieved " + str(accuracy)[:4]
             #update if better
             if accuracy > top_acc:
                 top_acc = accuracy
                 top_learner = learner
                 top_settings = settings
-                tl_str = str_learner + " current best at " + str(top_acc) + " :"
+                tl_str = str_learner + " current best at " + str(top_acc)[:4] + " :"
                 msg += " new top learner : "
             #let queue know how this learner did
             if settings is not None:

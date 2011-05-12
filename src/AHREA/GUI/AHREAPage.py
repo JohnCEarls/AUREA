@@ -3,7 +3,6 @@ import tkFileDialog
 import tkMessageBox
 import os
 from AHREA.GUI.AHREAResults import *
-#from AHREA.GUI.AHREAApp import AHREARemote
 import platform
 class AHREAPage(Frame):
     """
@@ -99,7 +98,7 @@ class HomePage(AHREAPage):
         if ni is not None:
             fl = Label(gnff, text = os.path.split(ni[0])[1])
             nets = Label(gnff, text = ni[1])
-            genestr = str(ni[4])+  '-' + str(ni[3]) + '(ave. ' + str(ni[2]) +')'
+            genestr = str(ni[4])+  '-' + str(ni[3]) + '(ave. ~' + str(int(ni[2])) +')'
             genes = Label(gnff, text=genestr)
         else:
             fl = Label(gnff, text ="Not specified", fg="red" )
@@ -138,10 +137,21 @@ class HomePage(AHREAPage):
         lc2.grid(row=2,column=1, sticky=W) 
         cf.columnconfigure( 0, weight = 1 )
         cf.columnconfigure( 1, weight = 1 )
+    def showResults(self, learner):
+        if learner=='tsp':
+            TSPResults(self)
+        elif learner == 'ktsp':
+            KTSPResults(self)
+        elif learner == 'tst':
+            TSTResults(self)
+        elif learner ==  'dirac':
+            DiracResults(self)
+        elif learner ==  'ada':
+            AdaptiveResults(self)
+
 
     def setupLearningAlgorithmFrame(self):
-        def showResults(learner):
-            pass
+
         c = self.root.controller
         lf = self.learningAlgorithmFrame = Frame(self)
         bc = Label(lf, text="Best Classifiers:")
@@ -163,7 +173,22 @@ class HomePage(AHREAPage):
         cv = c.getCrossValidationResults()
         for i,l in enumerate(['tsp','ktsp','tst', 'dirac', 'ada']):
             lList[i].grid(row=i+1, column=0, sticky=E)
-            bd[l]  = Button(lf, text="More info", command=lambda: showResults(l))
+            myalg = l
+            #so dumb, for some reason cannot pass l or myalg(ref or some such nonsense)
+            if l=='tsp':
+                bd[l]  = Button(lf, text="More info...", command=lambda: self.showResults('tsp'))
+              
+            elif l == 'ktsp':
+                 bd[l]  = Button(lf, text="More info...", command=lambda: self.showResults('ktsp'))
+            elif l == 'tst':
+                  bd[l]  = Button(lf, text="More info...", command=lambda: self.showResults('tst'))
+            elif l ==  'dirac':
+                bd[l]  = Button(lf, text="More info...", command=lambda: self.showResults('dirac'))
+            elif l ==  'ada':
+                bd[l]  = Button(lf, text="More info...", command=lambda: self.showResults('ada'))
+
+         
+            #bd[l]  = Button(lf, text="More info..." + l, command=lambda: self.showResults(myalg))
             bd[l].grid(row=i+1, column=2,sticky=E+W, padx=5)
             nt = Label(lf, text="Not trained", fg="red")
             nc = Label(lf, text="Not calculated", fg="red")
@@ -172,14 +197,15 @@ class HomePage(AHREAPage):
                 bd[l].configure(state=DISABLED)
                 nt.grid(row=i+1, column=1,sticky=W)
             else:
-                l = Label(lf, text=acc[i])
-                l.grid(row=i+1, column=1,sticky=W)
+                toStr = ','.join([str(x)[:4] for x in acc[i]])
+                lab = Label(lf, text=toStr, padx=5 )
+                lab.grid(row=i+1, column=1,sticky=W)
             #handle cross validation
             if cv[i] is None:
                 nc.grid(row=i+1, column=3)
             else:
-                l = Label(lf, text=cv[i])
-                l.grid(row=i+1, column=3)
+                lab = Label(lf, text=cv[i])
+                lab.grid(row=i+1, column=3)
         bc.grid(row=0, column=0,columnspan=3, sticky=W)
         cp.grid(row=0, column=3)
         lf.rowconfigure( 0, weight = 1 )
@@ -203,12 +229,6 @@ class HomePage(AHREAPage):
     def clearPage(self):
         self.clearGrid()
         self.grid_forget()
-
-    def next(self):
-        return 'filebrowse'
-
-    def prev(self):
-        pass
 
 class ImportDataPage(AHREAPage):
     """
@@ -743,42 +763,52 @@ class TrainClassifiers(AHREAPage):
         s.auto_maxtimeE = Entry(self, textvariable=self.auto_maxtime) 
         s.dirac_warning = Label(self, text="Gene Network file required", fg="red")
         s.adaptive_warning = Label(self, text="Gene Network file required", fg="red")
-        s.target_message = Label(self, text="Please specify max time & target accuracy", fg="red")
+        s.target_message = Label(self, text="Please specify max time & target accuracy for Adaptive", fg="red")
         s.buttonList = [a,b,c,d,e]
 
     def trainDirac(self):
         self.root.controller.trainDirac()
+        self.root.controller.updateState(self.remote.TrainDirac, 1)
+        self.root.controller.updateState(self.remote.TrainAny, 1)
         DiracResults(self)
 
     def trainTSP(self):
         self.root.controller.trainTSP()
+        self.root.controller.updateState(self.remote.TrainTSP, 1)
+        self.root.controller.updateState(self.remote.TrainAny, 1)
         TSPResults(self) 
 
     def trainKTSP(self):
+        self.root.controller.updateState(self.remote.TrainKTSP, 1)
+        self.root.controller.updateState(self.remote.TrainAny, 1)
         self.root.controller.trainkTSP()
         KTSPResults(self)
         
 
     def trainTST(self):
         self.root.controller.trainTST()
+        self.root.controller.updateState(self.remote.TrainTST, 1)
+        self.root.controller.updateState(self.remote.TrainAny, 1)
         TSTResults(self)
 
     def trainAdaptive(self):
         self.root.controller.trainAdaptive(self.auto_target_acc.get(), self.auto_maxtime.get())
+        self.root.controller.updateState(self.remote.TrainAdaptive, 1)
+        self.root.controller.updateState(self.remote.TrainAny, 1)
         AdaptiveResults(self)
     
     def clearPage(self):
         self.clearGrid()
         self.grid_forget()
 
-class addUnclassified(AHREAPage):
+class TestClassifiers(AHREAPage):
     """
     Displays a list of unclassified samples and allows you to choose one 
     for classification,
     """
 
     def __init__(self, root):
-        AHREAPage.__init__(self, root, 'addUnclassified')
+        AHREAPage.__init__(self, root, 'Test')
 
     def setUpPage(self):
         self.sample_list = self.root.controller.getUntrainedSamples()
@@ -791,7 +821,14 @@ class addUnclassified(AHREAPage):
         self.unclassified_listbox.config(width=maxlen)
         self.unclassifiedLabel = Label(self, text="Select Sample for Classification")
         self.description = Text(self, height=10,width=50,background='white')
-        
+        s = self
+        s.classify_label= Label(self, text="Select method.")
+        s.dirac_button = Button(self, text="Dirac...", command=self.classifyDirac )
+        s.tsp_button = Button(self, text="TSP...", command= self.classifyTSP )
+        s.ktsp_button = Button(self, text="k-TSP...", command=self.classifyKTSP )
+        s.tst_button = Button(self, text="TST...", command=self.classifyTST )
+        s.adaptive_button = Button(self, text="Adaptive...", command=self.classifyAdaptive )
+       
      
     def poll(self):
         now = self.unclassified_listbox.curselection()
@@ -813,89 +850,138 @@ class addUnclassified(AHREAPage):
             self.description.config(state=DISABLED)
 
     def drawPage(self):
-        self.unclassified_listbox.grid(row=2,rowspan=1, column=1)
-        self.unclassifiedLabel.grid(row=1, column=1)
-        self.description.grid(row=4, columnspan=5, sticky=N+S+E+W)
+        self.setAppTitle("Train Classifiers")
+
+        self.unclassifiedLabel.grid(row=0, column=0)
+        self.unclassified_listbox.grid(row=1, column=0, rowspan=5, sticky = N+S+E+W)
+        self.description.grid(row=6,column=0, sticky=N+S+E+W)
         self.description.config(state=DISABLED)
-        self.pack()
+
+        self.classify_label.grid(row=0, column=1, sticky=E+W)
+        self.dirac_button.grid(row=4, column=1, sticky=E+W)
+        self.tsp_button.grid(row=1, column=1, sticky=E+W)
+        self.tst_button.grid(row=3, column=1, sticky=E+W)
+        self.ktsp_button.grid(row=2, column=1, sticky=E+W)
+        self.adaptive_button.grid(row=5, column=1, sticky=E+W)
+        for i in range(7):
+            self.rowconfigure(i, weight=1)
         self.current = None
+        if self.root.controller.dirac is not None:
+            self.dirac_button.config(state=NORMAL)
+        else:
+            self.dirac_button.config(state=DISABLED)
+
+        if self.root.controller.tsp is not None:
+            self.tsp_button.config(state=NORMAL)
+        else:
+            self.tsp_button.config(state=DISABLED)
+
+
+        if self.root.controller.ktsp is not None:
+            self.ktsp_button.config(state=NORMAL)
+        else:
+            self.ktsp_button.config(state=DISABLED)
+
+       
+        if self.root.controller.tst is not None:
+            self.tst_button.config(state=NORMAL)
+        else:
+            self.tst_button.config(state=DISABLED)
+
+        if self.root.controller.adaptive is not None:
+            self.adaptive_button.config(state=NORMAL)
+        else:
+            self.adaptive_button.config(state=DISABLED)
         self.poll()
 
     def clearPage(self):
-        self.pack_forget()
+        self.clearGrid()
+        self.grid_forget()
 
-    def next(self):
+    def addUnc(self):
         cursor = self.unclassified_listbox.curselection()
         raw = self.unclassified_listbox.get(int(cursor[0])).split('].')
         table = raw[0][1:]
         sample_name = raw[1]
 
         self.root.controller.addUnclassified(table, sample_name)
-        return 'classify'
 
-    def prev(self):
-        return 'training'
-        
-class classificationPage(AHREAPage):
-    def __init__(self, root):
-        AHREAPage.__init__(self, root, 'classify')
 
-    def drawPage(self):
-        self.classify_label.grid(row=1, column=0, rowspan=4)
-        self.dirac_button.grid(row=1, column=1)
-        self.tsp_button.grid(row=2, column=1)
-        self.tst_button.grid(row=3, column=1)
-        self.ktsp_button.grid(row=4, column=1)
-        self.adaptive_button.grid(row=5, column=1)
-        self.pack()
-    
-    def setUpPage(self):
-        s = self
-        s.classify_label= Label(self, text="Please click a button for the algorithm you would like to classify against")
-        s.dirac_button = Button(self, text="Classify using Dirac...", command=self.classifyDirac )
-        s.tsp_button = Button(self, text="Classify using TSP...", command= self.classifyTSP )
-        s.ktsp_button = Button(self, text="Classify using k-TSP...", command=self.classifyKTSP )
-        s.tst_button = Button(self, text="Classify using TST...", command=self.classifyTST )
-        s.adaptive_button = Button(self, text="Classify using Adaptive...", command=self.classifyAdaptive )
-        
- 
     def classifyDirac(self):
         if self.root.controller.dirac is not None:
+            self.addUnc()
             self.root.controller.classifyDirac()
             DiracClassificationResults(self)
 
     def classifyTSP(self):
         if self.root.controller.tsp is not None:
+            self.addUnc()
             self.root.controller.classifyTSP()
             TSPClassificationResults(self) 
 
     def classifyKTSP(self):
         if self.root.controller.ktsp is not None:
+            self.addUnc()
             self.root.controller.classifykTSP()
             KTSPClassificationResults(self)
         
 
     def classifyTST(self):
         if self.root.controller.tst is not None:
+            self.addUnc()
             self.root.controller.classifyTST()
             TSTClassificationResults(self)
 
     def classifyAdaptive(self):
         if self.root.controller.adaptive is not None:
+            self.addUnc()
             self.root.controller.classifyAdaptive()
             AdaptiveClassificationResults(self)
 
-        
+class EvaluateClassifiers(AHREAPage):
+    """
+    Displays a list of unclassified samples and allows you to choose one 
+    for classification,
+    """
+
+    def __init__(self, root):
+        AHREAPage.__init__(self, root, 'Evaluate')
+
+    def setUpPage(s):
+        self = s
+        s.cv_label= Label(self, text="Please select the algorithm you would like to evaluate in cross validation")
+        d = s.dirac_button = Button(self, text="Dirac...", command=s.cvDirac )
+        a = s.tsp_button = Button(self, text="TSP...", command= s.cvTSP )
+        b= s.ktsp_button = Button(self, text="k-TSP...", command=s.cvKTSP )
+        c = s.tst_button = Button(self, text="TST...", command=s.cvTST )
+        e = s.adaptive_button = Button(self, text="Adaptive...", command=s.cvAdaptive )
+        s.buttonList = [a,b,c,d,e]
+
+
+    def drawPage(s):
+        s.setAppTitle("Train Classifiers")
+        for i,b in enumerate(s.buttonList):
+            b.grid(row = i, column=0, sticky = E+W)
+
+    def cvDirac(self):
+        self.root.controller.crossValidateDirac()
+
+    def cvTSP(self):
+        self.root.controller.crossValidateTSP()
+
+    def cvKTSP(self):
+        self.root.controller.crossValidateKTSP()
+
+    def cvTST(self):
+        self.root.controller.crossValidateTST()
+
+    def cvAdaptive(self):
+        self.root.controller.crossValidateAdaptive()
+
     def clearPage(self):
-        self.pack_forget()
+        self.clearGrid()
+        self.grid_forget()
 
-    def next(self):
-        pass
-
-    def prev(self):
-        return 'addUnclassified'
-
-    
 class Error(Exception):
     pass
 
