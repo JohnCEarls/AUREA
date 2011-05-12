@@ -338,5 +338,8 @@ class LearnerQueue:
             #clear out old gene net and create new one
             self.data_package.createGeneNetVector(settings['min_network_size'])
             geneNet, geneNetSize = self.data_package.getGeneNetVector(settings['min_network_size'])
-            return dirac.Dirac(data, numGenes, classSizes, geneNet, geneNetSize)    
+            numnet = settings['numTopNetworks']
+            geneNetMap = self.data_package.gene_net_map
+            return dirac.Dirac(data, numGenes, classSizes, geneNet, geneNetSize,numnet, geneNetMap )    
+
         raise Exception("Unrecognized learner")

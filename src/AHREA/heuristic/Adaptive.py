@@ -17,6 +17,7 @@ class Adaptive:
         self.lq = learnerQueue
         self.app_status_bar = app_status_bar
         self.print_status = print_status
+        self.history = []
 
     def getLearner(self, target_acc, maxTime):
         """
@@ -83,13 +84,9 @@ class Adaptive:
                 accuracy = .001
                 learner = None
                 settings = None
-            elif settings['learner'] != LearnerQueue.dirac:
+            else:
                 accuracy = learner.crossValidate()
                 msg = str_learner + " achieved " + str(accuracy)
-            else:
-                accuracy = learner.crossValidate(numTopNetworks=settings['numTopNetworks'])
-                msg = str_learner + " achieved " + str(accuracy)
-
             #update if better
             if accuracy > top_acc:
                 top_acc = accuracy
@@ -99,8 +96,10 @@ class Adaptive:
                 msg += " new top learner : "
             #let queue know how this learner did
             if settings is not None:
-                self.lq.feedback(settings['learner'], (1.0+accuracy)/2)
                 #shift accuracy to [0.0,1.0]
+                self.lq.feedback(settings['learner'], (1.0+accuracy)/2)
+                #keep track of history
+                self.history.append((accuracy, settings))
                 
             if self._goodEnough(accuracy):
                 #tell why we are done
@@ -123,7 +122,41 @@ class Adaptive:
             self.app_status_bar.set( msg )
         if self.print_status:
             print msg
+
+    def getHistory(self):
+        """
+        Returns a list of tuples
+        (accuracy, learner settings string)
+        """
+        return [(s[0], self.getSettingString(s[1])) for s in self.history]       
+
+    def getSettingString(self, settings):
+        """
+        Returns a human readable version of the settings dictionary
+        """
+        #dont want these
+        ignorekeys = ['data', 'learner']
+        # get a nice string with the learners name
+        learnerMap = ['', '', '', '']
+        learnerMap[LearnerQueue.dirac] = "DiRaC"
+        learnerMap[LearnerQueue.tsp] = "TSP"
+        learnerMap[LearnerQueue.tst] = "TST"
+        learnerMap[LearnerQueue.ktsp] = "k-TSP"
+        myStr = learnerMap[settings['learner']] + os.linesep
         
+        for k, v in settings.iteritems():
+            if k not in ignorekeys:
+                myStr  += k + ': '
+                if k == 'restrictions':
+                    comma = ''
+                    for r in v:
+                        myStr += comma + str(r) 
+                        comma = ', '
+                else:
+                    myStr += str(v)
+                myStr += os.linesep
+        return myStr
+
 class AdaptiveTimeoutException(Exception):
     def __init__(self, msg):
         self.msg = msg

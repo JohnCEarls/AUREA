@@ -61,7 +61,7 @@ class AHREAApp(Frame):
         self.pages.append(AHREAPage.ImportDataPage(self))
         self.pages.append(AHREAPage.ClassDefinitionPage(self))
         self.pages.append(AHREAPage.LearnerSettingsPage(self))
-
+        self.pages.append(AHREAPage.TrainClassifiers(self))
         #self.pages.append(AHREAPage.ClassLabelPage(self))
         #self.pages.append(AHREAPage.BuildTrainingSetPage(self))
         #self.pages.append(AHREAPage.RunTraining(self))
@@ -75,6 +75,7 @@ class AHREAApp(Frame):
         if self.curr_page:
             self.curr_page.clearPage()
             self.curr_page.grid_forget()
+            self.curr_page = None
         for page in self.pages:
             if page.id == page_id:
                 page.setUpPage()

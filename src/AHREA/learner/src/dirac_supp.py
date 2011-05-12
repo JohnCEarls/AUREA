@@ -1,4 +1,5 @@
 %pythoncode{
+import dirac
 class Dirac:
     """
     This is the python class that controls the execution of the 
@@ -11,17 +12,30 @@ class Dirac:
     Published in PLoS Computational Biology May 2010 | Volume 6 |
     Issue 5.
     """
-    def __init__(self, data, numGenes,classSizes, geneNet, geneNetSize, numTopNetworks=None):
+    def __init__(self, data, numGenes,classSizes, geneNet, geneNetSize, numTopNetworks, netMap):
+        if netMap is None:
+            raise Exception("You need to add the Gene Network Map")
+        #copy geneNet and geneNetSize
+        #hacky crap because I did not think ahead in datapackager
+        #running multiple diracs on different minimum network
+        #sizes screws up the mapping
+        #prob need to add the min gene net size to Dirac
+        self.geneNet = IntVector()
+        for x in geneNet:
+            self.geneNet.push_back(x)
+        self.geneNetSize = IntVector()
+        for x in geneNetSize:
+            self.geneNetSize.push_back(x)
+        self.netMap=netMap[:]
+       
         self.data = data
         self.numGenes = numGenes
         self.classSizes = classSizes
-        self.geneNet = geneNet
         self.numTopNetworks = numTopNetworks
         if len(self.geneNet) == 0:
             raise Exception('invalid network size', 'Dirac was provided with a zero length network.')
         self.unclassified_data_vector = None
         self.unClassifiedRankMatrix = None
-        self.geneNetSize = geneNetSize
         self.rank_templates = None
         #lists the starting locations of each geneNetwork in the data matrix
         self.unclassifiedRankMatrix = None
@@ -35,18 +49,18 @@ class Dirac:
         self.RankConservation = DoubleVector()
         runDirac(self.data, self.numGenes, self.classSizes, self.geneNet, self.geneNetSize, self.RankMatrix, self.RankMatching, self.RankConservation)
     
-    def classify(self, numTopNetworks = 1):
+    def classify(self):
         """
         Returns 0 or 1.
-        Call with classify(numTopNetworks = x).  The netStart and netEnd
+        The netStart and netEnd
         are where in the rank templates and unclassified rank vector the
         gene network you are interested in is located.
 
         Update: you can now set numTopNetworks in the constructor.
         Passing here should be deprecated.
         """
-        if self.numTopNetworks is not None and numTopNetworks == 1:
-            numTopNetworks = self.numTopNetworks
+        numTopNetworks = self.numTopNetworks
+        
         classification_list = []
         rc = self.getRankDifference()
         for x in xrange(0,numTopNetworks):
@@ -58,58 +72,7 @@ class Dirac:
             return 1
         else:
             return 0
-    
-    def old_classify(self, numTopNetworks = 1):
-        """
-        NOTE: some older components will expect this.  Fix in GUI
-        Returns a list of tuples of length numTopNetworks by default.
-        Call with classify(numTopNetworks = x).  The netStart and netEnd
-        are where in the rank templates and unclassified rank vector the
-        gene network you are interested in is located.
-        """
-        classification_list = []
-        rc = self.getRankDifference()
-        for x in xrange(0,numTopNetworks):
-            netNum = rc[x][1]
-            rms = self.getRankMatchingScores()
-            classification_list.append( self.classify_network(netNum) )
 
-        return classification_list
-    """ 
-    def classify_network(self, network_index):
-        Returns a tuple that contains
-        (classified class [0 or 1], class one percent match, 
-        class two percent match)
-        #unclassified rank template
-        un = self.getUnclassifiedRankTemplate(network_index)
-        #the trained rank templates
-        rt = self.getRankTemplates()
-        class1 = rt[0]
-        class2 = rt[1]
-        #keep track of the matches
-        match1 = 0
-        match2 = 0
-        #where in trained rank templates are we?
-        netstart = self.getNetworkRankStart(network_index)
-        netend = netstart + self.getNetworkRankSize(network_index)
-        #compare the rank templates against the unclassified template
-        for x in xrange(netstart, netend):
-            unclassgenerank = un[x - netstart]
-            if class1[x] == unclassgenerank:
-                match1 += 1
-            if class2[x] == unclassgenerank:
-                match2 += 1
-            #print str(class1[x]) + " " + str(class2[x])
-        m1Score =float(match1)/(netend-netstart)
-        m2Score = float(match2)/(netend-netstart)
-
-        if match1 > match2:
-            return (0,m1Score, m2Score)
-        elif match2 > match1:
-            return (1, m1Score, m2Score)
-        else:#tie
-            return (.5, m1Score, m2Score)
-"""
     def classify_network(self, network_index):
         """
         Returns a tuple that contains
@@ -233,7 +196,7 @@ class Dirac:
         rc_list =  self.vecToList(self.RankConservation, 2)
         return rc_list
 
-    def getRankDifference(self):
+    def getRankDifference(self, numNets = None):
         """
         Returns a list of tuples containing (sum of matches, gene_index, distance) in sorted order
         """
@@ -280,13 +243,20 @@ class Dirac:
             else:
                 return x[0] - y[0]
         conservation_list.sort(cmp = lambda x,y: ourRanker(y,x)) 
+        if numNets is not None:
+            conservation_list = conservation_list[:numNets]
         return conservation_list
 
     def getTopNetworks(self):
         """
-        returns a list of the top networks as determined by get rank difference
+        returns a list of the top networks(by name) as determined by get rank difference
         """
-        return [x[1] for x in self.getRankDifference()]
+        #NOTE: this was changed on May 11.
+        #TODO: cleanup the topNetworks and datapackage stuff in v2
+        rd = self.getRankDifference( self.numTopNetworks )
+        netList = [self.netMap[x[1]] for x in rd]
+
+        return netList
  
     def getNetworkRankStart(self, network_id):
         """
@@ -319,12 +289,13 @@ class Dirac:
         else:
             return 0
 
-    def crossValidate(self,k=10, numTopNetworks=1):
+    def crossValidate(self,k=10):
         """
         Runs the C-based cross validation
         K-Fold testing of the given data, returns Matthews correlation coefficient.
         """
-
+        numTopNetworks = self.numTopNetworks
+        
         return crossValidate(self.data, self.numGenes, self.classSizes, self.geneNet, self.geneNetSize, numTopNetworks, k) 
 
     def testAll(self):

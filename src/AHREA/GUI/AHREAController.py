@@ -271,7 +271,8 @@ class AHREAController:
         """
         Removes samples from any classifications
         """
-        self.datapackage.clearClassSamples()
+        if self.datapackage is not None:
+            self.datapackage.clearClassSamples()
    
     def getUntrainedSamples(self):
         """
@@ -317,11 +318,14 @@ class AHREAController:
         self.app.status.set("Preparing Dirac")
         min_net = self.config.getSetting("dirac","Minimum Network Size")[0]
         row_key = self.config.getSetting("dirac","Row Key(genes/probes)")[0]
+        numTopNetworks = self.config.getSetting("dirac","Number of Top Networks")[0]
         data_vector, num_genes = self.datapackage.getDataVector(row_key)
         class_vector = self.datapackage.getClassVector()
+
         gene_net, gene_net_size = self.datapackage.getGeneNetVector(min_net)
+        netMap = self.datapackage.gene_net_map
         self.app.status.set("Training Dirac")
-        self.dirac = dirac.Dirac(data_vector, num_genes,class_vector, gene_net, gene_net_size)
+        self.dirac = dirac.Dirac(data_vector, num_genes,class_vector, gene_net, gene_net_size, numTopNetworks, netMap)
         self.dirac.train()
         self.app.status.set("Training Complete")
 
@@ -390,9 +394,9 @@ class AHREAController:
         try:
             acc = float(target_accuracy)
         except Exception:
-            acc = .9
+            acc = .99
         if acc > 1.0 or acc <= .0:
-            acc = .9
+            acc = .99
         try:
             mtime = int(maxTime)
         except:
@@ -406,8 +410,12 @@ class AHREAController:
         adaptive = Adaptive(self.learnerqueue, app_status_bar = self.app.status)
         top_acc, top_settings, top_learner = adaptive.getLearner(target_accuracy, maxTime)
         #store adaptive results
+        self.adaptive_history = adaptive.getHistory()
+        self.adaptive_history.reverse()
         self.adaptive = top_learner
         self.adaptive_settings = top_settings
+        self.adaptive_acc = top_acc
+        self.adaptive_setting_string  = adaptive.getSettingString(top_settings)
 
 
     def _adaptiveSetup(self):
@@ -472,11 +480,10 @@ class AHREAController:
 
     def classifyDirac(self):
         dp = self.datapackage
-        num_net = self.config.getSetting("dirac","Number of Top Networks")[0]
         row_key = self.config.getSetting("dirac","Row Key(genes/probes)")[0]
         self._checkRowKey(row_key)
         self.dirac.addUnclassified(dp.getUnclassifiedDataVector(row_key ))
-        self.dirac_classification = self.dirac.classify(num_net)
+        self.dirac_classification = self.dirac.classify()
 
     def classifyTSP(self):
         dp = self.datapackage
@@ -505,12 +512,7 @@ class AHREAController:
         settings = self.adaptive_settings
         row_key = settings['data_type']
         learner.addUnclassified(dp.getUnclassifiedDataVector(row_key))
-        
-        if settings['learner'] == LearnerQueue.dirac:
-            num_net =settings['numTopNetworks']
-            self.adaptive_classification = learner.classify(num_net)
-        else:
-            self.adaptive_classification = learner.classify()
+        self.adaptive_classification = learner.classify()
        
     def _checkRowKey(self, row_key, srcStr="Not Given"):
         if row_key not in ['gene', 'probe']:

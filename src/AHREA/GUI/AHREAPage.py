@@ -414,12 +414,17 @@ class ImportDataPage(AHREAPage):
         if self.checkFiles():
             self.remote.disableAllButtons() 
             self.root.controller.unloadFiles()
+            self.root.controller.clearClassSamples()
             for path in self.softFilePath:
                 self.root.controller.addSOFTFile(path.get()) 
             self.root.controller.setGeneNetworkFile(self.gnPath.get())
             self.root.controller.setSynonymFile(self.gsynPath.get())
             self.root.controller.loadFiles()
+            #update states
             self.root.controller.updateState(self.remote.DataImport, 1)
+            ni = self.root.controller.getNetworkInfo()
+            if ni is not None:
+                self.root.controller.updateState(self.remote.NetworkImport, 1)
             self.import_button.config(state=DISABLED)
             
 
@@ -473,6 +478,8 @@ class ClassDefinitionPage(AHREAPage):
 
     def setUpClassPartitionPage(self):
         if self._updatedSamples():
+            self.className1.set('')
+            self.className2.set('')
             self.sample_list = self.root.controller.getSamples()
             s1 = self.s1 = Scrollbar(self, orient=VERTICAL)
             self.unclassified_listbox = Listbox(self, yscrollcommand=s1.set)
@@ -542,9 +549,14 @@ class ClassDefinitionPage(AHREAPage):
     def _updatedSamples(self):
         """
         Check if the sample list has changed
+        (True if we need to clear samples)
         Note this returns True on initialization
         """
         new_sample_list = self.root.controller.getSamples()
+        c = self.root.controller
+        ci =c.getClassificationInfo()
+        if ci[1] == 0:
+            return True
         if len(new_sample_list) != len(self.sample_list):
             return True
         for i, sample in enumerate(new_sample_list):
@@ -673,34 +685,54 @@ class LearnerSettingsPage(AHREAPage):
         self.grid_forget()
  
 
-class RunTraining(AHREAPage):
+class TrainClassifiers(AHREAPage):
     def __init__(self, root):
-        AHREAPage.__init__(self, root, 'training')
+        AHREAPage.__init__(self, root, 'Train')
         self.auto_target_acc = None
         self.auto_maxtime = None
 
     def drawPage(self):
-        self.training_label.grid(row=1, column=0, columnspan=4)
-        self.dirac_button.grid(row=2, column=0)
-        self.tsp_button.grid(row=2, column=1)
-        self.tst_button.grid(row=2, column=2)
-        self.ktsp_button.grid(row=2, column=3)
-        self.auto_maxtime_label.grid(row=3, column=0)
-        self.auto_maxtimeE.grid(row=3,column=1)
-        self.auto_target_acc_label.grid(row=3, column=2)
-        self.auto_target_accE.grid(row=3, column=3)
-        self.auto_button.grid(row=3, column=4)
-        self.pack()
+        self.setAppTitle("Train Classifiers")
+        def netLoaded():
+            m = self.root.remote
+            nisat = m.getDepVector([m.NetworkImport])
+            return m.dependenciesSatisfied(self.root.controller.dependency_state, nisat)
+        self.training_label.grid(row=0, column=0, columnspan=2)
+
+        self.tsp_button.grid(row=1, column=0)
+        self.ktsp_button.grid(row=2, column=0)
+        self.tst_button.grid(row=3, column=0)
+        self.dirac_button.grid(row=4, column=0)
+        self.auto_button.grid(row=5, column=0)
+        if not netLoaded():
+            self.dirac_warning.grid(row=4, column=1)
+            self.adaptive_warning.grid(row=5, column=1)
+            self.dirac_button.config(state=DISABLED)
+            self.auto_button.config(state=DISABLED)
+        else:
+            self.dirac_button.config(state=NORMAL)
+            self.auto_button.config(state=NORMAL)
+
+        self.target_message.grid(row=6, column=0, columnspan=2)
+        self.auto_maxtimeE.grid(row=7,column=1)
+        self.auto_maxtime_label.grid(row=7, column=0)
+        
+        self.auto_target_acc_label.grid(row=8, column=0)
+        self.auto_target_accE.grid(row=8, column=1)
+        for x in self.buttonList:
+            x.grid(sticky=E+W)
+        for x in range(9):
+            self.rowconfigure(x, weight = 1 )
     
     def setUpPage(self):
         s = self
-        s.training_label= Label(self, text="Please click a button for the algorithm you would like to train")
-        s.dirac_button = Button(self, text="Train Dirac...", command=self.trainDirac )
-        s.tsp_button = Button(self, text="Train TSP...", command= self.trainTSP )
-        s.ktsp_button = Button(self, text="Train k-TSP...", command=self.trainKTSP )
-        s.tst_button = Button(self, text="Train TST...", command=self.trainTST )
+        s.training_label= Label(self, text="Please click a button for the algorithm you would like to train.")
+        a=s.dirac_button = Button(self, text="Train Dirac...", command=self.trainDirac )
+        b=s.tsp_button = Button(self, text="Train TSP...", command= self.trainTSP )
+        c=s.ktsp_button = Button(self, text="Train k-TSP...", command=self.trainKTSP )
+        d=s.tst_button = Button(self, text="Train TST...", command=self.trainTST )
   
-        s.auto_button = Button(self, text="Adaptive Training...", command=self.trainAdaptive )
+        e=s.auto_button = Button(self, text="Adaptive Training...", command=self.trainAdaptive )
         s.auto_target_acc_label = Label(self, text="Target Accuracy:")
         s.auto_maxtime_label = Label(self, text="Maximum Time(sec):")
         if s.auto_target_acc is None:
@@ -709,6 +741,10 @@ class RunTraining(AHREAPage):
         if s.auto_maxtime is None:
             s.auto_maxtime = StringVar()
         s.auto_maxtimeE = Entry(self, textvariable=self.auto_maxtime) 
+        s.dirac_warning = Label(self, text="Gene Network file required", fg="red")
+        s.adaptive_warning = Label(self, text="Gene Network file required", fg="red")
+        s.target_message = Label(self, text="Please specify max time & target accuracy", fg="red")
+        s.buttonList = [a,b,c,d,e]
 
     def trainDirac(self):
         self.root.controller.trainDirac()
@@ -729,14 +765,11 @@ class RunTraining(AHREAPage):
 
     def trainAdaptive(self):
         self.root.controller.trainAdaptive(self.auto_target_acc.get(), self.auto_maxtime.get())
+        AdaptiveResults(self)
     
     def clearPage(self):
-        self.pack_forget()
-    def next(self):
-        return 'addUnclassified'
-    def prev(self):
-        return 'trainingset'
-
+        self.clearGrid()
+        self.grid_forget()
 
 class addUnclassified(AHREAPage):
     """
