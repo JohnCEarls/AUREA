@@ -80,17 +80,22 @@ class TSPResults(AHREAResults):
         row_key = self.config.getSetting("tsp","Row Key(genes/probes)")[0]
         resultString = "" 
         resultString += "@acc: " + str(self.accuracy) + os.linesep
+        resultString += "Note: Assigns to class 1 if gene1 is more expressed than gene2" + os.linesep
+        
         for genes in ms:
             column = 0
             tab = ''
             for gene in genes:
                 gene_name = self.datapackage.getGeneName(gene, row_key)
                 resultString += tab + gene_name
+                
                 Label(self,text=gene_name).grid(row=row, column=column, padx=10 )
                 tab = '\t'
                 column += 1
             resultString += os.linesep
             row += 1
+        Label(self, text="Note: Assigns to class 1 if gene1 is more expressed than gene2").grid(row=row, column=0, columnspan=2)
+        row += 1
         save_button = Button(self, text="Save...", command=lambda:self.saveResults(resultString))
         save_button.grid(row=row, column=1, sticky=E)
 
@@ -107,6 +112,23 @@ class TSTResults(AHREAResults):
         self.config = self.root.root.controller.config
         self.accuracy = self.root.root.controller.tst_acc
 
+    def getPtableString(self):
+        ptable = self.tst.ptable
+        ptStr = 'order\tclass1\tclass2 ' + os.linesep
+        ord = ['g1,g2,g3', 'g1,g3,g2', 'g2,g1,g3', 'g2,g3,g1', 'g3,g1,g2', 'g3,g2,g1']
+        for t, triplet in enumerate(ptable):
+            ptStr += "Triplet " + str(t+1) + os.linesep
+            c1 = triplet[0]
+            c2 = triplet[1]
+            for i in range(6):
+                ptStr += ord[i]
+                ptStr += '\t'
+                ptStr += str(c1[i])
+                ptStr += '\t'
+                ptStr += str(c2[i])
+                ptStr += os.linesep
+        return ptStr
+
     def displayData(self):
         ms = self.tst.getMaxScores()
         row = 1
@@ -116,14 +138,17 @@ class TSTResults(AHREAResults):
         for genes in ms:
             column = 0
             tab = ''
-            for gene in genes:
+            for i,gene in enumerate(genes):
                 gene_name = self.datapackage.getGeneName(gene, row_key)
-                resultString += tab + gene_name
+                resultString += tab + 'g'+str(i+1)+'=' + gene_name
                 Label(self,text=gene_name).grid(row=row, column=column, padx=10 )
                 tab = '\t'
                 column += 1
             resultString += os.linesep
             row += 1
+        resultString += self.getPtableString()
+        Label(self, text="Note: Save and view created file to see the probability tables used for classification.").grid(row=row, column=0, columnspan=3)
+        row += 1
         save_button = Button(self, text="Save...", command=lambda:self.saveResults(resultString))
         save_button.grid(row=row, column=2, sticky=E)
 
@@ -147,10 +172,13 @@ class KTSPResults(AHREAResults):
         row = 1
         row_key = self.config.getSetting("ktsp","Row Key(genes/probes)")[0]
         resultString = "" 
+        resultString += "Note: Assigns to class 1 if gene1 is more expressed than gene2"
         resultString += "@acc: " + str(self.accuracy) + os.linesep
         for genes in topk:
             column = 0
             tab = ''
+            #tsp and ktsp are opposite in their classification order
+            genes = (genes[1], genes[0])
             for gene in genes:
                 gene_name = self.datapackage.getGeneName(gene, row_key)
                 resultString += tab + gene_name
@@ -159,6 +187,8 @@ class KTSPResults(AHREAResults):
                 column += 1
             resultString += os.linesep
             row += 1
+        Label(self, text="Note: Assigns to class 1 if gene1 is more expressed than gene2").grid(row=row, column=0, columnspan=2)
+        row += 1
         save_button = Button(self, text="Save...", command=lambda:self.saveResults(resultString))
         save_button.grid(row=row, column=1, sticky=E)
 
