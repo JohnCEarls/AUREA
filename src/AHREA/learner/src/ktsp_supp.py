@@ -45,10 +45,10 @@ class KTSP:
         aPair = []
         for i in xrange(len(topKPairsVector)):
             if len(aPair) == 2:
-                self.topKPairs.append((aPair[0], aPair[1]))
+                self.topKPairs.append((aPair[1], aPair[0]))
                 aPair = []
             aPair.append(topKPairsVector[i])
-        self.topKPairs.append((aPair[0], aPair[1]))
+        self.topKPairs.append((aPair[1], aPair[0]))
     
     def getMaxScores(self):
         """
@@ -70,9 +70,9 @@ class KTSP:
         for pair in self.topKPairs:
             index1 = pair[0]
             index2 = pair[1]
-            if( self.unclassified_data_vector[index1] < self.unclassified_data_vector[index2] ):
+            if( self.unclassified_data_vector[index1] > self.unclassified_data_vector[index2] ):
                 classification.append(0)
-            elif self.unclassified_data_vector[index1] > self.unclassified_data_vector[index2]:
+            elif self.unclassified_data_vector[index1] < self.unclassified_data_vector[index2]:
                 classification.append(1)
             else:
                 classification.append(.5)#ties, not happy
