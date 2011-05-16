@@ -22,7 +22,7 @@ class AHREAResults(Toplevel):
         options['initialdir'] = 'data'
         options['initialfile'] = ''
         options['parent'] = self
-        options['title'] = 'Save config'
+        options['title'] = 'Save Results'
         filename = tkFileDialog.asksaveasfilename(**options)
         if filename:
             o = open(filename, 'w')
@@ -39,12 +39,15 @@ class DiracResults(AHREAResults):
 
     def getData(self):
         self.dirac = self.root.root.controller.dirac
+        self.accuracy = self.root.root.controller.dirac_acc
         self.datapackage = self.root.root.controller.datapackage
         self.config = self.root.root.controller.config
+        
         
     def displayTopNetworks(self):
         tn = self.dirac.getTopNetworks()
         resultString = ""
+        resultString += "@acc: " + str(self.accuracy) + os.linesep
         num_net = self.config.getSetting("dirac","Number of Top Networks")[0]
         
         tn = tn[0:num_net]
@@ -69,12 +72,14 @@ class TSPResults(AHREAResults):
         self.tsp = self.root.root.controller.tsp
         self.datapackage = self.root.root.controller.datapackage
         self.config = self.root.root.controller.config
+        self.accuracy = self.root.root.controller.tsp_acc
 
     def displayData(self):
         ms = self.tsp.getMaxScores()
         row = 1
         row_key = self.config.getSetting("tsp","Row Key(genes/probes)")[0]
         resultString = "" 
+        resultString += "@acc: " + str(self.accuracy) + os.linesep
         for genes in ms:
             column = 0
             tab = ''
@@ -100,12 +105,14 @@ class TSTResults(AHREAResults):
         self.tst = self.root.root.controller.tst
         self.datapackage = self.root.root.controller.datapackage
         self.config = self.root.root.controller.config
- 
+        self.accuracy = self.root.root.controller.tst_acc
+
     def displayData(self):
         ms = self.tst.getMaxScores()
         row = 1
         row_key = self.config.getSetting("tst","Row Key(genes/probes)")[0]
         resultString = "" 
+        resultString += "@acc: " + str(self.accuracy) + os.linesep
         for genes in ms:
             column = 0
             tab = ''
@@ -133,12 +140,14 @@ class KTSPResults(AHREAResults):
         self.ktsp = self.root.root.controller.ktsp
         self.datapackage = self.root.root.controller.datapackage
         self.config = self.root.root.controller.config
- 
+        self.accuracy = self.root.root.controller.ktsp_acc
+
     def displayData(self):
         topk = self.ktsp.getMaxScores()
         row = 1
         row_key = self.config.getSetting("ktsp","Row Key(genes/probes)")[0]
         resultString = "" 
+        resultString += "@acc: " + str(self.accuracy) + os.linesep
         for genes in topk:
             column = 0
             tab = ''

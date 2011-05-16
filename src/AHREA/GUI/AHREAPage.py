@@ -155,7 +155,7 @@ class HomePage(AHREAPage):
 
         c = self.root.controller
         lf = self.learningAlgorithmFrame = Frame(self)
-        bc = Label(lf, text="Best Classifiers:")
+        bc = Label(lf, text="Best Classifiers(T1,F1,T2,F2,MCC):")
         cp = Label(lf, text="CV Performance:")
         self._boldFont(cp)
         self._boldFont(bc)
