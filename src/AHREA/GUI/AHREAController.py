@@ -108,6 +108,9 @@ class AHREAController:
         raise Exception, "initWorkspace is deprecated, download the workspace.zip file"
 
     def downloadSOFT(self, softfilename):
+        """
+        Note raises urllib2.URLError when the download attempt fails
+        """
         self.app.status.clear()
         self.app.status.set("Downloading " + softfilename)
         dl = SOFTDownloader(softfilename, output_directory=self.config.getSetting("datatable", "Data Folder")[0])

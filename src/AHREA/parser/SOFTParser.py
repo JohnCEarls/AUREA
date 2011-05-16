@@ -408,23 +408,14 @@ class SOFTDownloader:
     
 
     def getFile(self, url, filename):
+        """
+        Note raises urllib2.URLError when it can't find the file
+        """
         counter = 0            
         socket.setdefaulttimeout(self.timeout)
-        while counter < 3:
-            #sometimes the website rejects connections
-            #so try 3 times
-            try:
-                f = urllib2.urlopen(url + filename.strip())
-                counter = 4
-            except Exception, e:
-                time.sleep(30)
-                counter += 1
-
-        if counter == 4:
-            return f
-        else:
-            return None
-
+        f = urllib2.urlopen(url + filename.strip())
+        return f
+       
     def writeFile(self, file_obj, dir, filename):
         if os.path.exists(dir):
             fpath = os.path.join(dir, filename)

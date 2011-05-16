@@ -4,6 +4,7 @@ import tkMessageBox
 import os
 from AHREA.GUI.AHREAResults import *
 import platform
+import re
 class AHREAPage(Frame):
     """
     Base class for data input frames
@@ -376,7 +377,7 @@ class ImportDataPage(AHREAPage):
 
         self.dsd = top = Toplevel(self)
         self.dsd.transient(self)
-        Label(top, text="SOFT file name(GDS####.soft.gz)").pack()
+        Label(top, text="SOFT file number(GDS####.soft.gz)").pack()
         self.dsd_value= e = Entry(top)
         e.pack()
         b = Button(top, text="Download", command=self.downloadSOFT)
@@ -390,7 +391,19 @@ class ImportDataPage(AHREAPage):
 
 
     def downloadSOFT(self):
-        result = self.root.controller.downloadSOFT(self.dsd_value.get().strip())
+        softnumber = self.dsd_value.get().strip()
+        if re.match(r'\d{4}',softnumber) is None or len(softnumber) != 4:
+            tkMessageBox.showerror(message="Invalid SOFT file number.")
+            return
+
+        softfile = 'GDS' + softnumber + '.soft.gz' 
+        from urllib2 import URLError
+        try:
+            result = self.root.controller.downloadSOFT(softfile)
+        except URLError, e:
+            tkMessageBox.showerror(title="Download Error", message=(str(e)))
+            return
+
         self.dsd.destroy()
         if result is not None:
             insert = True
