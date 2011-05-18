@@ -3,6 +3,8 @@ from AHREA.heuristic.ResourceEstimate import ResourceEstimate
 from AHREA.learner.wilcoxon import Wilcoxon
 from AHREA.learner import tsp, tst, ktsp, dirac
 import time
+
+
 class LearnerQueue:
     dirac = 0
     tsp = 1
@@ -72,6 +74,7 @@ class LearnerQueue:
             min_network_size: a tuple with (start, end, increment)
             numTopNetworks: a tuple with (start, end, increment)
         """
+        self.dirac_param = (min_network_size, numTopNetworks, data_type)
         for netsize in range(*min_network_size):
             for numTop in range(*numTopNetworks):
                 self._addDirac(netsize, numTop, data_type)
@@ -100,7 +103,9 @@ class LearnerQueue:
             equijoin - boolean, should we restrict filters to [10,10] [20,20] etc.
             
         """
+        self.tsp_param = ( r1, r2, equijoin, data_type)
         _, nGenes = self.data_package.getDataVector(data_type)
+    
         rest_check = {}
         for x in range(*r1):
             if x >= nGenes:
@@ -146,6 +151,7 @@ class LearnerQueue:
             equijoin - boolean, should we restrict filters to [10,10] [20,20] etc.
             
         """
+        self.tst_param = ( r1, r2, r3, equijoin, data_type)
         _, nGenes = self.data_package.getDataVector(data_type)
         rest_check = {}
         for x in range(*r1):
@@ -198,6 +204,7 @@ class LearnerQueue:
             equijoin - boolean, should we restrict filters to [10,10] [20,20] etc.
             
         """
+        self.ktsp_param =  (r1, r2, equijoin, data_type)
         _, nGenes = self.data_package.getDataVector(data_type)
         rest_check = {}
         for x in range(*r1):

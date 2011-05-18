@@ -157,6 +157,168 @@ class Adaptive:
                 myStr += os.linesep
         return myStr
 
+    def crossValidate(self, target_acc, maxtime, k=10):
+        """
+        performs kfold crossvalidation on the adaptive algorithm 
+        """
+        import math
+        def MCC(TP,FP, TN, FN):
+            return float(TP*TN - FP*FN)/math.sqrt(float((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN))
+        import copy
+        #we swap out the base_lq, gets swapped back in at end of this meth.
+        base_lq = self.lq
+            
+        dp = copy.deepcopy(base_lq.datapackage)
+        classifications = base_lq.getClassifications()
+        test, train = self._partition(classifications, k)
+        T0 = 0
+        F0 = 0
+        T1 = 0
+        F1 = 0
+        for i, training_set in train:
+            test_set = test[i]
+            nLQ = self._genLearnerQueue( dp ,training_set)
+            nLQ.genTSP(*base_lq.tsp_param)
+            nLQ.genKTSP(*base_lq.ktsp_param)
+            nLQ.genDirac(*base_lq.dirac_param)
+            nLQ.genTST(*base_lq.tst_param)
+            self.lq = nLQ
+            _, settings, learner = self.getLearner( target_acc, maxTime)
+            c1, c2 = test_set
+            c1List = c1[1]
+            c2List = c2[1]
+            for table, sample in c1List:
+                dp.setUnclassified(table, sample)
+                lv = dp.getUnclassifiedDataVector(settings['data_type'])
+                learner.addUnclassified(table, sample)
+                pred_class = learner.classify()
+                if pred_class == 0:
+                    T0 += 1
+                else:
+                    F1 += 1
+            for table, sample in c1List:
+                dp.setUnclassified(table, sample)
+                lv = dp.getUnclassifiedDataVector(settings['data_type'])
+                learner.addUnclassified(table, sample)
+                pred_class = learner.classify()
+                if pred_class == 1:
+                    T1 += 1
+                else:
+                    F0 += 1
+        #put things back the way they were
+        self.lq = base_lq
+        return MCC(T0, F0, T1, F1)
+
+                  
+
+
+    def _partition(self,c, k):
+        """
+        Returns a list of (test set, training set) for the given classes
+        based on k
+        """
+     
+        def checkShuffle(r_list, kfold, c1size, c2size):
+            """
+            Checks that we do not end up with an empty class
+            in a training set
+            """
+            foldsize = len(r_list)/kfold
+            if c1size > foldsize and c2size > foldsize:
+                #can't have a bad shuffle
+                return True
+            if len(r_list)%kfold > 0:
+                foldsize += 1
+            c1count = 0
+            c2count = 0
+            for i,element in enumerate(r_list):
+                if i%foldsize == 0:
+                    c1count = 0
+                    c2count = 0
+                if element < c1size:#class1
+                    c1count += 1
+                else:
+                    c2count += 1
+                if c1count == c1size or c2count == c2size:
+                    return False
+            return True
+
+        import random
+        training_list = []
+        validating_list = []
+        c1_size = len(c[0][1])
+        c2_size = len(c[1][1])
+        c1_key = c[0][0]
+        c2_key = c[1][0]
+
+        #check if we need to adjust k downward
+        if c1_size +c2_size < kfold:
+            #k too large do loocv
+            kfold = c1_size +c2_size
+
+        #build random list of indices for partitioning
+        r_list = range(c1_size + c2_size)
+        goodShuffle  = False
+        while not goodShuffle:        
+            random.shuffle(r_list)
+            #check that the shuffle did not put all of one class into one fold
+            goodShuffle = checkShuffle(r_list, kfold, c1_size, c2_size)
+        foldsize = len(r_list)/kfold
+        if len(r_list)%kfold > 0:
+            foldsize += 1
+        steps =[x for x in range(0, kfold*foldsize , foldsize)]
+        for i in steps:
+            training = []
+            validating = []
+            for j in steps:
+                if i==j:
+                    validating = r_list[j: j+foldsize]
+                else:
+                    for valu in r_list[j:j+foldsize]:
+                        training.append( valu )
+                      
+
+            training_ss = [(c1_key, []), (c2_key, [])]
+            validating_ss = [(c1_key, []), (c2_key, [])]
+            c1_training = False
+            c2_training = False
+     
+            for item in training:
+                if item < c1_size:
+                    training_ss[0][1].append(c[0][1][item])
+                else:
+                    training_ss[1][1].append(c[1][1][item - c1_size])
+            for item in validating:
+                if item < c1_size:
+                    validating_ss[0][1].append(c[0][1][item])
+                else:    
+                    validating_ss[1][1].append(c[1][1][item - c1_size])
+            training_list.append(training_ss)
+            validating_list.append(validating_ss)
+        return (training_list, validating_list)
+
+       
+    def _genLearnerQueue(self, dataPackage, training_set):
+        #build training package
+        subset1 = training_set[0][0]
+        subset2 = training_set[1][0]
+        subsetSamples1 = training_set[0][1]
+        subsetSamples2 = training_set[1][1]
+        
+        dataPackage.clearClassification()
+        dataPackage.clearData()
+        dataPackage.createClassification(subset1)
+        dataPackage.createClassification(subset2)
+        for table, sample in subsetSamples1:
+            dataPackage.addToClassification( subset1, table, sample )
+
+        for table, sample in subsetSamples2:
+            dataPackage.addToClassification( subset2, table, sample )
+        #build learner queue
+        return learner_queue  
+
+
+
 class AdaptiveTimeoutException(Exception):
     def __init__(self, msg):
         self.msg = msg
