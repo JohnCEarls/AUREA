@@ -112,6 +112,10 @@ class Adaptive:
 
        
     def _goodEnough(self, current_accuracy):
+        """
+        Checks that one of the 2 conditions have been met(time or accuracy)
+        True if 'good enough'
+        """
         return time.clock() > self.endTime or self.target_accuracy  <= current_accuracy
 
     def _progress_report(self, msg):
@@ -176,14 +180,18 @@ class Adaptive:
         F0 = 0
         T1 = 0
         F1 = 0
+        msg = ""
         for i, training_set in enumerate(train):
+            #set up adaptive for this training set
             test_set = test[i]
             nLQ = self._genLearnerQueue( dp ,training_set)
             self._copyLQParams(nLQ, base_lq)
             self.lq = nLQ
+            #train adaptive
             _, settings, learner = self.getLearner( float(target_acc), int(maxtime))
+            msg += ": Classifying test set "+ str(i+1)
             self._progress_report("Classifying test set "+ str(i+1))
-
+            #classify test set
             c1, c2 = test_set
             c1List = c1[1]
             c2List = c2[1]
@@ -205,7 +213,8 @@ class Adaptive:
                     T1 += 1
                 else:
                     F0 += 1
-
+            msg = "Validating at " + str(MCC(T0,F0, T1, F1)) 
+            self._progress_report(msg)
         #put things back the way they were
         self._genLearnerQueue( dp ,classifications)
         self.lq = base_lq
@@ -213,6 +222,10 @@ class Adaptive:
 
 
     def _copyLQParams(self, new_lq, base_lq):
+        """
+        Copies the parameters for the learners of base_lq (a Learner Queue)
+        to new_lq
+        """
         new_lq.genTSP(*base_lq.tsp_param)
         new_lq.genKTSP(*base_lq.ktsp_param)
         new_lq.genDirac(*base_lq.dirac_param)
@@ -222,8 +235,9 @@ class Adaptive:
 
     def _partition(self,c, k):
         """
-        Returns a list of (test set, training set) for the given classes
+        Returns a list of (training set, test set) for the given classes
         based on k
+        ts = [[(classname1, [list of (tablename, sampname) from c1]), (2 name, [list of (name, sampname) from c2])], ...]
         """
      
         def checkShuffle(r_list, kfold, c1size, c2size):
@@ -252,6 +266,7 @@ class Adaptive:
             return True
 
         import random
+        #initialize variables
         kfold = k
         training_list = []
         validating_list = []
@@ -309,7 +324,8 @@ class Adaptive:
        
     def _genLearnerQueue(self, dataPackage, training_set):
         """
-        Generates a new learnerq from the training set
+        Generates a new learnerq with the appropriate 
+        data package settings from the training set
         """
         #build training package
         subset1 = training_set[0][0]

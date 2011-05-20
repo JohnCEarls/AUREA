@@ -45,7 +45,26 @@ class AHREAPage(Frame):
     def clearGrid(self):
         for widget in self.grid_slaves():
             widget.grid_forget()
+    
+    def adaptiveGood(self):
+        """
+        checks that the target accuracy and max running time are set.
+        Used in train and evaluate
+        """
+        acc =  self.auto_target_acc.get()
+        mt = self.auto_maxtime.get()
+        errmsg = ""
+        if len(acc.strip()) == 0:
+            errmsg += "Adaptive requires a target accuracy."
+        if len(mt.strip()) == 0:
+            errmsg += "Adaptive requires a maximum running time."
 
+        if len(errmsg) > 0:
+           tkMessageBox.showerror(message=errmsg)
+           return False
+
+        else:
+            return True
 class HomePage(AHREAPage):
     """
     Corresponds to the Data Summary/Home page
@@ -156,7 +175,7 @@ class HomePage(AHREAPage):
         c = self.root.controller
         lf = self.learningAlgorithmFrame = Frame(self)
         bc = Label(lf, text="Best Classifiers(T1,F1,T2,F2,MCC):")
-        cp = Label(lf, text="CV Performance:")
+        cp = Label(lf, text="CV Performance(MCC):")
         self._boldFont(cp)
         self._boldFont(bc)
 
@@ -205,7 +224,7 @@ class HomePage(AHREAPage):
             if cv[i] is None:
                 nc.grid(row=i+1, column=3)
             else:
-                lab = Label(lf, text=cv[i])
+                lab = Label(lf, text=str(cv[i])[:4])
                 lab.grid(row=i+1, column=3)
         bc.grid(row=0, column=0,columnspan=3, sticky=W)
         cp.grid(row=0, column=3)
@@ -805,11 +824,12 @@ class TrainClassifiers(AHREAPage):
         TSTResults(self)
 
     def trainAdaptive(self):
-        self.root.controller.trainAdaptive(self.auto_target_acc.get(), self.auto_maxtime.get())
-        self.root.controller.updateState(self.remote.TrainAdaptive, 1)
-        self.root.controller.updateState(self.remote.TrainAny, 1)
-        AdaptiveResults(self)
-    
+        if self.adaptiveGood():
+            self.root.controller.trainAdaptive(self.auto_target_acc.get(), self.auto_maxtime.get())
+            self.root.controller.updateState(self.remote.TrainAdaptive, 1)
+            self.root.controller.updateState(self.remote.TrainAny, 1)
+            AdaptiveResults(self)
+        
     def clearPage(self):
         self.clearGrid()
         self.grid_forget()
@@ -977,19 +997,41 @@ class EvaluateClassifiers(AHREAPage):
         if s.auto_maxtime is None:
             s.auto_maxtime = StringVar()
         s.auto_maxtimeE = Entry(self, textvariable=self.auto_maxtime) 
+        s.target_message = Label(self, text="Please specify max time & target accuracy for Adaptive", fg="red")
         s.buttonList = [a,b,c,d,e]
 
 
     def drawPage(s):
-        s.setAppTitle("Evaluate Classifiers")
-        for i,b in enumerate(s.buttonList):
-            b.grid(row = i, column=0, sticky = E+W)
-        r = len(s.buttonList)
-        s.auto_target_acc_label.grid(row=r, column=0)
-        s.auto_target_accE.grid(row=r, column=1)
-        r+=1
+        def netLoaded():
+            m = s.root.remote
+            nisat = m.getDepVector([m.NetworkImport])
+            return m.dependenciesSatisfied(s.root.controller.dependency_state, nisat)
+
+        s.setAppTitle("Evaluate Performance")
+        r = 0
+        s.cv_label.grid(row=r, column=0, columnspan=2)
+        r += 1
+        for b in s.buttonList:
+            b.grid(row = r, column=0, sticky = E+W)
+            r += 1
+        s.target_message.grid(row=r, column=0, columnspan=2)
+        r += 1
         s.auto_maxtime_label.grid( row=r, column=0)
         s.auto_maxtimeE.grid(row=r, column=1) 
+        r += 1
+        s.auto_target_acc_label.grid(row=r, column=0)
+        s.auto_target_accE.grid(row=r, column=1)
+        for x in s.buttonList:
+            x.grid(sticky=E+W)
+        for x in range(9):
+            s.rowconfigure(x, weight = 1 )
+        if not netLoaded():
+            s.adaptive_button.config(state=DISABLED)
+            s.dirac_button.config(state=DISABLED)
+        else:
+            s.adaptive_button.config(state=NORMAL)
+            s.dirac_button.config(state=NORMAL)
+
 
     def cvDirac(self):
         self.root.controller.crossValidateDirac()
@@ -1004,8 +1046,8 @@ class EvaluateClassifiers(AHREAPage):
         self.root.controller.crossValidateTST()
 
     def cvAdaptive(self):
-       
-       self.root.controller.crossValidateAdaptive( self.auto_target_acc.get(), self.auto_maxtime.get())
+        if self.adaptiveGood():
+            self.root.controller.crossValidateAdaptive( self.auto_target_acc.get(), self.auto_maxtime.get())
 
     def clearPage(self):
         self.clearGrid()

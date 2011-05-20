@@ -280,7 +280,7 @@ class AHREARemote(Frame):
         #Test Classifiers
         self.navDep.append([aa.TrainAny])
         #Evaluate Performance
-        self.navDep.append([aa.TrainAny])
+        self.navDep.append([aa.ClassCreation])
 
     def buildNav(self):
         """

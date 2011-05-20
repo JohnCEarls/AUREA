@@ -373,7 +373,7 @@ class AHREAController:
 
 
 
-    def trainDirac(self):
+    def trainDirac(self, crossValidate=False):
         self.app.status.clear()
         self.app.status.set("Preparing Dirac")
         min_net = self.config.getSetting("dirac","Minimum Network Size")[0]
@@ -384,15 +384,19 @@ class AHREAController:
 
         gene_net, gene_net_size = self.datapackage.getGeneNetVector(min_net)
         netMap = self.datapackage.gene_net_map
+        d = dirac.Dirac(data_vector, num_genes,class_vector, gene_net, gene_net_size, numTopNetworks, netMap)
+        if crossValidate:
+            return d
+        
         self.app.status.set("Training Dirac")
-        self.dirac = dirac.Dirac(data_vector, num_genes,class_vector, gene_net, gene_net_size, numTopNetworks, netMap)
-        self.dirac.train()
+        d.train()
+        self.dirac = d
         self.app.status.set("Training Complete, Checking Accuracy")
         self.dirac_acc = self._getLearnerAccuracy(self.dirac, row_key)
         self.app.status.set("Accuracy Check Complete")
     
 
-    def trainTSP(self):
+    def trainTSP(self, crossValidate=False):
         """
         Performs the training of TSP
         """
@@ -405,15 +409,19 @@ class AHREAController:
         vecFilter = tsp.IntVector()
         for val in filters:
             vecFilter.push_back(val)
+
+        t = tsp.TSP(data_vector, num_genes, class_vector, vecFilter)
+        if crossValidate:
+            return t
         self.app.status.set("Training TSP")
-        self.tsp = tsp.TSP(data_vector, num_genes, class_vector, vecFilter)
-        self.tsp.train()
+        self.tsp = t
+        t.train()
         self.app.status.set("Training Complete, Checking Accuracy")
         self.tsp_acc = self._getLearnerAccuracy(self.tsp, row_key)
         self.app.status.set("Accuracy Check Complete")
 
 
-    def trainTST(self):
+    def trainTST(self, crossValidate=False):
         """
         Performs the training of tst
         """
@@ -426,15 +434,18 @@ class AHREAController:
         vecFilter = tst.IntVector()
         for val in filters:
             vecFilter.push_back(val)
+        t = tst.TST(data_vector, num_genes, class_vector, vecFilter)    
+        if crossValidate:
+            return t
+        self.tst = t
         self.app.status.set("Training TST")
-        self.tst = tst.TST(data_vector, num_genes, class_vector, vecFilter)    
-        self.tst.train()
+        t.train()
         self.app.status.set("Training Complete, Checking Accuracy")
         self.tst_acc = self._getLearnerAccuracy(self.tst, row_key)
         self.app.status.set("Accuracy Check Complete")
 
 
-    def trainkTSP(self):
+    def trainkTSP(self, crossValidate=False):
         """
         Performs the training of k-TSP
         """
@@ -452,9 +463,13 @@ class AHREAController:
                 raise Exception("Ktsp setting error.  The filters must be at least twice the Maximum K value")
             vecFilter.push_back(x)
 
-        self.app.status.set("Training k-TSP(this could take a while, get a Coke)")
-        self.ktsp = ktsp.KTSP( data_vector, num_genes, class_vector, vecFilter, maxk, cross_remove, num_cross)
-        self.ktsp.train()
+        
+        k = ktsp.KTSP( data_vector, num_genes, class_vector, vecFilter, maxk, cross_remove, num_cross)
+        if crossValidate:
+            return k
+        self.app.status.set("Training k-TSP")
+        k.train()
+        self.ktsp = k
         self.app.status.set("Training Complete, Checking Accuracy")
         self.ktsp_acc = self._getLearnerAccuracy(self.ktsp, row_key)
         self.app.status.set("Accuracy Check Complete")
@@ -611,23 +626,37 @@ class AHREAController:
         row_key = settings['data_type']
         learner.addUnclassified(dp.getUnclassifiedDataVector(row_key))
         self.adaptive_classification = learner.classify()
-      
+  
     def crossValidateDirac(self):
-        self.dirac_cv = self.dirac.crossValidate()
+        dirac = self.trainDirac(crossValidate = True)
+        self.app.status.set("Cross Validating")
+        self.dirac_cv = dirac.crossValidate()
+        self.app.status.set("Dirac had an MCC of " + str(self.dirac_cv)[:4])
+
     def crossValidateTSP(self):
-        self.tsp_cv = self.tsp.crossValidate()
+        tsp = self.trainTSP(crossValidate = True)
+        self.app.status.set("Cross Validating")
+        self.tsp_cv = tsp.crossValidate()
+        self.app.status.set("TSP had an MCC of " + str(self.tsp_cv)[:4])
 
     def crossValidateTST(self):
-        self.tst_cv = self.tst.crossValidate()
+        tst = self.trainTST(crossValidate = True)
+        self.app.status.set("Cross Validating")
+        self.tst_cv = tst.crossValidate()
+        self.app.status.set("TST had an MCC of " + str(self.tst_cv)[:4])
 
     def crossValidateKTSP(self):
-        self.ktsp_cv = self.ktsp.crossValidate()
-
+        ktsp = self.trainkTSP(crossValidate = True)
+        self.app.status.set("Cross Validating")
+        self.ktsp_cv = ktsp.crossValidate()
+        self.app.status.set("KTSP had an MCC of " + str(self.ktsp_cv)[:4])
+  
     def crossValidateAdaptive(self, target_acc, maxtime):
         self._adaptiveSetup()
         #create adaptive object
         adaptive = Adaptive(self.learnerqueue, app_status_bar = self.app.status)
         self.adaptive_cv = adaptive.crossValidate(target_acc, maxtime)
+        self.app.status.set("Adaptive had an MCC of " + str(self.ktsp_cv)[:4])
 
  
     def _checkRowKey(self, row_key, srcStr="Not Given"):
