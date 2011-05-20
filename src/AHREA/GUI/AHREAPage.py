@@ -953,12 +953,13 @@ class TestClassifiers(AHREAPage):
 
 class EvaluateClassifiers(AHREAPage):
     """
-    Displays a list of unclassified samples and allows you to choose one 
-    for classification,
+    Performs k-fold cross-validation on the learners.
     """
 
     def __init__(self, root):
         AHREAPage.__init__(self, root, 'Evaluate')
+        self.auto_target_acc = None
+        self.auto_maxtime = None
 
     def setUpPage(s):
         self = s
@@ -968,13 +969,27 @@ class EvaluateClassifiers(AHREAPage):
         b= s.ktsp_button = Button(self, text="k-TSP...", command=s.cvKTSP )
         c = s.tst_button = Button(self, text="TST...", command=s.cvTST )
         e = s.adaptive_button = Button(self, text="Adaptive...", command=s.cvAdaptive )
+        s.auto_target_acc_label = Label(self, text="Target Accuracy:")
+        s.auto_maxtime_label = Label(self, text="Maximum Time(sec):")
+        if s.auto_target_acc is None:
+            s.auto_target_acc = StringVar()
+        s.auto_target_accE = Entry(self, textvariable=s.auto_target_acc)
+        if s.auto_maxtime is None:
+            s.auto_maxtime = StringVar()
+        s.auto_maxtimeE = Entry(self, textvariable=self.auto_maxtime) 
         s.buttonList = [a,b,c,d,e]
 
 
     def drawPage(s):
-        s.setAppTitle("Train Classifiers")
+        s.setAppTitle("Evaluate Classifiers")
         for i,b in enumerate(s.buttonList):
             b.grid(row = i, column=0, sticky = E+W)
+        r = len(s.buttonList)
+        s.auto_target_acc_label.grid(row=r, column=0)
+        s.auto_target_accE.grid(row=r, column=1)
+        r+=1
+        s.auto_maxtime_label.grid( row=r, column=0)
+        s.auto_maxtimeE.grid(row=r, column=1) 
 
     def cvDirac(self):
         self.root.controller.crossValidateDirac()
@@ -989,7 +1004,8 @@ class EvaluateClassifiers(AHREAPage):
         self.root.controller.crossValidateTST()
 
     def cvAdaptive(self):
-        self.root.controller.crossValidateAdaptive()
+       
+       self.root.controller.crossValidateAdaptive( self.auto_target_acc.get(), self.auto_maxtime.get())
 
     def clearPage(self):
         self.clearGrid()

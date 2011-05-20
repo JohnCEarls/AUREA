@@ -160,55 +160,63 @@ class Adaptive:
     def crossValidate(self, target_acc, maxtime, k=10):
         """
         performs kfold crossvalidation on the adaptive algorithm 
+        returns the Matthews correlation coefficient
         """
         import math
         def MCC(TP,FP, TN, FN):
-            return float(TP*TN - FP*FN)/math.sqrt(float((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN))
+            return float(TP*TN - FP*FN)/math.sqrt(float((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN)))
         import copy
         #we swap out the base_lq, gets swapped back in at end of this meth.
         base_lq = self.lq
             
-        dp = copy.deepcopy(base_lq.datapackage)
-        classifications = base_lq.getClassifications()
-        test, train = self._partition(classifications, k)
+        dp = base_lq.data_package
+        classifications = dp.getClassifications()
+        train, test= self._partition(classifications, k)
         T0 = 0
         F0 = 0
         T1 = 0
         F1 = 0
-        for i, training_set in train:
+        for i, training_set in enumerate(train):
             test_set = test[i]
             nLQ = self._genLearnerQueue( dp ,training_set)
-            nLQ.genTSP(*base_lq.tsp_param)
-            nLQ.genKTSP(*base_lq.ktsp_param)
-            nLQ.genDirac(*base_lq.dirac_param)
-            nLQ.genTST(*base_lq.tst_param)
+            self._copyLQParams(nLQ, base_lq)
             self.lq = nLQ
-            _, settings, learner = self.getLearner( target_acc, maxTime)
+            _, settings, learner = self.getLearner( float(target_acc), int(maxtime))
+            self._progress_report("Classifying test set "+ str(i+1))
+
             c1, c2 = test_set
             c1List = c1[1]
             c2List = c2[1]
             for table, sample in c1List:
                 dp.setUnclassified(table, sample)
                 lv = dp.getUnclassifiedDataVector(settings['data_type'])
-                learner.addUnclassified(table, sample)
+                learner.addUnclassified(lv)
                 pred_class = learner.classify()
                 if pred_class == 0:
                     T0 += 1
                 else:
                     F1 += 1
-            for table, sample in c1List:
+            for table, sample in c2List:
                 dp.setUnclassified(table, sample)
                 lv = dp.getUnclassifiedDataVector(settings['data_type'])
-                learner.addUnclassified(table, sample)
+                learner.addUnclassified(lv)
                 pred_class = learner.classify()
                 if pred_class == 1:
                     T1 += 1
                 else:
                     F0 += 1
+
         #put things back the way they were
+        self._genLearnerQueue( dp ,classifications)
         self.lq = base_lq
         return MCC(T0, F0, T1, F1)
 
+
+    def _copyLQParams(self, new_lq, base_lq):
+        new_lq.genTSP(*base_lq.tsp_param)
+        new_lq.genKTSP(*base_lq.ktsp_param)
+        new_lq.genDirac(*base_lq.dirac_param)
+        new_lq.genTST(*base_lq.tst_param)
                   
 
 
@@ -244,6 +252,7 @@ class Adaptive:
             return True
 
         import random
+        kfold = k
         training_list = []
         validating_list = []
         c1_size = len(c[0][1])
@@ -299,6 +308,9 @@ class Adaptive:
 
        
     def _genLearnerQueue(self, dataPackage, training_set):
+        """
+        Generates a new learnerq from the training set
+        """
         #build training package
         subset1 = training_set[0][0]
         subset2 = training_set[1][0]
@@ -306,7 +318,6 @@ class Adaptive:
         subsetSamples2 = training_set[1][1]
         
         dataPackage.clearClassification()
-        dataPackage.clearData()
         dataPackage.createClassification(subset1)
         dataPackage.createClassification(subset2)
         for table, sample in subsetSamples1:
@@ -315,6 +326,7 @@ class Adaptive:
         for table, sample in subsetSamples2:
             dataPackage.addToClassification( subset2, table, sample )
         #build learner queue
+        learner_queue = LearnerQueue(dataPackage)
         return learner_queue  
 
 

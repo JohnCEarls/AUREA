@@ -623,10 +623,11 @@ class AHREAController:
     def crossValidateKTSP(self):
         self.ktsp_cv = self.ktsp.crossValidate()
 
-    def crossValidateAdaptive(self):
-        self.adaptive_cv = self.adaptive.crossValidate()
-
-
+    def crossValidateAdaptive(self, target_acc, maxtime):
+        self._adaptiveSetup()
+        #create adaptive object
+        adaptive = Adaptive(self.learnerqueue, app_status_bar = self.app.status)
+        self.adaptive_cv = adaptive.crossValidate(target_acc, maxtime)
 
  
     def _checkRowKey(self, row_key, srcStr="Not Given"):

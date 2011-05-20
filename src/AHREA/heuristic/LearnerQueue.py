@@ -204,7 +204,7 @@ class LearnerQueue:
             equijoin - boolean, should we restrict filters to [10,10] [20,20] etc.
             
         """
-        self.ktsp_param =  (r1, r2, equijoin, data_type)
+        self.ktsp_param =  ( maxK, ncv, nlo, r1, r2, equijoin, data_type)
         _, nGenes = self.data_package.getDataVector(data_type)
         rest_check = {}
         for x in range(*r1):
@@ -249,8 +249,10 @@ class LearnerQueue:
 
 
     def _calcScale(self, real_time, estimated_time):
-        #print "real time: ",
-        #print real_time
+        """
+        Takes the quotient of the est. time over the real time in order to
+        generate a scaling factor for the running time.
+        """
         return estimated_time/real_time
 
     def _adjWeight(self, learner, score):
