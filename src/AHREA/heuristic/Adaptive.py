@@ -26,7 +26,8 @@ class Adaptive:
         Returns a tuple containing (achieved accuracy (float), settings(dict), learner (a learner object)) the best achieved accuracy for the given parameters
         """
         #signal to catch timeouts
-        import signal
+        import signal, os
+
         from AHREA.heuristic.Adaptive import AdaptiveTimeoutException
         def signal_handler(signum, frame):
             """
@@ -34,7 +35,9 @@ class Adaptive:
             http://stackoverflow.com/questions/366682/how-to-limit-execution-time-of-a-function-call-in-python
             """
             raise AdaptiveTimeoutException("Timed out")
-        signal.signal(signal.SIGALRM, signal_handler)
+        isPosix = ( os.name == 'posix')
+        if isPosix:
+            signal.signal(signal.SIGALRM, signal_handler)
         self._progress_report("Configuring adaptive training")
         #check settings, if bad use defaults
         try:
@@ -70,13 +73,16 @@ class Adaptive:
             self._progress_report(tl_str + msg + " Trying " + str_learner)
             
             #set up alarm in case training learner goes over time
-            signal.alarm( int( self.endTime - time.clock() ) + 1)
+            if isPosix:
+                signal.alarm( int( self.endTime - time.clock() ) + 1)
             try:            
                 learner = self.lq.trainLearner(settings, est_running_time)
-                signal.alarm(0)#made it
+                if isPosix:
+                    signal.alarm(0)#made it
             except AdaptiveTimeoutException: 
                 timeout = True
-                signal.alarm(0)
+                if isPosix:
+                    signal.alarm(0)
 
             #cross validation
             if timeout:
