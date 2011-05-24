@@ -68,3 +68,8 @@ src/pyBabel/README
 src/pyBabel/__init__.py
 src/pyBabel/Client.py
 src/pyBabel/Extensions.py
+workspace/AUREAGUI.py
+workspace/data/c2.biocarta.v2.5.symbols.gmt
+workspace/data/Homo_sapiens.gene_info.gz
+workspace/data/config.xml
+workspace/data/AUREA-logo-200.pgm
