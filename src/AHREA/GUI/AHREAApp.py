@@ -1,14 +1,14 @@
 from Tkinter import *
 import traceback, tkMessageBox
 import Tkconstants, tkFileDialog
-import AHREA
-import AHREA.GUI.AHREAPage as AHREAPage
-from AHREA.parser.SettingsParser import *
+import AUREA
+import AUREA.GUI.AUREAPage as AUREAPage
+from AUREA.parser.SettingsParser import *
 import os.path
 import shutil
 import sys
 import platform
-class AHREAApp(Frame):
+class AUREAApp(Frame):
     def __init__(self, root, controller):
         
         root.report_callback_exception = self.report_callback_exception
@@ -30,8 +30,8 @@ class AHREAApp(Frame):
         """
         Set up all of the App Frame components
         """
-        self.menu = AHREAMenu(self)
-        self.remote = AHREARemote(self)
+        self.menu = AUREAMenu(self)
+        self.remote = AUREARemote(self)
         self.buttonList = self.remote.buttonList
         self.root.config(menu = self.menu)
         self.status = StatusBar(self)
@@ -57,13 +57,13 @@ class AHREAApp(Frame):
         self.AppTitle.set(title)
        
     def initPages(self):
-        self.pages.append(AHREAPage.HomePage(self))
-        self.pages.append(AHREAPage.ImportDataPage(self))
-        self.pages.append(AHREAPage.ClassDefinitionPage(self))
-        self.pages.append(AHREAPage.LearnerSettingsPage(self))
-        self.pages.append(AHREAPage.TrainClassifiers(self))
-        self.pages.append(AHREAPage.TestClassifiers(self))
-        self.pages.append(AHREAPage.EvaluateClassifiers(self)) 
+        self.pages.append(AUREAPage.HomePage(self))
+        self.pages.append(AUREAPage.ImportDataPage(self))
+        self.pages.append(AUREAPage.ClassDefinitionPage(self))
+        self.pages.append(AUREAPage.LearnerSettingsPage(self))
+        self.pages.append(AUREAPage.TrainClassifiers(self))
+        self.pages.append(AUREAPage.TestClassifiers(self))
+        self.pages.append(AUREAPage.EvaluateClassifiers(self)) 
 
     def displayPage(self, page_id):
         self.status.clear()
@@ -85,7 +85,7 @@ class AHREAApp(Frame):
     def next(self):
         try:
             next = self.curr_page.next()
-        except AHREAPage.ImplementationError as e:
+        except AUREAPage.ImplementationError as e:
             print e.msg
 
         if next:
@@ -94,7 +94,7 @@ class AHREAApp(Frame):
     def prev(self):
         try:
             prev = self.curr_page.prev()
-        except AHREAPage.ImplementationError as e:
+        except AUREAPage.ImplementationError as e:
             print e.msg
 
         if prev:
@@ -119,7 +119,7 @@ class AHREAApp(Frame):
         t.title("AUREA Error!!!!!")
         Label(t,text=msg).pack()
         import os
-        errmsg = 'Please copy this error and go to https://github.com/JohnCEarls/AHREAPackage/issues to report it'+ os.linesep
+        errmsg = 'Please copy this error and go to https://github.com/JohnCEarls/AUREAPackage/issues to report it'+ os.linesep
         errmsg += '(You may have to use Control-C or Apple-C to copy.)'+ os.linesep
         errmsg +=os.linesep.join(err)
         errBox = Text(t,wrap=WORD)
@@ -146,7 +146,7 @@ class StatusBar(Frame):
         self.label.update_idletasks()               
         
 
-class AHREARemote(Frame):
+class AUREARemote(Frame):
     """
     This frame acts as the remote control for the gui.
     """
@@ -165,11 +165,11 @@ class AHREARemote(Frame):
     def __init__(self, master):
         """
         Builds the left side controller of AUREA
-        master - the AHREAApp Frame
+        master - the AUREAApp Frame
         """
         Frame.__init__(self, master, width=200)
         self.m = master
-        aa=AHREARemote
+        aa=AUREARemote
         self.depGraph = [[0 for x in range(aa.NumStates)] for y in range(aa.NumStates)]
         self.setNavDependencies()
         self.buildNav()
@@ -185,7 +185,7 @@ class AHREARemote(Frame):
             for x in A:
                 for y in B:
                     self.depGraph[x][y] = 1
-        aa= AHREARemote
+        aa= AUREARemote
 
         depends([aa.TrainAdaptive,aa.TrainDirac,aa.TrainKTSP,aa.TrainTSP,aa.TrainTST], [aa.ClassCreation])
         depends([aa.TrainAdaptive, aa.TrainDirac],[aa.NetworkImport])
@@ -211,7 +211,7 @@ class AHREARemote(Frame):
                     for j in traverse(i):
                         traversal.append(j)
             return traversal
-        aa=AHREARemote
+        aa=AUREARemote
         dvec = [0 for x in range(aa.NumStates)]
         #basically unioning all dependency paths
         for dep in dependencies:
@@ -226,7 +226,7 @@ class AHREARemote(Frame):
         Given the current state and the dependency vector
         Return True if all dependencies have been satisfied
         """
-        aa = AHREARemote
+        aa = AUREARemote
 
         if depVector[aa.TrainAny] == 1:
             #special case for when any LA has run
@@ -265,7 +265,7 @@ class AHREARemote(Frame):
         """
         Maps between buttons and dependencies
         """
-        aa = AHREARemote
+        aa = AUREARemote
         self.navDep = []
         #home
         self.navDep.append([])
@@ -351,7 +351,7 @@ class AHREARemote(Frame):
     def nullaction(self):
         print self.m.pack_info()
 
-class AHREAMenu(Menu):
+class AUREAMenu(Menu):
     def __init__(self, daRoot):
         Menu.__init__(self, daRoot)
         self.root = daRoot
@@ -369,9 +369,9 @@ class AHREAMenu(Menu):
 
     def buildSettings(self):
         """
-        Deprecated, they have their own AHREAPage now.
+        Deprecated, they have their own AUREAPage now.
         """
-        raise Exception("menu.buildSettings is deprecated. Use the AHREAPage.learnerSettings")
+        raise Exception("menu.buildSettings is deprecated. Use the AUREAPage.learnerSettings")
         settingsmenu = Menu( self )
         self.add_cascade(label="Settings", menu=settingsmenu)
         settingsmenu.add_command(label="Data...", command=self.data_settings)
@@ -389,13 +389,13 @@ class AHREAMenu(Menu):
         helpmenu.add_command(label="About", command=self.about)
 
     def reportProblem(self):
-        msg = "Please go to https://github.com/JohnCEarls/AHREAPackage/issues to report any bugs. Thank you for helping make AHREA better."
-        tkMessageBox.showinfo("AHREA: report error", msg)
+        msg = "Please go to https://github.com/JohnCEarls/AUREAPackage/issues to report any bugs. Thank you for helping make AUREA better."
+        tkMessageBox.showinfo("AUREA: report error", msg)
     
     def about(self):
-        msg = "AHREA v. " + AHREA.__version__
+        msg = "AUREA v. " + AUREA.__version__
         msg += " Copyright (c) 2010-2011 John C. Earls"
-        tkMessageBox.showinfo("AHREA", msg)
+        tkMessageBox.showinfo("AUREA", msg)
         
 
     def dirac_settings(self):

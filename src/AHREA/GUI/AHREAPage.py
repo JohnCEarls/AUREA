@@ -2,10 +2,10 @@ from Tkinter import *
 import tkFileDialog
 import tkMessageBox
 import os
-from AHREA.GUI.AHREAResults import *
+from AUREA.GUI.AUREAResults import *
 import platform
 import re
-class AHREAPage(Frame):
+class AUREAPage(Frame):
     """
     Base class for data input frames
     """
@@ -65,13 +65,13 @@ class AHREAPage(Frame):
 
         else:
             return True
-class HomePage(AHREAPage):
+class HomePage(AUREAPage):
     """
     Corresponds to the Data Summary/Home page
     """
     
     def __init__(self, root):
-        AHREAPage.__init__(self, root, 'Home')
+        AUREAPage.__init__(self, root, 'Home')
         
 
     def setUpPage(self):
@@ -250,12 +250,12 @@ class HomePage(AHREAPage):
         self.clearGrid()
         self.grid_forget()
 
-class ImportDataPage(AHREAPage):
+class ImportDataPage(AUREAPage):
     """
     Page to choose data files
     """
     def __init__(self, root):
-        AHREAPage.__init__(self, root, 'Import')
+        AUREAPage.__init__(self, root, 'Import')
         self.gnPath = None
         self.softFilePath = None
         self.gsynPath = None
@@ -383,7 +383,7 @@ class ImportDataPage(AHREAPage):
             options['filetypes'] = [('gzipped SOFT', '.soft.gz'), ('SOFT', '.soft'),('Comma Separated', '.csv')]
         options['parent'] = self
         options['initialdir'] = 'data'
-        options['title'] = "AHREA - Select data file."
+        options['title'] = "AUREA - Select data file."
         response = tkFileDialog.askopenfilename(**options)
         if response:
             self.import_button.config(state=NORMAL)
@@ -443,7 +443,7 @@ class ImportDataPage(AHREAPage):
             options['filetypes'] = [('Gene Matrix Transposed file format', '.gmt')]
         options['parent'] = self
         options['initialdir'] = 'data'
-        options['title'] = "AHREA - Select network file."
+        options['title'] = "AUREA - Select network file."
         response = tkFileDialog.askopenfilename(**options)
         if response:
            self.import_button.config(state=NORMAL)
@@ -456,7 +456,7 @@ class ImportDataPage(AHREAPage):
         options['parent'] = self
         options['initialdir'] = 'data'
         options['initialfile'] = 'Homo_sapiens.gene_info.gz'
-        options['title'] = "AHREA - Select synonym file."
+        options['title'] = "AUREA - Select synonym file."
         response = tkFileDialog.askopenfilename(**options)
         if response:
             self.import_button.config(state=NORMAL)
@@ -497,12 +497,12 @@ class ImportDataPage(AHREAPage):
             return False
         return True
 
-class ClassDefinitionPage(AHREAPage):
+class ClassDefinitionPage(AUREAPage):
     """
     Defines the Class Definition Layout
     """
     def __init__(self, root):
-        AHREAPage.__init__(self, root, 'Class')
+        AUREAPage.__init__(self, root, 'Class')
         self.className1 = None
         self.className2 = None
         self.unclassified_listbox = None
@@ -710,9 +710,9 @@ class ClassDefinitionPage(AHREAPage):
         self.grid_forget()
         
 
-class LearnerSettingsPage(AHREAPage):
+class LearnerSettingsPage(AUREAPage):
     def __init__(self, root):
-        AHREAPage.__init__(self, root, 'Settings')
+        AUREAPage.__init__(self, root, 'Settings')
 
     def setUpPage(self):
         m = self.root.menu
@@ -737,9 +737,9 @@ class LearnerSettingsPage(AHREAPage):
         self.grid_forget()
  
 
-class TrainClassifiers(AHREAPage):
+class TrainClassifiers(AUREAPage):
     def __init__(self, root):
-        AHREAPage.__init__(self, root, 'Train')
+        AUREAPage.__init__(self, root, 'Train')
         self.auto_target_acc = None
         self.auto_maxtime = None
 
@@ -834,14 +834,14 @@ class TrainClassifiers(AHREAPage):
         self.clearGrid()
         self.grid_forget()
 
-class TestClassifiers(AHREAPage):
+class TestClassifiers(AUREAPage):
     """
     Displays a list of unclassified samples and allows you to choose one 
     for classification,
     """
 
     def __init__(self, root):
-        AHREAPage.__init__(self, root, 'Test')
+        AUREAPage.__init__(self, root, 'Test')
 
     def setUpPage(self):
         self.sample_list = self.root.controller.getUntrainedSamples()
@@ -971,13 +971,13 @@ class TestClassifiers(AHREAPage):
             self.root.controller.classifyAdaptive()
             AdaptiveClassificationResults(self)
 
-class EvaluateClassifiers(AHREAPage):
+class EvaluateClassifiers(AUREAPage):
     """
     Performs k-fold cross-validation on the learners.
     """
 
     def __init__(self, root):
-        AHREAPage.__init__(self, root, 'Evaluate')
+        AUREAPage.__init__(self, root, 'Evaluate')
         self.auto_target_acc = None
         self.auto_maxtime = None
 

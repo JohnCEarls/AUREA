@@ -1,7 +1,7 @@
 from Queue import PriorityQueue
-from AHREA.heuristic.ResourceEstimate import ResourceEstimate
-from AHREA.learner.wilcoxon import Wilcoxon
-from AHREA.learner import tsp, tst, ktsp, dirac
+from AUREA.heuristic.ResourceEstimate import ResourceEstimate
+from AUREA.learner.wilcoxon import Wilcoxon
+from AUREA.learner import tsp, tst, ktsp, dirac
 import time
 
 

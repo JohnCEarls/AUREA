@@ -3,7 +3,7 @@ from packager import DataCleaner
 from packager import DataPackager
 """
 Some cheap scripts to facilitate testing the data building portion
-of AHREA
+of AUREA
 """
 
 

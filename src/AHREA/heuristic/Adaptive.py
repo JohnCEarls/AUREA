@@ -1,4 +1,4 @@
-from AHREA.heuristic.LearnerQueue import LearnerQueue
+from AUREA.heuristic.LearnerQueue import LearnerQueue
 import time
 import os
 class Adaptive:
@@ -8,9 +8,9 @@ class Adaptive:
     """
     def __init__(self, learnerQueue,app_status_bar = None, print_status=False):
         """
-        learnerQueue is an AHREA.heuristic.LearnerQueue.LearnerQueue object
+        learnerQueue is an AUREA.heuristic.LearnerQueue.LearnerQueue object
         that has had its learners defined.
-        app_status_bar is an AHREA.GUI.AHREAApp.StatusBar object.  If not in
+        app_status_bar is an AUREA.GUI.AUREAApp.StatusBar object.  If not in
             GUI then just leave it as None. 
         print_status is a boolean, if True then messages will be printed to stdout
         """
@@ -28,7 +28,7 @@ class Adaptive:
         #signal to catch timeouts
         import signal, os
 
-        from AHREA.heuristic.Adaptive import AdaptiveTimeoutException
+        from AUREA.heuristic.Adaptive import AdaptiveTimeoutException
         def signal_handler(signum, frame):
             """
             TYVM

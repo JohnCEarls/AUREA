@@ -11,7 +11,7 @@ def cos_sim(A,B):
         return sum
     return dot_product(A,B)/(math.sqrt(dot_product(A,A)) * math.sqrt(dot_product(B,B)))
 
-conn = psycopg2.connect("host=localhost dbname=SOFTFile user=AHREA password=AHREA")
+conn = psycopg2.connect("host=localhost dbname=SOFTFile user=AUREA password=AUREA")
 conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
 c = conn.cursor()
 qry = "SELECT dataset_id, dataset_title, dataset_description \

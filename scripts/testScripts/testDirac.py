@@ -1,12 +1,12 @@
-from AHREA.learner import ktsp, tst, dirac, tsp
-from AHREA.parser import SOFTParser, GMTParser
-from AHREA.packager import DataCleaner, DataPackager
-from AHREA.heuristic import ResourceEstimate
-from AHREA.heuristic import LearnerQueue
+from AUREA.learner import ktsp, tst, dirac, tsp
+from AUREA.parser import SOFTParser, GMTParser
+from AUREA.packager import DataCleaner, DataPackager
+from AUREA.heuristic import ResourceEstimate
+from AUREA.heuristic import LearnerQueue
 import random
 import string
 def getDataPackage():
-    dd = "/home/earls3/Price/AHREAPackage/src/AHREA/data/"
+    dd = "/home/earls3/Price/AUREAPackage/src/AUREA/data/"
     softfile = dd+"GDS2545.soft.gz"
 
 
@@ -41,7 +41,7 @@ def getDataPackage():
     dp.setUnclassified(dt.dt_id, normal[-1])
     return dp
 
-from AHREA.learner import ktsp, tst, dirac, tsp
+from AUREA.learner import ktsp, tst, dirac, tsp
 dp = getDataPackage()
 min_net = 1
 

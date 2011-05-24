@@ -11,16 +11,16 @@ import os
 import os.path
 import shutil
 
-def getAHREApyModules():
+def getAUREApyModules():
     """
-    Returns a list of all py_modules in AHREA
+    Returns a list of all py_modules in AUREA
     """
     #defining the modules
-    GUI_mod = [ 'AHREA.GUI.'+x for x in ['AHREAApp', 'AHREAController', 'AHREAPage', 'AHREAResults']] 
-    heuristic_mod = ['AHREA.heuristic.'+x for x in ['LearnerQueue', 'ResourceEstimate']]
-    packager_mod = ['AHREA.packager.'+x for x in ['DataCleaner','DataPackager']]
-    parser_mod = ['AHREA.parser.' + x for x in  ['CSVParser', 'GMTParser', 'SettingsParser', 'SOFTParser', 'SynonymParser']]
-    learner_mod = ["AHREA.learner.dirac", "AHREA.learner.tsp","AHREA.learner.tst", "AHREA.learner.ktsp", "AHREA.learner.wilcoxon"]
+    GUI_mod = [ 'AUREA.GUI.'+x for x in ['AUREAApp', 'AUREAController', 'AUREAPage', 'AUREAResults']] 
+    heuristic_mod = ['AUREA.heuristic.'+x for x in ['LearnerQueue', 'ResourceEstimate']]
+    packager_mod = ['AUREA.packager.'+x for x in ['DataCleaner','DataPackager']]
+    parser_mod = ['AUREA.parser.' + x for x in  ['CSVParser', 'GMTParser', 'SettingsParser', 'SOFTParser', 'SynonymParser']]
+    learner_mod = ["AUREA.learner.dirac", "AUREA.learner.tsp","AUREA.learner.tst", "AUREA.learner.ktsp", "AUREA.learner.wilcoxon"]
     #putting all of the python modules in oneList
     a_modules = []
     for mod_list in [GUI_mod, heuristic_mod, packager_mod, parser_mod, learner_mod]:
@@ -33,11 +33,11 @@ def getExtensionModuleSettings():
     Returns a list of tuples with the settings for the extension modules    
     """
     ext_mod_settings = []
-    ext_mod_settings.append(('AHREA.learner._dirac', ['Dirac_pywrapper.i', 'Dirac_pywrapper.cpp', 'Dirac.cpp', 'dir_Matrix.cpp','kfold.cpp' ]))
-    ext_mod_settings.append(('AHREA.learner._tsp',[ 'TSP_pywrapper.i', 'TSP_pywrapper.cpp', 'learn_utsp_classifier.cpp', 'utils.cpp', 'matrix.cpp', 'wilcoxon.cpp', 'order.cpp', 'kfold.cpp' ]))
-    ext_mod_settings.append(('AHREA.learner._tst',['TST_pywrapper.i', 'TST_pywrapper.cpp', 'learn_tst_classifier.cpp', 'utils.cpp', 'matrix.cpp', 'wilcoxon.cpp', 'order.cpp', 'kfold.cpp' ]))
-    ext_mod_settings.append(('AHREA.learner._ktsp',['KTSP_pywrapper.i', 'KTSP_pywrapper.cpp', 'Ktsp.cpp', 'kfold.cpp',  'utils.cpp', 'matrix.cpp', 'wilcoxon.cpp', 'order.cpp']))
-    ext_mod_settings.append(('AHREA.learner._wilcoxon',['WILCOXON_pywrapper.i', 'WILCOXON_pywrapper.cpp', 'wilcoxon_test.cpp', 'utils.cpp', 'matrix.cpp', 'wilcoxon.cpp', 'order.cpp' ]))
+    ext_mod_settings.append(('AUREA.learner._dirac', ['Dirac_pywrapper.i', 'Dirac_pywrapper.cpp', 'Dirac.cpp', 'dir_Matrix.cpp','kfold.cpp' ]))
+    ext_mod_settings.append(('AUREA.learner._tsp',[ 'TSP_pywrapper.i', 'TSP_pywrapper.cpp', 'learn_utsp_classifier.cpp', 'utils.cpp', 'matrix.cpp', 'wilcoxon.cpp', 'order.cpp', 'kfold.cpp' ]))
+    ext_mod_settings.append(('AUREA.learner._tst',['TST_pywrapper.i', 'TST_pywrapper.cpp', 'learn_tst_classifier.cpp', 'utils.cpp', 'matrix.cpp', 'wilcoxon.cpp', 'order.cpp', 'kfold.cpp' ]))
+    ext_mod_settings.append(('AUREA.learner._ktsp',['KTSP_pywrapper.i', 'KTSP_pywrapper.cpp', 'Ktsp.cpp', 'kfold.cpp',  'utils.cpp', 'matrix.cpp', 'wilcoxon.cpp', 'order.cpp']))
+    ext_mod_settings.append(('AUREA.learner._wilcoxon',['WILCOXON_pywrapper.i', 'WILCOXON_pywrapper.cpp', 'wilcoxon_test.cpp', 'utils.cpp', 'matrix.cpp', 'wilcoxon.cpp', 'order.cpp' ]))
     return ext_mod_settings
 
 def buildExtension(ext_name,src_dir, src_files, swig_opts=['-modern', '-c++']):
@@ -60,12 +60,12 @@ def swig_helper( module, src_dir ):
     command = 'swig -c++ -python -modern ' + swig_interface
     os.system(command)
     
-    shutil.copy(os.path.join(src_dir, module.lower() + ".py"),os.sep.join(['src', 'AHREA', 'learner' ] ))
+    shutil.copy(os.path.join(src_dir, module.lower() + ".py"),os.sep.join(['src', 'AUREA', 'learner' ] ))
 
 #start script
 
 learner_modules = ["Dirac", "TSP", "TST", "KTSP", "WILCOXON"]
-path_dir = ['src', 'AHREA', 'learner', 'src']
+path_dir = ['src', 'AUREA', 'learner', 'src']
 src_dir = os.sep.join(path_dir)
 
 #copy swig generated pymodules to the learner directory
@@ -82,16 +82,16 @@ except Exception as e:
 ext_mod = [ buildExtension(name, src_dir, src_files) for name, src_files in getExtensionModuleSettings()]
 
 #run setup
-setup (name = 'AHREA',
-        version='1.3.0', #edit AHREA/__init__.py
+setup (name = 'AUREA',
+        version='1.3.0', #edit AUREA/__init__.py
         author ='John C. Earls',
         author_email = 'earls3@illinois.edu',
-        url= 'https://github.com/JohnCEarls/AHREAPackage.git',
-        description="""AHREA is a sofware suite that makes finding Relative Expression Learners easy.""",
-        packages=['AHREA','AHREA.GUI', 'AHREA.learner', 'AHREA.packager', 'AHREA.parser','AHREA.heuristic', 'pyBabel'],
-        package_dir={'AHREA': 'src/AHREA', 'pyBabel': 'src/pyBabel'},
+        url= 'https://github.com/JohnCEarls/AUREAPackage.git',
+        description="""AUREA is a sofware suite that makes finding Relative Expression Learners easy.""",
+        packages=['AUREA','AUREA.GUI', 'AUREA.learner', 'AUREA.packager', 'AUREA.parser','AUREA.heuristic', 'pyBabel'],
+        package_dir={'AUREA': 'src/AUREA', 'pyBabel': 'src/pyBabel'},
         ext_modules = ext_mod, 
-        py_modules = getAHREApyModules(),
+        py_modules = getAUREApyModules(),
         classifiers=[
             'License :: OSI Approved :: GNU Affero General Public License v3', 
             'Development Status :: 4 - Beta', 

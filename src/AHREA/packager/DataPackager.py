@@ -1,4 +1,4 @@
-from AHREA.learner import dirac
+from AUREA.learner import dirac
 import pyBabel.Extensions
 class dataPackager:
     """
@@ -405,7 +405,7 @@ This builds the geneNet Vector from the provided information.  It uses gene syno
         """
 Adds a table of synonyms to allow cross referencing between geneNets and datasets.
         """
-        import AHREA.parser.SynonymParser as sp
+        import AUREA.parser.SynonymParser as sp
         self.synonyms = sp.SynonymParser()
         self.synonyms.importgene_info(file)
 

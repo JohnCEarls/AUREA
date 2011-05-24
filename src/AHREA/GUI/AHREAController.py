@@ -1,21 +1,21 @@
-from AHREA.learner import ktsp, tst, dirac, tsp
-from AHREA.heuristic.LearnerQueue import LearnerQueue 
-from AHREA.heuristic.Adaptive import Adaptive
-from AHREA.parser.SOFTParser import *
-from AHREA.parser.CSVParser import *
-from AHREA.parser.GMTParser import *
-from AHREA.parser.SettingsParser import *
-from AHREA.packager.DataCleaner import *
-from AHREA.packager.DataPackager import *
-from AHREA.GUI.AHREAPage import InputError
-from AHREA.GUI.AHREAApp import AHREARemote
+from AUREA.learner import ktsp, tst, dirac, tsp
+from AUREA.heuristic.LearnerQueue import LearnerQueue 
+from AUREA.heuristic.Adaptive import Adaptive
+from AUREA.parser.SOFTParser import *
+from AUREA.parser.CSVParser import *
+from AUREA.parser.GMTParser import *
+from AUREA.parser.SettingsParser import *
+from AUREA.packager.DataCleaner import *
+from AUREA.packager.DataPackager import *
+from AUREA.GUI.AUREAPage import InputError
+from AUREA.GUI.AUREAApp import AUREARemote
 
 from Tkinter import *
 import time
 import os
 import shutil
 
-class AHREAController:
+class AUREAController:
     def __init__(self, workspace ):
         """
         This is the controller (MVC design pattern) for the GUI.
@@ -30,7 +30,7 @@ class AHREAController:
         self.datapackage = None
         self.workspace = workspace
         configFile = os.path.join(self.workspace, 'data', 'config.xml')
-        logo = os.path.join(self.workspace, 'data', 'AHREA-logo.pgm')
+        logo = os.path.join(self.workspace, 'data', 'AUREA-logo.pgm')
         if not os.path.exists(configFile):
             raise Exception, configFile + " not found.  Exiting"
         if not os.path.exists(logo):
@@ -57,7 +57,7 @@ class AHREAController:
 
        
 
-        self.dependency_state = [0 for x in range(AHREARemote.NumStates)]#see AHREAApp.AHREARemote for mappings
+        self.dependency_state = [0 for x in range(AUREARemote.NumStates)]#see AUREAApp.AUREARemote for mappings
 
     def setSOFTFile(self, softFile):
         raise Exception, "controller.setSOFTFile deprecated"

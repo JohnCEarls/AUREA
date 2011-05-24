@@ -1,6 +1,6 @@
-from AHREA.parser.CSVParser import CSVParser
-from AHREA.packager.DataCleaner import DataTable
-from AHREA.packager.DataPackager import dataPackager
+from AUREA.parser.CSVParser import CSVParser
+from AUREA.packager.DataCleaner import DataTable
+from AUREA.packager.DataPackager import dataPackager
 csvFile = "data/testPackagerProbes1.csv"
 p = CSVParser(csvFile,probe_column_name="probe", gene_column_name="probe")
 

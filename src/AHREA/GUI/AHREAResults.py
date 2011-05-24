@@ -1,8 +1,8 @@
 from Tkinter import *
 import tkFileDialog
 import os
-from AHREA.heuristic.LearnerQueue import LearnerQueue
-class AHREAResults(Toplevel):
+from AUREA.heuristic.LearnerQueue import LearnerQueue
+class AUREAResults(Toplevel):
     def __init__(self,root):
         Toplevel.__init__(self)
         self.root = root
@@ -29,10 +29,10 @@ class AHREAResults(Toplevel):
             o.write(resultString)
             o.close()
 
-class DiracResults(AHREAResults):
+class DiracResults(AUREAResults):
     def __init__( self, root ):
-        AHREAResults.__init__(self, root)
-        self.title("AHREA: Dirac results")
+        AUREAResults.__init__(self, root)
+        self.title("AUREA: Dirac results")
         self.getData()
         self.displayTopNetworks()
 
@@ -61,9 +61,9 @@ class DiracResults(AHREAResults):
         save_button.pack()
 
      
-class TSPResults(AHREAResults):
+class TSPResults(AUREAResults):
     def __init__(self, root ):
-        AHREAResults.__init__(self, root)
+        AUREAResults.__init__(self, root)
         self.root = root
         self.getData()
         self.displayData()
@@ -100,9 +100,9 @@ class TSPResults(AHREAResults):
         save_button.grid(row=row, column=1, sticky=E)
 
  
-class TSTResults(AHREAResults):
+class TSTResults(AUREAResults):
     def __init__(self, root):
-        AHREAResults.__init__(self, root)
+        AUREAResults.__init__(self, root)
         self.getData()
         self.displayData()
 
@@ -154,9 +154,9 @@ class TSTResults(AHREAResults):
 
  
 
-class KTSPResults(AHREAResults):
+class KTSPResults(AUREAResults):
     def __init__(self, root):
-        AHREAResults.__init__(self, root)
+        AUREAResults.__init__(self, root)
         self.root = root
         self.getData()
         self.displayData()
@@ -192,9 +192,9 @@ class KTSPResults(AHREAResults):
         save_button = Button(self, text="Save...", command=lambda:self.saveResults(resultString))
         save_button.grid(row=row, column=1, sticky=E)
 
-class AdaptiveResults(AHREAResults):
+class AdaptiveResults(AUREAResults):
     def __init__(self,root):
-        AHREAResults.__init__(self, root)
+        AUREAResults.__init__(self, root)
         self.getData()
         self.buildDisplay()
        
@@ -250,9 +250,9 @@ class AdaptiveResults(AHREAResults):
         self.save_button.grid(row=r, column=c, sticky=E)
 
 
-class DiracClassificationResults(AHREAResults):
+class DiracClassificationResults(AUREAResults):
     def __init__(self, root):
-        AHREAResults.__init__(self, root)
+        AUREAResults.__init__(self, root)
         self.getData()
         self.buildDisplay()
 
@@ -274,9 +274,9 @@ class DiracClassificationResults(AHREAResults):
 
         self.result.pack()    
  
-class TSPClassificationResults(AHREAResults):
+class TSPClassificationResults(AUREAResults):
     def __init__(self, root):
-        AHREAResults.__init__(self, root)
+        AUREAResults.__init__(self, root)
         self.getData()
         self.buildDisplay()
 
@@ -297,9 +297,9 @@ class TSPClassificationResults(AHREAResults):
 
         self.result.pack()
 
-class TSTClassificationResults(AHREAResults):
+class TSTClassificationResults(AUREAResults):
     def __init__(self, root):
-        AHREAResults.__init__(self, root)
+        AUREAResults.__init__(self, root)
         self.getData()
         self.buildDisplay()
 
@@ -320,9 +320,9 @@ class TSTClassificationResults(AHREAResults):
 
         self.result.pack()
 
-class KTSPClassificationResults(AHREAResults):
+class KTSPClassificationResults(AUREAResults):
     def __init__(self, root):
-        AHREAResults.__init__(self, root)
+        AUREAResults.__init__(self, root)
         self.getData()
         self.buildDisplay()
 
@@ -343,9 +343,9 @@ class KTSPClassificationResults(AHREAResults):
 
         self.result.pack()
 
-class AdaptiveClassificationResults(AHREAResults):
+class AdaptiveClassificationResults(AUREAResults):
     def __init__(self, root):
-        AHREAResults.__init__(self, root)
+        AUREAResults.__init__(self, root)
         self.getData()
         self.buildDisplay()
 

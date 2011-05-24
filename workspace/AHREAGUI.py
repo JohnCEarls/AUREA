@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 import Tkinter
-from AHREA.GUI.AHREAApp import AHREAApp
-from AHREA.GUI.AHREAController import AHREAController
+from AUREA.GUI.AUREAApp import AUREAApp
+from AUREA.GUI.AUREAController import AUREAController
 import os
 import tkFileDialog
 from tkMessageBox import *
@@ -12,8 +12,8 @@ from tkMessageBox import *
 workspace = os.getcwd()
 
 root = Tkinter.Tk()
-cont = AHREAController(workspace=workspace)
-app = AHREAApp(root, cont)
+cont = AUREAController(workspace=workspace)
+app = AUREAApp(root, cont)
 cont.setApp(app)
 root.mainloop()
 

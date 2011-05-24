@@ -272,10 +272,10 @@ exist in the table"""
                     print ",",
                 print
 
-    def addEntitiesToDatabase(self, host="localhost", dbName ="SOFTFile", user="AHREA", password="URDumb"):
+    def addEntitiesToDatabase(self, host="localhost", dbName ="SOFTFile", user="AUREA", password="URDumb"):
         """
         A simple entity insertion function.
-        This is really a helper function that was used in testing AHREA.
+        This is really a helper function that was used in testing AUREA.
         It needs to be modified if used.
         """
         import psycopg2
