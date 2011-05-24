@@ -1,5 +1,6 @@
 README
 setup.py
+ez_setup.py
 src/AUREA/__init__.py
 src/AUREA/parser/SOFTParser.py
 src/AUREA/parser/GMTParser.py
