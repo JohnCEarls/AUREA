@@ -30,7 +30,7 @@ class AUREAController:
         self.datapackage = None
         self.workspace = workspace
         configFile = os.path.join(self.workspace, 'data', 'config.xml')
-        logo = os.path.join(self.workspace, 'data', 'AUREA-logo.pgm')
+        logo = os.path.join(self.workspace, 'data', 'AUREA-logo-200.pgm')
         if not os.path.exists(configFile):
             raise Exception, configFile + " not found.  Exiting"
         if not os.path.exists(logo):
@@ -60,6 +60,9 @@ class AUREAController:
         self.dependency_state = [0 for x in range(AUREARemote.NumStates)]#see AUREAApp.AUREARemote for mappings
 
     def setSOFTFile(self, softFile):
+        """
+        DEPRECATED  
+        """
         raise Exception, "controller.setSOFTFile deprecated"
         self.softFile = softFile
 
