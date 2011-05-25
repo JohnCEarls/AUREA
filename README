@@ -17,4 +17,15 @@ AUREA uses C code from the RXA project at https://jshare.johnshopkins.edu/dnaima
 We encourage you to check out their versions if they fit your needs better.
 They are released under GPL v.2.
 
+You can download the latest source at https://github.com/JohnCEarls/AUREA.  This may or may not be stable.
 
+
+You can download binaries or stable source distributions for your system from http://pypi.python.org/pypi/AUREA/
+
+If you have any difficulties, please feel free to contact me at earls3@illinois.edu.
+
+I hope you find this useful.
+
+AUREA was created by:
+
+John Earls, James Eddy, Younhee Ko, Andrew Magis and Nathan D. Price from the Institute for Genomic Biology at the University of Illinois-Urbana.
