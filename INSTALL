@@ -93,19 +93,54 @@ Linux Requirements to build from source
     The GNU toolchain (g++, etc.)
 
 
-Download the appropriate source file from http://pypi.python.org/pypi/AUREA.
+Download the source file from http://pypi.python.org/pypi/AUREA.
 
 Extract the archive.  Enter the extracted archive and run 'python setup.py install' there.
 
 For more options see http://docs.python.org/distutils/index.html.
 
 
-
-
-
-
 OS X General
 ============
 
-Very Easy Install:
+Binary versions are available for OS X 10.5 and 10.6.  We will attempt to have a build for 10.7 shortly after it is released.
+
+We have binary and source versions of AUREA available at http://pypi.python.org/pypi/AUREA.
+
+The workplace files, required for the GUI are available at http://www.igb.uiuc.edu/labs/price/downloads_tmp.html.
+
+OS X Software Requirements:
+    Python v.2.6.* or 2.7.* (http://www.python.org/)
+    Note:10.6 ships with Python 2.7, 10.5 ships with 2.3 and has to be upgraded.
+
+
+
+
+
+
+:
+Easy Install (with pip)
+=======================
+If you have installed pip (http://pypi.python.org/pypi/pip), installation should be as simple as, entering 'pip install AUREA' into the terminal.
+
+Pretty Easy Install (with easy_install)
+======================================
+If you have installed Easy Install (http://pypi.python.org/pypi/setuptools) installation, installation should be as simple as entering 'easy_install AUREA' into the terminal.
+
+If you do not want easy_install downloading and installing AUREA automatically, you can download the appropriate *.egg file from http://pypi.python.org/pypi/AUREA and install it by going to the directory containing the egg file and running 'easy_install AUREA*.egg' from the terminal.
+
+
+OS X Requirements to build from source
+=======================================
+    Xcode 4 (contains all of the required software to build AUREA)
+    (Should be available on your OS X install DVD)
+    (http://developer.apple.com/technologies/tools/)
+ 
+Download the source file from http://pypi.python.org/pypi/AUREA.
+
+Extract the archive.  Enter the extracted archive and run 'python setup.py install' there.
+
+For more options see http://docs.python.org/distutils/index.html.
+
+
 
