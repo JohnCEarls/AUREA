@@ -1,0 +1,20 @@
+AUREA - Adaptive Unified Relative Expression Analyser
+=====================================================
+
+AUREA is a python based framework for using Relative Expression Analysis tools on transcriptomic data.
+Currently it can read SOFT (Simple Omnibus Format) files and csv files.  
+SOFT files are the preferred format of AUREA and the preferred format of GEO.
+
+See the INSTALL instructions to see how to install AUREA on your system.
+
+A GUI is provided to make using these algorithms simpler.
+In order to use the GUI you need to download workplace.zip from http://www.igb.uiuc.edu/labs/price/downloads_tmp.html or if you have the source distribution, the 'workplace' folder is underneath the root.  Simply copy the folder to the location you would like to work from.
+
+AUREA is released under the GPL v.3 Affero license, so feel free to adapt AUREA to your needs.
+A copy of the AGPL is provided in COPYING.
+
+AUREA uses C code from the RXA project at https://jshare.johnshopkins.edu/dnaiman1/public_html/rxa/ which contains R-based implementations of TSP and TST.  
+We encourage you to check out their versions if they fit your needs better.
+They are released under GPL v.2.
+
+
