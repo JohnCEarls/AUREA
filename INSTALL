@@ -1,0 +1,111 @@
+INSTALLATION
+============
+
+Windows General
+===============
+
+We have binary and source versions of AUREA available at http://pypi.python.org/pypi/AUREA.
+
+The workplace files, required for the GUI are available at http://www.igb.uiuc.edu/labs/price/downloads_tmp.html.
+
+Windows Software Requirements:
+
+    Python v.2.6.* or 2.7.* (http://www.python.org/)
+
+    Microsoft Visual C++ 2010 Redistributable Package (if you are not building from source)
+        64-bit (http://www.microsoft.com/downloads/en/confirmation.aspx?FamilyID=bd512d9e-43c8-4655-81bf-9350143d5867)
+        32-bit (http://www.microsoft.com/downloads/en/details.aspx?FamilyID=A7B7A05E-6DE6-4D3A-A423-37BF0912DB84)
+
+
+Very Easy Winstall (with pip)
+============================
+If you have installed pip (http://pypi.python.org/pypi/pip), installation should be as simple as, entering 'pip install AUREA' into the command prompt.
+
+You can access the command prompt by clicking run or search in the start menu and typing 'cmd.exe' into the provided text box.
+
+Easy Winstall (with easy_install)
+================================
+If you have installed Easy Install (http://pypi.python.org/pypi/setuptools) installation, installation should be as simple as entering 'easy_install AUREA' into the command prompt.
+
+You can access the command prompt by clicking run or search in the start menu and typing 'cmd.exe' into the provided text box
+
+If you do not want easy_install downloading and installing AUREA automatically, you can download the appropriate *.egg file from http://pypi.python.org/pypi/AUREA and install it by going to the directory containing the egg file and running 'easy_install AHREA*.egg' from the command line.
+
+Still Pretty Easy Winstall (with windows installer)
+===================================================
+If you download an AUREA*.exe file from http://pypi.python.org/pypi/AUREA you should be able to simply click on the folder and follow the install instructions.
+
+
+Install from Source (Wow, you da man now dog)
+=============================================
+    Requirements to build Source
+        You must have Microsoft Visual Studio of some sort installed, you are going to need a C++ compiler. The binaries generated used VS 2010 Supreme. (Other compilers get very complicated and your python distribution also has to be compiled by that compiler.  If you really need to go this route, contact earls3@illinois.edu and he will attempt to assist you)
+        
+        You must have swigwin-2.0.1 installed. (http://sourceforge.net/projects/swig/files/swigwin/swigwin-2.0.1/swigwin-2.0.1.zip/download)
+
+        You must add the environmental variables 
+            PYTHON_INCLUDE: c:\Python27\include
+            PYTHON_LIB: C:\Python27\libs\python27.lib
+               -or wherever you installed python on your system
+            and add the python executable to your system path.
+
+            You can find instructions for altering your path at http://www.java.com/en/download/help/path.xml.
+
+        Their are also some problems when building where the system may throw an error:
+        Unable to find vcvarsall.bat
+    
+        You need to follow the instructions at http://nukeit.org/compile-python-2-7-packages-with-visual-studio-2010-express/ in order to get AUREA to build.
+
+After all of the pre-requisites are installed you simply need to extract the source directory and enter 'python setup.py install' into the commandline while you are in the extracted directory.
+For more setup.py options see http://docs.python.org/distutils/index.html.
+
+Linux General
+=============
+
+We have binary and source versions of AUREA available at http://pypi.python.org/pypi/AUREA.
+
+The workplace files, required for the GUI are available at http://www.igb.uiuc.edu/labs/price/downloads_tmp.html.
+
+Linux Software Requirements:
+
+    Python v.2.6.* or 2.7.* (http://www.python.org/)
+
+Easy Install (with pip)
+=======================
+If you have installed pip (http://pypi.python.org/pypi/pip), installation should be as simple as, entering 'pip install AUREA' into the terminal.
+
+Pretty Easy Install (with easy_install)
+======================================
+If you have installed Easy Install (http://pypi.python.org/pypi/setuptools) installation, installation should be as simple as entering 'easy_install AUREA' into the terminal.
+
+If you do not want easy_install downloading and installing AUREA automatically, you can download the appropriate *.egg file from http://pypi.python.org/pypi/AUREA and install it by going to the directory containing the egg file and running 'easy_install AUREA*.egg' from the terminal.
+
+RPM Install
+===========
+Download the appropriate rpm file from http://pypi.python.org/pypi/AUREA and run 'rpm AUREA*.rpm' from the terminal in the directory containing the rpm file.
+
+Source Install
+==============
+
+Linux Requirements to build from source
+=======================================
+    swig version 1.3.* (http://sourceforge.net/projects/swig/files/swig/swig-1.3.40/) Note: that swig version 2.* will not work. There is a bug in the way it handles vectors.
+    The GNU toolchain (g++, etc.)
+
+
+Download the appropriate source file from http://pypi.python.org/pypi/AUREA.
+
+Extract the archive.  Enter the extracted archive and run 'python setup.py install' there.
+
+For more options see http://docs.python.org/distutils/index.html.
+
+
+
+
+
+
+OS X General
+============
+
+Very Easy Install:
+
