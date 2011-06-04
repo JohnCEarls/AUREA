@@ -10,7 +10,7 @@ class Adaptive:
         """
         learnerQueue is an AUREA.heuristic.LearnerQueue.LearnerQueue object
         that has had its learners defined.
-        app_status_bar is an AUREA.GUI.AUREAApp.StatusBar object.  If not in
+        app_status_bar is an AUREA.GUI.App.StatusBar object.  If not in
             GUI then just leave it as None. 
         print_status is a boolean, if True then messages will be printed to stdout
         """

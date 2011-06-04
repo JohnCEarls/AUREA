@@ -2,10 +2,10 @@ from Tkinter import *
 import tkFileDialog
 import tkMessageBox
 import os
-from AUREA.GUI.AUREAResults import *
+from AUREA.GUI.Results import *
 import platform
 import re
-class AUREAPage(Frame):
+class Page(Frame):
     """
     Base class for data input frames
     """
@@ -65,13 +65,13 @@ class AUREAPage(Frame):
 
         else:
             return True
-class HomePage(AUREAPage):
+class HomePage(Page):
     """
     Corresponds to the Data Summary/Home page
     """
     
     def __init__(self, root):
-        AUREAPage.__init__(self, root, 'Home')
+        Page.__init__(self, root, 'Home')
         
 
     def setUpPage(self):
@@ -250,12 +250,12 @@ class HomePage(AUREAPage):
         self.clearGrid()
         self.grid_forget()
 
-class ImportDataPage(AUREAPage):
+class ImportDataPage(Page):
     """
     Page to choose data files
     """
     def __init__(self, root):
-        AUREAPage.__init__(self, root, 'Import')
+        Page.__init__(self, root, 'Import')
         self.gnPath = None
         self.softFilePath = None
         self.gsynPath = None
@@ -497,12 +497,12 @@ class ImportDataPage(AUREAPage):
             return False
         return True
 
-class ClassDefinitionPage(AUREAPage):
+class ClassDefinitionPage(Page):
     """
     Defines the Class Definition Layout
     """
     def __init__(self, root):
-        AUREAPage.__init__(self, root, 'Class')
+        Page.__init__(self, root, 'Class')
         self.className1 = None
         self.className2 = None
         self.unclassified_listbox = None
@@ -710,9 +710,9 @@ class ClassDefinitionPage(AUREAPage):
         self.grid_forget()
         
 
-class LearnerSettingsPage(AUREAPage):
+class LearnerSettingsPage(Page):
     def __init__(self, root):
-        AUREAPage.__init__(self, root, 'Settings')
+        Page.__init__(self, root, 'Settings')
 
     def setUpPage(self):
         m = self.root.menu
@@ -737,9 +737,9 @@ class LearnerSettingsPage(AUREAPage):
         self.grid_forget()
  
 
-class TrainClassifiers(AUREAPage):
+class TrainClassifiers(Page):
     def __init__(self, root):
-        AUREAPage.__init__(self, root, 'Train')
+        Page.__init__(self, root, 'Train')
         self.auto_target_acc = None
         self.auto_maxtime = None
 
@@ -834,14 +834,14 @@ class TrainClassifiers(AUREAPage):
         self.clearGrid()
         self.grid_forget()
 
-class TestClassifiers(AUREAPage):
+class TestClassifiers(Page):
     """
     Displays a list of unclassified samples and allows you to choose one 
     for classification,
     """
 
     def __init__(self, root):
-        AUREAPage.__init__(self, root, 'Test')
+        Page.__init__(self, root, 'Test')
 
     def setUpPage(self):
         self.sample_list = self.root.controller.getUntrainedSamples()
@@ -971,13 +971,13 @@ class TestClassifiers(AUREAPage):
             self.root.controller.classifyAdaptive()
             AdaptiveClassificationResults(self)
 
-class EvaluateClassifiers(AUREAPage):
+class EvaluateClassifiers(Page):
     """
     Performs k-fold cross-validation on the learners.
     """
 
     def __init__(self, root):
-        AUREAPage.__init__(self, root, 'Evaluate')
+        Page.__init__(self, root, 'Evaluate')
         self.auto_target_acc = None
         self.auto_maxtime = None
 

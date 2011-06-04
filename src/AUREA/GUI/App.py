@@ -2,13 +2,13 @@ from Tkinter import *
 import traceback, tkMessageBox
 import Tkconstants, tkFileDialog
 import AUREA
-import AUREA.GUI.AUREAPage as AUREAPage
+import AUREA.GUI.Page as Page
 from AUREA.parser.SettingsParser import *
 import os.path
 import shutil
 import sys
 import platform
-class AUREAApp(Frame):
+class App(Frame):
     def __init__(self, root, controller):
         
         root.report_callback_exception = self.report_callback_exception
@@ -57,13 +57,13 @@ class AUREAApp(Frame):
         self.AppTitle.set(title)
        
     def initPages(self):
-        self.pages.append(AUREAPage.HomePage(self))
-        self.pages.append(AUREAPage.ImportDataPage(self))
-        self.pages.append(AUREAPage.ClassDefinitionPage(self))
-        self.pages.append(AUREAPage.LearnerSettingsPage(self))
-        self.pages.append(AUREAPage.TrainClassifiers(self))
-        self.pages.append(AUREAPage.TestClassifiers(self))
-        self.pages.append(AUREAPage.EvaluateClassifiers(self)) 
+        self.pages.append(Page.HomePage(self))
+        self.pages.append(Page.ImportDataPage(self))
+        self.pages.append(Page.ClassDefinitionPage(self))
+        self.pages.append(Page.LearnerSettingsPage(self))
+        self.pages.append(Page.TrainClassifiers(self))
+        self.pages.append(Page.TestClassifiers(self))
+        self.pages.append(Page.EvaluateClassifiers(self)) 
 
     def displayPage(self, page_id):
         self.status.clear()
@@ -85,7 +85,7 @@ class AUREAApp(Frame):
     def next(self):
         try:
             next = self.curr_page.next()
-        except AUREAPage.ImplementationError as e:
+        except Page.ImplementationError as e:
             print e.msg
 
         if next:
@@ -94,7 +94,7 @@ class AUREAApp(Frame):
     def prev(self):
         try:
             prev = self.curr_page.prev()
-        except AUREAPage.ImplementationError as e:
+        except Page.ImplementationError as e:
             print e.msg
 
         if prev:
@@ -165,7 +165,7 @@ class AUREARemote(Frame):
     def __init__(self, master):
         """
         Builds the left side controller of AUREA
-        master - the AUREAApp Frame
+        master - the App Frame
         """
         Frame.__init__(self, master, width=200)
         self.m = master
@@ -369,9 +369,9 @@ class AUREAMenu(Menu):
 
     def buildSettings(self):
         """
-        Deprecated, they have their own AUREAPage now.
+        Deprecated, they have their own Page now.
         """
-        raise Exception("menu.buildSettings is deprecated. Use the AUREAPage.learnerSettings")
+        raise Exception("menu.buildSettings is deprecated. Use the Page.learnerSettings")
         settingsmenu = Menu( self )
         self.add_cascade(label="Settings", menu=settingsmenu)
         settingsmenu.add_command(label="Data...", command=self.data_settings)

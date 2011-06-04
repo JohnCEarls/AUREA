@@ -7,15 +7,15 @@ from AUREA.parser.GMTParser import *
 from AUREA.parser.SettingsParser import *
 from AUREA.packager.DataCleaner import *
 from AUREA.packager.DataPackager import *
-from AUREA.GUI.AUREAPage import InputError
-from AUREA.GUI.AUREAApp import AUREARemote
+from AUREA.GUI.Page import InputError
+from AUREA.GUI.App import AUREARemote
 
 from Tkinter import *
 import time
 import os
 import shutil
 
-class AUREAController:
+class Controller:
     def __init__(self, workspace ):
         """
         This is the controller (MVC design pattern) for the GUI.
@@ -57,7 +57,7 @@ class AUREAController:
 
        
 
-        self.dependency_state = [0 for x in range(AUREARemote.NumStates)]#see AUREAApp.AUREARemote for mappings
+        self.dependency_state = [0 for x in range(AUREARemote.NumStates)]#see App.AUREARemote for mappings
 
     def setSOFTFile(self, softFile):
         """

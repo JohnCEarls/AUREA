@@ -2,7 +2,7 @@ from Tkinter import *
 import tkFileDialog
 import os
 from AUREA.heuristic.LearnerQueue import LearnerQueue
-class AUREAResults(Toplevel):
+class Results(Toplevel):
     def __init__(self,root):
         Toplevel.__init__(self)
         self.root = root
@@ -29,9 +29,9 @@ class AUREAResults(Toplevel):
             o.write(resultString)
             o.close()
 
-class DiracResults(AUREAResults):
+class DiracResults(Results):
     def __init__( self, root ):
-        AUREAResults.__init__(self, root)
+        Results.__init__(self, root)
         self.title("AUREA: Dirac results")
         self.getData()
         self.displayTopNetworks()
@@ -61,9 +61,9 @@ class DiracResults(AUREAResults):
         save_button.pack()
 
      
-class TSPResults(AUREAResults):
+class TSPResults(Results):
     def __init__(self, root ):
-        AUREAResults.__init__(self, root)
+        Results.__init__(self, root)
         self.root = root
         self.getData()
         self.displayData()
@@ -100,9 +100,9 @@ class TSPResults(AUREAResults):
         save_button.grid(row=row, column=1, sticky=E)
 
  
-class TSTResults(AUREAResults):
+class TSTResults(Results):
     def __init__(self, root):
-        AUREAResults.__init__(self, root)
+        Results.__init__(self, root)
         self.getData()
         self.displayData()
 
@@ -154,9 +154,9 @@ class TSTResults(AUREAResults):
 
  
 
-class KTSPResults(AUREAResults):
+class KTSPResults(Results):
     def __init__(self, root):
-        AUREAResults.__init__(self, root)
+        Results.__init__(self, root)
         self.root = root
         self.getData()
         self.displayData()
@@ -192,9 +192,9 @@ class KTSPResults(AUREAResults):
         save_button = Button(self, text="Save...", command=lambda:self.saveResults(resultString))
         save_button.grid(row=row, column=1, sticky=E)
 
-class AdaptiveResults(AUREAResults):
+class AdaptiveResults(Results):
     def __init__(self,root):
-        AUREAResults.__init__(self, root)
+        Results.__init__(self, root)
         self.getData()
         self.buildDisplay()
        
@@ -250,9 +250,9 @@ class AdaptiveResults(AUREAResults):
         self.save_button.grid(row=r, column=c, sticky=E)
 
 
-class DiracClassificationResults(AUREAResults):
+class DiracClassificationResults(Results):
     def __init__(self, root):
-        AUREAResults.__init__(self, root)
+        Results.__init__(self, root)
         self.getData()
         self.buildDisplay()
 
@@ -274,9 +274,9 @@ class DiracClassificationResults(AUREAResults):
 
         self.result.pack()    
  
-class TSPClassificationResults(AUREAResults):
+class TSPClassificationResults(Results):
     def __init__(self, root):
-        AUREAResults.__init__(self, root)
+        Results.__init__(self, root)
         self.getData()
         self.buildDisplay()
 
@@ -297,9 +297,9 @@ class TSPClassificationResults(AUREAResults):
 
         self.result.pack()
 
-class TSTClassificationResults(AUREAResults):
+class TSTClassificationResults(Results):
     def __init__(self, root):
-        AUREAResults.__init__(self, root)
+        Results.__init__(self, root)
         self.getData()
         self.buildDisplay()
 
@@ -320,9 +320,9 @@ class TSTClassificationResults(AUREAResults):
 
         self.result.pack()
 
-class KTSPClassificationResults(AUREAResults):
+class KTSPClassificationResults(Results):
     def __init__(self, root):
-        AUREAResults.__init__(self, root)
+        Results.__init__(self, root)
         self.getData()
         self.buildDisplay()
 
@@ -343,9 +343,9 @@ class KTSPClassificationResults(AUREAResults):
 
         self.result.pack()
 
-class AdaptiveClassificationResults(AUREAResults):
+class AdaptiveClassificationResults(Results):
     def __init__(self, root):
-        AUREAResults.__init__(self, root)
+        Results.__init__(self, root)
         self.getData()
         self.buildDisplay()
 
