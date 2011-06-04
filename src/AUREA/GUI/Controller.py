@@ -346,7 +346,11 @@ class Controller:
         """
         import math
         def MCC(TP,FP, TN, FN):
-            return float(TP*TN - FP*FN)/math.sqrt(float((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN)))
+            den = math.sqrt(float((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN)))
+            if den < .000001:
+                #http://en.wikipedia.org/wiki/Matthews_correlation_coefficient
+                den = 1.0
+            return float(TP*TN - FP*FN)/den
         dp = self.datapackage
         class1, class2 = dp.getClassifications()
         T0 = 0
