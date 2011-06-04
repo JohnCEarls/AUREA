@@ -16,7 +16,7 @@ def getAUREApyModules():
     Returns a list of all py_modules in AUREA
     """
     #defining the modules
-    GUI_mod = [ 'AUREA.GUI.'+x for x in ['AUREAApp', 'AUREAController', 'AUREAPage', 'AUREAResults']] 
+    GUI_mod = [ 'AUREA.GUI.'+x for x in ['App', 'Controller', 'Page', 'Results']] 
     heuristic_mod = ['AUREA.heuristic.'+x for x in ['LearnerQueue', 'ResourceEstimate']]
     packager_mod = ['AUREA.packager.'+x for x in ['DataCleaner','DataPackager']]
     parser_mod = ['AUREA.parser.' + x for x in  ['CSVParser', 'GMTParser', 'SettingsParser', 'SOFTParser', 'SynonymParser']]
