@@ -316,7 +316,7 @@ class ImportDataPage(Page):
             self.downloadButton = Button(self, text="Download...", command=self.downloadSOFTdialog)
             self.dataSettingsButton = Button(self, text="Data Settings", command=self.root.menu.data_settings)
         self.geneSynonymDisplay()    
-        self.import_button = Button(self, text="Import Files", command=self.importFiles)
+        self.import_button = Button(self, text="Import Files", command=self.timportFiles)
         self.import_button.config(state=DISABLED)
 
     def clearGrid(self):
@@ -462,25 +462,43 @@ class ImportDataPage(Page):
             self.import_button.config(state=NORMAL)
             self.gsynPath.set(response)
 
-    def importFiles(self):
+    def importFiles(self, queue):
+        """
+        Actually imports the files
+        """
+        print "importing files"
+        p = queue.get()
+        print "got q"
+        for path in self.softFilePath:
+            self.root.controller.addSOFTFile(path.get()) 
+        self.root.controller.setGeneNetworkFile(self.gnPath.get())
+        self.root.controller.setSynonymFile(self.gsynPath.get())
+        self.root.controller.loadFiles()
+        #update states
+        self.root.controller.updateState(self.remote.DataImport, 1)
+        ni = self.root.controller.getNetworkInfo()
+        if ni is not None:
+            self.root.controller.updateState(self.remote.NetworkImport, 1)
+        queue.task_done()
+            
+    def timportFiles(self):
+        import threading, Queue
         if self.checkFiles():
             self.remote.disableAllButtons() 
             self.root.controller.unloadFiles()
             self.root.controller.clearClassSamples()
-            for path in self.softFilePath:
-                self.root.controller.addSOFTFile(path.get()) 
-            self.root.controller.setGeneNetworkFile(self.gnPath.get())
-            self.root.controller.setSynonymFile(self.gsynPath.get())
-            self.root.controller.loadFiles()
-            #update states
-            self.root.controller.updateState(self.remote.DataImport, 1)
-            ni = self.root.controller.getNetworkInfo()
-            if ni is not None:
-                self.root.controller.updateState(self.remote.NetworkImport, 1)
+            q = Queue.Queue()
+            t = threading.Thread( target =self.importFiles, args=(q,) )
+            q.put(True)
+            t.run()
+            q.join()
+            print "Are we really waiting?"
             self.import_button.config(state=DISABLED)
-            
 
     def checkFiles(self):
+        """
+        Makes sure we have the necessary info to perform import
+        """
         import os.path
         goodFiles = True
         for path in self.softFilePath:
