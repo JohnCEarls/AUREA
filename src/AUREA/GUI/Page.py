@@ -462,13 +462,11 @@ class ImportDataPage(Page):
             self.import_button.config(state=NORMAL)
             self.gsynPath.set(response)
 
-    def importFiles(self, queue):
+    def importFiles(self):
         """
-        Actually imports the files
+        Imports the files called as thread.
+        called by timportFiles
         """
-        print "importing files"
-        p = queue.get()
-        print "got q"
         for path in self.softFilePath:
             self.root.controller.addSOFTFile(path.get()) 
         self.root.controller.setGeneNetworkFile(self.gnPath.get())
@@ -479,20 +477,15 @@ class ImportDataPage(Page):
         ni = self.root.controller.getNetworkInfo()
         if ni is not None:
             self.root.controller.updateState(self.remote.NetworkImport, 1)
-        queue.task_done()
             
     def timportFiles(self):
         import threading, Queue
         if self.checkFiles():
             self.remote.disableAllButtons() 
             self.root.controller.unloadFiles()
-            self.root.controller.clearClassSamples()
-            q = Queue.Queue()
-            t = threading.Thread( target =self.importFiles, args=(q,) )
-            q.put(True)
-            t.run()
-            q.join()
-            print "Are we really waiting?"
+            t = threading.Thread( target =self.importFiles )
+            t.start()
+            print "out"
             self.import_button.config(state=DISABLED)
 
     def checkFiles(self):
