@@ -27,6 +27,7 @@ class DataTable:
         #the headings of the probe and gene columns
         self.probe_column = probe_column
         self.gene_column = gene_column
+        self.subsets = []
 
     def getSOFTData(self, SOFTParse, tableNumber = 0):
         """
@@ -48,6 +49,16 @@ class DataTable:
         self.data_table = self.sp.getTable(lock=True) 
 
         self.cleanUp()
+        #subset definition
+        #truth be told I am really worried about this
+        #dont really have time to test it
+        sstemp = self.sp.getSubsets()
+        for ssentity in sstemp:
+            if 'subset_sample_id' in ssentity.attributes and len(ssentity.attributes['subset_sample_id']) != 0:
+                ss_samples = ssentity.attributes['subset_sample_id'][0].split(',')
+                ss_desc =  ssentity.attributes['subset_description']
+
+                self.subsets.append( (ss_samples, ss_desc) )            
         self.sp = None #so garbage collection can pick it up
 
     def getCSVData(self, CSVParse):
@@ -74,6 +85,8 @@ class DataTable:
         self.cleanUp()
         self.csv = None #so garbage collection can pick it up
 
+    def getSubsets(self):
+        if self.sp is not None:
 
 
     def writeAsCSV(self, file):
