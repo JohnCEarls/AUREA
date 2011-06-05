@@ -299,7 +299,7 @@ class ImportDataPage(Page):
         r+=1
         self.gsynText.grid(row=r, column=0, pady=ypad, columnspan=2, sticky=E+W)
         numcolumns, numrows = self.grid_size()
-        self.import_button.grid(row=numrows, column=numcolumns-1, padx=10, sticky=E)
+        self.import_button.grid(row=numrows, column=numcolumns-2,columnspan=2, padx=10, sticky=E+W)
         self.grid(row=1,column=1, sticky=N+S+E+W)
         numcolumns, numrows = self.grid_size()
         #self.rowconfigure(numrows-1 , weight = 0 )
@@ -363,7 +363,7 @@ class ImportDataPage(Page):
             self.gnPath = StringVar()
         self.gnPathE = Entry(self, textvariable=self.gnPath,width=50)
         self.gnDialogButton = Button(self, text = "Browse ...",command=self.gnfiledialog)
-        self.gnText = Label(self, text="Required for DiRaC, Adaptive")
+        self.gnText = Label(self, text="Required for DiRaC, Adaptive (c2.biocarta.v2.5.symbols.gmt)")
         self._italicFont(self.gnText)
 
     def geneSynonymDisplay(self):
@@ -372,7 +372,7 @@ class ImportDataPage(Page):
             self.gsynPath = StringVar()
         self.gsynPathE = Entry(self, textvariable=self.gsynPath, width=50)
         self.gsynDialogButton = Button(self, text = "Browse ...",command=self.gsynfiledialog) 
-        self.gsynText = Label(self, text="Recommended for DiRaC, Adaptive")
+        self.gsynText = Label(self, text="Recommended for DiRaC, Adaptive (Homo_sapiens.gene_info.gz)")
         self._italicFont(self.gsynText)
 
 
@@ -507,9 +507,12 @@ class ClassDefinitionPage(Page):
         self.className2 = None
         self.unclassified_listbox = None
         self.sample_list = []
+        self.subset_list = []
+        #a token prepended to the subset label
+        self.tok = "*ss: "
 
     def setUpPage(self):
-        self.define_button = Button(self, text="Define Class", command=self.buildClasses)
+        self.define_button = Button(self, text="Define Classes", command=self.buildClasses)
         self.setUpClassLabelFrame()
         self.setUpClassPartitionPage()
         
@@ -533,10 +536,18 @@ class ClassDefinitionPage(Page):
             self.className1.set('')
             self.className2.set('')
             self.sample_list = self.root.controller.getSamples()
+            self.subset_list = self.root.controller.getSubsets()
             s1 = self.s1 = Scrollbar(self, orient=VERTICAL)
             self.unclassified_listbox = Listbox(self, yscrollcommand=s1.set)
             s1.config(command=self.unclassified_listbox.yview)
             maxlen = 0
+            #add subsets to unclassified listbox
+            for subset_desc, _ in self.subset_list:
+                txt = self.tok + subset_desc
+                if len(txt) > maxlen:
+                    maxlen = len(txt)
+                self.unclassified_listbox.insert(END, txt)
+            #add samples to unclassified listbox
             for sample in self.sample_list:
                 if len(sample) > maxlen:
                     maxlen = len(sample)
@@ -588,7 +599,7 @@ class ClassDefinitionPage(Page):
         self.current = None
         self.poll()
 
-        self.define_button.grid(row=4, column=8, columnspan=2, sticky=E )        
+        self.define_button.grid(row=4, column=4, columnspan=6, sticky=E+W )        
         self.grid(row=1,column=1, sticky=N+S+E+W)
         numcolumns, numrows = self.grid_size()
         #self.rowconfigure(numrows-1 , weight = 0 )
@@ -596,7 +607,12 @@ class ClassDefinitionPage(Page):
         self.rowconfigure(2, weight = 1 )
         self.columnconfigure( 4, weight = 1 )
 
-
+    def _isSubsetLabel(self, txt):
+        """
+        Returns whether the txt contains the token defined in setUpClassPartitionPage
+        """
+        return txt[:len(self.tok)] == self.tok
+            
 
     def _updatedSamples(self):
         """
@@ -621,11 +637,52 @@ class ClassDefinitionPage(Page):
     def move(self, origin, dest):
         self.define_button.config(state=NORMAL)
         if len(origin.curselection()) > 0:
-            f = origin.curselection()[0]
-            val = origin.get(f)
-            origin.delete(f)
-            dest.insert(END, val )
-            origin.selection_set(int(f))
+            current = origin.curselection()
+            try:
+                current = map(int, current)
+            except ValueError:
+                pass
+            if origin.get(current[0])[:len(self.tok)] != self.tok:
+                #not a subset
+                current.sort()
+                current.reverse()
+                
+                for f in current:
+                    self._swap(origin, dest, f)
+                    origin.selection_set(int(f))
+            else:
+                #subset 
+                self.moveSubset(origin, dest, origin.get(current[0])[len(self.tok):])
+
+    def _swap(self, origin, dest, f):
+        """
+        Moves the value at the given index to the destination
+        """
+        val = origin.get(f)
+        origin.delete(f)
+        dest.insert(END, val )
+
+    def moveSubset(self, origin, dest, subsetLabel):
+        values = origin.get(0,END)
+        delIndices = []
+        sssampleList = self._subsetSampleList(subsetLabel)
+        sssampleDict = {}
+        for x in sssampleList:
+            sssampleDict[x] = True
+        sslIndex = 0
+        for i, val in enumerate(values):
+            if val in sssampleDict:
+                dest.insert(END, val)
+                delIndices.append(i)
+            elif val[len(self.tok):] == subsetLabel:
+                delIndices.append(i)
+                dest.insert(0, self.tok + subsetLabel)
+        delIndices.reverse()
+        for i in delIndices:
+            origin.delete(i)
+        origin.selection_set(delIndices[-1])
+
+      
     def add1(self):
         self.move(self.unclassified_listbox, self.class1listbox)
         self.current = None
@@ -648,6 +705,10 @@ class ClassDefinitionPage(Page):
         self.after(250, self.poll)
 
     def _currentList(self):
+        """
+        Returns a 2-tuple
+        (tuple containing selected, currently selected listbox object)
+        """
         uncList = self.unclassified_listbox.curselection()
         c1List = self.class1listbox.curselection()
         c2List = self.class2listbox.curselection()
@@ -664,14 +725,29 @@ class ClassDefinitionPage(Page):
             lb = self.class2listbox
         return (now, lb)
          
+    def _subsetDescription(self, subsetLabel):
+        mystr = "Subset: " + subsetLabel[len(self.tok):]
+        mystr += os.linesep
+        mystr += "Contains samples: " 
+        mystr += ' : '.join(self._subsetSampleList(subsetLabel[len(self.tok):]))
+        return mystr
 
+    def _subsetSampleList(self, subsetLabel):
+        for d, l in self.subset_list:
+            if d == subsetLabel:
+                return l
+ 
     def displayDescription(self, cursor, listbox):
         if len(cursor) > 0:
+            text = "No Description Available"
             raw = listbox.get(int(cursor[0]))
-            a = raw.split('].')
-            table = a[0][1:]
-            sample_id = a[1].strip()
-            text = self.root.controller.getSampleInfo(table, sample_id)
+            if self._isSubsetLabel(raw):
+                text = self._subsetDescription(raw)
+            else:
+                a = raw.split('].')
+                table = a[0][1:]
+                sample_id = a[1].strip()
+                text = self.root.controller.getSampleInfo(table, sample_id)
             self.description.config(state=NORMAL)
             self.description.delete(1.0, END)
             self.description.insert(END, text)
@@ -688,16 +764,18 @@ class ClassDefinitionPage(Page):
         class1 = []
         class2 = []
         for i in xrange(self.class1listbox.size()):
-            raw = self.class1listbox.get(i).split('].')
-            table = raw[0][1:]
-            sample_name = raw[1]
-            class1.append((table, sample_name))
+            if not self._isSubsetLabel(self.class1listbox.get(i)):
+                raw = self.class1listbox.get(i).split('].')
+                table = raw[0][1:]
+                sample_name = raw[1]
+                class1.append((table, sample_name))
         
         for i in xrange(self.class2listbox.size()):
-            raw = self.class2listbox.get(i).split('].')
-            table = raw[0][1:]
-            sample_name = raw[1]
-            class2.append((table, sample_name))
+            if not self._isSubsetLabel(self.class2listbox.get(i)):
+                raw = self.class2listbox.get(i).split('].')
+                table = raw[0][1:]
+                sample_name = raw[1]
+                class2.append((table, sample_name))
         self.root.controller.partitionClasses(class1, class2)
         
         self.define_button.config(state=DISABLED)

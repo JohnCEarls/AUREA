@@ -286,9 +286,40 @@ class Controller:
         for table in self.datapackage.getTables():
             table_id = table.dt_id
             for sample_id in table.getSamples():
-                text = "[" + table_id + "]." + sample_id
-                sample_list.append(text)
+                sample_list.append(self._makeSampleString(table_id, sample_id))
         return sample_list
+    
+    def _makeSampleString(self, table_id, sample_id):
+        """
+        helper to keep sample strings consistent
+        """
+        return "[" + table_id + "]." + sample_id
+
+    def getSubsets(self):
+        """
+        Returns a list of 2-tuples, 
+        [
+        (description, list of sample names formatted to match getSamples),
+        ...]
+        
+        """
+        sample_list = self.getSamples()[:]
+        sample_set = set(self.getSamples())
+        subset_list = []        
+        
+
+        for table in self.datapackage.getTables():
+            table_id = table.dt_id
+            for ssetdesc, ssetsamples in table.subsets:
+                sschecked_list = []
+                for sample_id in ssetsamples:
+                    sssid = self._makeSampleString(table_id, sample_id)
+                    if sssid in sample_set:
+                        sschecked_list.append(sssid)
+                subset_list.append((ssetdesc, sschecked_list))
+
+        return subset_list
+ 
 
     def clearClassSamples(self):
         """

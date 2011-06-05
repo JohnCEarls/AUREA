@@ -56,9 +56,9 @@ class DataTable:
         for ssentity in sstemp:
             if 'subset_sample_id' in ssentity.attributes and len(ssentity.attributes['subset_sample_id']) != 0:
                 ss_samples = ssentity.attributes['subset_sample_id'][0].split(',')
-                ss_desc =  ssentity.attributes['subset_description']
+                ss_desc =  ssentity.attributes['subset_description'][0]
 
-                self.subsets.append( (ss_samples, ss_desc) )            
+                self.subsets.append( (ss_desc, ss_samples) )            
         self.sp = None #so garbage collection can pick it up
 
     def getCSVData(self, CSVParse):
@@ -84,9 +84,6 @@ class DataTable:
 
         self.cleanUp()
         self.csv = None #so garbage collection can pick it up
-
-    def getSubsets(self):
-        if self.sp is not None:
 
 
     def writeAsCSV(self, file):
