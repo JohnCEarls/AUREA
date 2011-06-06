@@ -29,7 +29,7 @@ class LearnerQueue:
             self.weight = [1.0,1.0,1.0,1.0]
         else:
             self.weight = weight
-        if scale == None:
+        if scale is None:
             self.scale = [None,None,None,None]
         else:
             self.scale = scale
@@ -248,12 +248,12 @@ class LearnerQueue:
         self._queue[LearnerQueue.ktsp].put((self._est.kTSPtime(maxk, num_cross_validate, restrictions), settings))
 
 
-    def _calcScale(self, real_time, estimated_time):
+    def _calcScale(self, real_time, complexity):
         """
-        Takes the quotient of the est. time over the real time in order to
+        Takes the quotient of the complexity over time in order to
         generate a scaling factor for the running time.
         """
-        return estimated_time/real_time
+        return complexity/real_time
 
     def _adjWeight(self, learner, score):
         """
@@ -283,34 +283,46 @@ class LearnerQueue:
             #cycle through the queues looking for the best score
             if not self._queue[x].empty():
                 next = self._queue[x].get()
-                #scale time to last observed
-                if self.scale[x] is None:
-                    #initially scale all to .01 sec
-                    self.scale[x] = 100*float(next[0])
-                adj_next = next[0]/(self.weight[x]*self.scale[x])
-                if adj_next < min:
-                    min = adj_next
-                    if curr is not None:#put previous best back
+                complexity = next[0]
+                next_settings = next[1]
+                est_time = self.getEstimatedTime(x, complexity)
+                
+                weighted_time = est_time/self.weight[x]
+                if  weighted_time < min:
+                    min = weighted_time
+                    min_complexity = complexity
+                    min_settings = next_settings
+                    if curr is not None:
+                        #put previous best back
                         self._queue[curr[1]['learner']].put(curr)
                     curr = next 
                 else:
                     self._queue[x].put(next)
-        return curr 
+        return (min_complexity, min_settings) 
 
-    def trainLearner(self, settings, est_time):
+    def trainLearner(self, settings, complexity):
         """
         Returns a learner that has been trained according to the settings given.
         """
-        start = time.clock()
+        start_time = time.clock()
         l =  self.getLearner(settings)
         l.train()
-        real_time = time.clock() - start
-        newScale = 1.0
-        if real_time > 0.0:#should not happen, but windows may be silly
-            newScale = self._calcScale(real_time, est_time)
+        real_time = time.clock() - start_time
+
+        if real_time > 0.0:            
+            newScale = self._calcScale(real_time, complexity)
+        else:
+            #should not happen, but windows may be silly
+            newScale = None
+
         self._adjScale(settings['learner'], newScale)       
         return l
 
+    def getEstimatedTime(self, learner_id, complexity):
+        if self.scale[learner_id] is None:
+            return .00001
+        else:
+            return float(complexity)/float(self.scale[learner_id])
  
     def getLearner(self, settings):
         """

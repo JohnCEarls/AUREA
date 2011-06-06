@@ -25,34 +25,13 @@ class Adaptive:
         maxTime - maximum time in seconds to search model space
         Returns a tuple containing (achieved accuracy (float), settings(dict), learner (a learner object)) the best achieved accuracy for the given parameters
         """
-        #signal to catch timeouts
-        import signal, os
+        BAD_ACC = -.99999999
 
-        from AUREA.heuristic.Adaptive import AdaptiveTimeoutException
-        def signal_handler(signum, frame):
-            """
-            TYVM
-            http://stackoverflow.com/questions/366682/how-to-limit-execution-time-of-a-function-call-in-python
-            """
-            raise AdaptiveTimeoutException("Timed out")
-        isPosix = ( os.name == 'posix')
-        if isPosix:
-            signal.signal(signal.SIGALRM, signal_handler)
         self._progress_report("Configuring adaptive training")
-        #check settings, if bad use defaults
-        try:
-            acc = float(target_acc)
-        except Exception:
-            acc = .9
-        if acc > 1.0 or acc <= .0:
-            acc = .9
-        try:
-            mtime = int(maxTime)
-        except:
-            mtime = 2**20
+
         startTime = time.clock()
         self.endTime = maxTime + startTime
-        self.target_accuracy = acc
+        self.target_accuracy = target_acc
 
         learners = [LearnerQueue.dirac, LearnerQueue.tsp, LearnerQueue.tst, LearnerQueue.ktsp]
         #strings for display
@@ -61,38 +40,39 @@ class Adaptive:
         tl_str = "" #the best so far
 
         #init scores
-        top_acc = .000001
+        top_acc = BAD_ACC
         top_learner = None
         top_settings = None
     
         self._progress_report("Running Adaptive training.")
-        for est_running_time, settings in self.lq:
+        finished = False
+        str_learner = "Init:"
+        for complexity, settings in self.lq:            
+            est_running_time = self.lq.getEstimatedTime(settings['learner'],complexity)
             timeout = False
-            str_learner = viewable[settings['learner']]
-            #training
-            self._progress_report(tl_str + msg + " Trying " + str_learner)
+            est_end_time = est_running_time + time.clock()
             
-            #set up alarm in case training learner goes over time
-            if isPosix:
-                signal.alarm( int( self.endTime - time.clock() ) + 1)
-            try:            
-                learner = self.lq.trainLearner(settings, est_running_time)
-                if isPosix:
-                    signal.alarm(0)#made it
-            except AdaptiveTimeoutException: 
-                timeout = True
-                if isPosix:
-                    signal.alarm(0)
-
-            #cross validation
-            if timeout:
-                msg = str_learner + " timed out. :"
-                accuracy = .001
-                learner = None
-                settings = None
-            else:
+            if est_end_time < self.endTime:#see if we believe we will go over
+                str_learner = viewable[settings['learner']]
+                self._progress_report(tl_str + msg + " Trying " + str_learner)
+                
+                #training
+                learner = self.lq.trainLearner(settings, complexity)
                 accuracy = learner.crossValidate()
                 msg = str_learner + " achieved " + str(accuracy)[:4]
+
+                #shift accuracy to [0.0,1.0] for feedback
+                #let queue know how this learner did
+                self.lq.feedback(settings['learner'], (1.0+accuracy)/2)
+                #keep track of history for logs
+                self.history.append((accuracy, settings))
+            else: #our estimate says we would go over  
+                timeout = True
+                tl_str = str_learner + " estimated to go over time limit: "
+                accuracy = BAD_ACC
+                learner = None
+                settings = None
+
             #update if better
             if accuracy > top_acc:
                 top_acc = accuracy
@@ -100,20 +80,18 @@ class Adaptive:
                 top_settings = settings
                 tl_str = str_learner + " current best at " + str(top_acc)[:4] + " :"
                 msg += " new top learner : "
-            #let queue know how this learner did
-            if settings is not None:
-                #shift accuracy to [0.0,1.0]
-                self.lq.feedback(settings['learner'], (1.0+accuracy)/2)
-                #keep track of history
-                self.history.append((accuracy, settings))
                 
-            if self._goodEnough(accuracy):
-                #tell why we are done
-                if time.clock() > self.endTime:
-                    self._progress_report(tl_str + "Adaptive Finished.  Out of time.")
-                if accuracy >= self.target_accuracy:
-                    self._progress_report(tl_str + "Adaptive Finished.  Achieved Desired MCC.")
+            #tell why we are done
+            if timeout or time.clock() > self.endTime:
+                self._progress_report(tl_str + "Adaptive Finished.  Out of time.")
+                finished = True
+            if accuracy >= self.target_accuracy:
+                self._progress_report(tl_str + "Adaptive Finished.  Achieved Desired MCC.")
+                finished = True
+
+            if finished:
                 break
+
         return (top_acc, top_settings, top_learner)
 
        
@@ -121,6 +99,7 @@ class Adaptive:
         """
         Checks that one of the 2 conditions have been met(time or accuracy)
         True if 'good enough'
+        DEPRECATED
         """
         return time.clock() > self.endTime or self.target_accuracy  <= current_accuracy
 
@@ -144,6 +123,9 @@ class Adaptive:
         """
         Returns a human readable version of the settings dictionary
         """
+        if settings is None:
+            #no algorithms ran
+            return "None: Not Applicable."
         #dont want these
         ignorekeys = ['data', 'learner']
         # get a nice string with the learners name
