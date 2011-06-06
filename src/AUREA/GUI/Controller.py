@@ -516,18 +516,10 @@ class Controller:
     def trainAdaptive(self, target_accuracy, maxTime  ):
         self.app.status.set("Configuring adaptive training")
         
-        try:
-            acc = float(target_accuracy)
-        except Exception:
-            acc = .99
-        if acc > 1.0 or acc <= .0:
-            acc = .99
-        try:
-            mtime = int(maxTime)
-        except:
-            mtime = 2**20
-     
+        acc = float(target_accuracy)
+        mtime = int(maxTime)
         maxTime = mtime
+
         target_accuracy = acc
         #build learner queue
         self._adaptiveSetup()
@@ -541,11 +533,15 @@ class Controller:
         self.adaptive_settings = top_settings
         self.adaptive_acc = top_acc
         self.adaptive_setting_string  = adaptive.getSettingString(top_settings)
-
-        row_key = top_settings['data_type']
-        self.app.status.set("Training Complete, Checking Accuracy")
-        self.adaptive_acc_tuple = self._getLearnerAccuracy(self.adaptive, row_key)
-        self.app.status.set("Accuracy Check Complete")
+        if self.adaptive is not None:
+            row_key = top_settings['data_type']
+            self.app.status.set("Training Complete, Checking Accuracy")
+            self.adaptive_acc_tuple = self._getLearnerAccuracy(self.adaptive, row_key)
+            self.app.status.set("Accuracy Check Complete")
+        else:
+            #none of the algorithms ran, maybe timeout is to low
+            self.app.status.set("Adaptive failed to run. Is the timeout too low?")
+        
 
     def _adaptiveSetup(self):
         self._adaptiveSetupLearnerQueue()

@@ -4,7 +4,20 @@ import tkMessageBox
 import os
 from AUREA.GUI.Results import *
 import platform
+
 import re
+import threading
+
+def run_in_thread(fn):
+    """
+    A decorator that causes a function to be run in a thread
+    see:http://amix.dk/blog/post/19346
+    """
+    def run(*k, **kw):
+        t = threading.Thread(target=fn, args=k, kwargs=kw)
+        t.start()
+    return run
+
 class Page(Frame):
     """
     Base class for data input frames
@@ -316,7 +329,7 @@ class ImportDataPage(Page):
             self.downloadButton = Button(self, text="Download...", command=self.downloadSOFTdialog)
             self.dataSettingsButton = Button(self, text="Data Settings", command=self.root.menu.data_settings)
         self.geneSynonymDisplay()    
-        self.import_button = Button(self, text="Import Files", command=self.timportFiles)
+        self.import_button = Button(self, text="Import Files", command=self.importFiles)
         self.import_button.config(state=DISABLED)
 
     def clearGrid(self):
@@ -383,6 +396,8 @@ class ImportDataPage(Page):
             options['filetypes'] = [('gzipped SOFT', '.soft.gz'), ('SOFT', '.soft'),('Comma Separated', '.csv')]
         options['parent'] = self
         options['initialdir'] = 'data'
+        options['initialfile'] = 'GDS2545.soft.gz'
+
         options['title'] = "AUREA - Select data file."
         response = tkFileDialog.askopenfilename(**options)
         if response:
@@ -443,6 +458,7 @@ class ImportDataPage(Page):
             options['filetypes'] = [('Gene Matrix Transposed file format', '.gmt')]
         options['parent'] = self
         options['initialdir'] = 'data'
+        options['initialfile'] = 'c2.biocarta.v2.5.symbols.gmt'
         options['title'] = "AUREA - Select network file."
         response = tkFileDialog.askopenfilename(**options)
         if response:
@@ -461,33 +477,27 @@ class ImportDataPage(Page):
         if response:
             self.import_button.config(state=NORMAL)
             self.gsynPath.set(response)
-
+    @run_in_thread
     def importFiles(self):
         """
-        Imports the files called as thread.
-        called by timportFiles
+        Imports the files.
+        called by importFiles
         """
-        for path in self.softFilePath:
-            self.root.controller.addSOFTFile(path.get()) 
-        self.root.controller.setGeneNetworkFile(self.gnPath.get())
-        self.root.controller.setSynonymFile(self.gsynPath.get())
-        self.root.controller.loadFiles()
-        #update states
-        self.root.controller.updateState(self.remote.DataImport, 1)
-        ni = self.root.controller.getNetworkInfo()
-        if ni is not None:
-            self.root.controller.updateState(self.remote.NetworkImport, 1)
-            
-    def timportFiles(self):
-        import threading, Queue
         if self.checkFiles():
             self.remote.disableAllButtons() 
             self.root.controller.unloadFiles()
-            t = threading.Thread( target =self.importFiles )
-            t.start()
-            print "out"
             self.import_button.config(state=DISABLED)
-
+            for path in self.softFilePath:
+                self.root.controller.addSOFTFile(path.get()) 
+            self.root.controller.setGeneNetworkFile(self.gnPath.get())
+            self.root.controller.setSynonymFile(self.gsynPath.get())
+            self.root.controller.loadFiles()
+            #update states
+            self.root.controller.updateState(self.remote.DataImport, 1)
+            ni = self.root.controller.getNetworkInfo()
+            if ni is not None:
+                self.root.controller.updateState(self.remote.NetworkImport, 1)
+            
     def checkFiles(self):
         """
         Makes sure we have the necessary info to perform import
@@ -544,8 +554,8 @@ class ClassDefinitionPage(Page):
 
     def setUpClassPartitionPage(self):
         if self._updatedSamples():
-            self.className1.set('')
-            self.className2.set('')
+            self.className1.set('a')
+            self.className2.set('b')
             self.sample_list = self.root.controller.getSamples()
             self.subset_list = self.root.controller.getSubsets()
             s1 = self.s1 = Scrollbar(self, orient=VERTICAL)
@@ -825,7 +835,6 @@ class LearnerSettingsPage(Page):
         self.clearGrid()
         self.grid_forget()
  
-
 class TrainClassifiers(Page):
     def __init__(self, root):
         Page.__init__(self, root, 'Train')
@@ -834,32 +843,22 @@ class TrainClassifiers(Page):
 
     def drawPage(self):
         self.setAppTitle("Train Classifiers")
-        def netLoaded():
-            m = self.root.remote
-            nisat = m.getDepVector([m.NetworkImport])
-            return m.dependenciesSatisfied(self.root.controller.dependency_state, nisat)
-        self.training_label.grid(row=0, column=0, columnspan=2)
 
+        self.training_label.grid(row=0, column=0, columnspan=2)
         self.tsp_button.grid(row=1, column=0)
         self.ktsp_button.grid(row=2, column=0)
         self.tst_button.grid(row=3, column=0)
         self.dirac_button.grid(row=4, column=0)
         self.auto_button.grid(row=5, column=0)
-        if not netLoaded():
-            self.dirac_warning.grid(row=4, column=1)
-            self.adaptive_warning.grid(row=5, column=1)
-            self.dirac_button.config(state=DISABLED)
-            self.auto_button.config(state=DISABLED)
-        else:
-            self.dirac_button.config(state=NORMAL)
-            self.auto_button.config(state=NORMAL)
+
+        self.enableButtons()
 
         self.target_message.grid(row=6, column=0, columnspan=2)
         self.auto_maxtimeE.grid(row=7,column=1)
         self.auto_maxtime_label.grid(row=7, column=0)
-        
         self.auto_target_acc_label.grid(row=8, column=0)
         self.auto_target_accE.grid(row=8, column=1)
+
         for x in self.buttonList:
             x.grid(sticky=E+W)
         for x in range(9):
@@ -876,49 +875,93 @@ class TrainClassifiers(Page):
         e=s.auto_button = Button(self, text="Adaptive Training...", command=self.trainAdaptive )
         s.auto_target_acc_label = Label(self, text="Target Accuracy:")
         s.auto_maxtime_label = Label(self, text="Maximum Time(sec):")
-        if s.auto_target_acc is None:
-            s.auto_target_acc = StringVar()
-        s.auto_target_accE = Entry(self, textvariable=s.auto_target_acc)
         if s.auto_maxtime is None:
             s.auto_maxtime = StringVar()
         s.auto_maxtimeE = Entry(self, textvariable=self.auto_maxtime) 
+        if s.auto_target_acc is None:
+            s.auto_target_acc = StringVar()
+        s.auto_target_accE = Entry(self, textvariable=s.auto_target_acc)
         s.dirac_warning = Label(self, text="Gene Network file required", fg="red")
         s.adaptive_warning = Label(self, text="Gene Network file required", fg="red")
         s.target_message = Label(self, text="Please specify max time & target accuracy for Adaptive", fg="red")
         s.buttonList = [a,b,c,d,e]
 
+    def disableButtons(self):
+        """
+        disables all buttons
+        """
+        self.remote.disableAllButtons()
+        for b in self.buttonList:
+            b.config(state=DISABLED)
+
+    def enableButtons(self):
+        """
+        Enables the all(valid) buttons
+        """
+        def netLoaded():
+            m = self.root.remote
+            nisat = m.getDepVector([m.NetworkImport])
+            return m.dependenciesSatisfied(self.root.controller.dependency_state, nisat)
+
+        for b in self.buttonList:
+            b.config(state=NORMAL)
+
+        if not netLoaded():
+            self.dirac_warning.grid(row=4, column=1)
+            self.adaptive_warning.grid(row=5, column=1)
+            self.dirac_button.config(state=DISABLED)
+            self.auto_button.config(state=DISABLED)
+        else:
+            self.dirac_button.config(state=NORMAL)
+            self.auto_button.config(state=NORMAL)
+            self.root.remote.stateChange()
+
+    @run_in_thread
     def trainDirac(self):
+        self.disableButtons()
         self.root.controller.trainDirac()
         self.root.controller.updateState(self.remote.TrainDirac, 1)
         self.root.controller.updateState(self.remote.TrainAny, 1)
+        self.enableButtons()
         DiracResults(self)
-
+        
+    @run_in_thread
     def trainTSP(self):
+        self.disableButtons()
         self.root.controller.trainTSP()
         self.root.controller.updateState(self.remote.TrainTSP, 1)
         self.root.controller.updateState(self.remote.TrainAny, 1)
+        self.enableButtons()
         TSPResults(self) 
 
+    @run_in_thread
     def trainKTSP(self):
+        self.disableButtons()
         self.root.controller.updateState(self.remote.TrainKTSP, 1)
         self.root.controller.updateState(self.remote.TrainAny, 1)
         self.root.controller.trainkTSP()
+        self.enableButtons()
         KTSPResults(self)
         
-
+    @run_in_thread
     def trainTST(self):
+        self.disableButtons()
         self.root.controller.trainTST()
         self.root.controller.updateState(self.remote.TrainTST, 1)
         self.root.controller.updateState(self.remote.TrainAny, 1)
+        self.enableButtons()
         TSTResults(self)
 
+    @run_in_thread
     def trainAdaptive(self):
+        self.disableButtons()
         if self.adaptiveGood():
             self.root.controller.trainAdaptive(self.auto_target_acc.get(), self.auto_maxtime.get())
             self.root.controller.updateState(self.remote.TrainAdaptive, 1)
             self.root.controller.updateState(self.remote.TrainAny, 1)
             AdaptiveResults(self)
-        
+        self.enableButtons()
+       
     def clearPage(self):
         self.clearGrid()
         self.grid_forget()
