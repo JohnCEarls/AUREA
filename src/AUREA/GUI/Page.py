@@ -13,10 +13,21 @@ def run_in_thread(fn):
     A decorator that causes a function to be run in a thread
     see:http://amix.dk/blog/post/19346
     """
-    def run(*k, **kw):
+    def run(*k, **kw):        
         t = threading.Thread(target=fn, args=k, kwargs=kw)
         t.start()
     return run
+
+def thread_error_catch(fn):
+    def run(*k, **kw):        
+        try:
+            fn(*k, **kw)
+        except:
+            import sys
+            k[0].root.root.report_callback_exception(*sys.exc_info())
+    return run
+
+   
 
 class Page(Frame):
     """
@@ -477,12 +488,15 @@ class ImportDataPage(Page):
         if response:
             self.import_button.config(state=NORMAL)
             self.gsynPath.set(response)
+    
     @run_in_thread
+    @thread_error_catch
     def importFiles(self):
         """
         Imports the files.
         called by importFiles
         """
+        float("a")
         if self.checkFiles():
             self.remote.disableAllButtons() 
             self.root.controller.unloadFiles()
@@ -1164,19 +1178,26 @@ class EvaluateClassifiers(Page):
             s.adaptive_button.config(state=NORMAL)
             s.dirac_button.config(state=NORMAL)
 
-
+    @run_in_thread
     def cvDirac(self):
         self.root.controller.crossValidateDirac()
-
+    @run_in_thread
     def cvTSP(self):
         self.root.controller.crossValidateTSP()
-
+    @run_in_thread
     def cvKTSP(self):
         self.root.controller.crossValidateKTSP()
-
+    @run_in_thread
     def cvTST(self):
-        self.root.controller.crossValidateTST()
-
+        try:
+            float("asdf")
+            self.root.controller.crossValidateTST()
+            float("asdf")
+            a = 1
+        except Exception:
+            import sys
+            self.root.root.report_callback_exception(*sys.exc_info())
+    @run_in_thread
     def cvAdaptive(self):
         if self.adaptiveGood():
             self.root.controller.crossValidateAdaptive( self.auto_target_acc.get(), self.auto_maxtime.get())
