@@ -690,7 +690,7 @@ class Controller:
         #create adaptive object
         adaptive = Adaptive(self.learnerqueue, app_status_bar = self.app.status)
         self.adaptive_cv = adaptive.crossValidate(target_acc, maxtime)
-        self.app.status.set("Adaptive had an MCC of " + str(self.ktsp_cv)[:4])
+        self.app.status.set("Adaptive had an MCC of " + str(self.adaptive_cv)[:4])
 
  
     def _checkRowKey(self, row_key, srcStr="Not Given"):

@@ -160,12 +160,11 @@ class Adaptive:
             if den < .000001:
                 #http://en.wikipedia.org/wiki/Matthews_correlation_coefficient
                 den = 1.0
-
             return float(TP*TN - FP*FN)/den
         import copy
         #we swap out the base_lq, gets swapped back in at end of this meth.
         base_lq = self.lq
-            
+           
         dp = base_lq.data_package
         classifications = dp.getClassifications()
         train, test= self._partition(classifications, k)
@@ -177,7 +176,7 @@ class Adaptive:
         for i, training_set in enumerate(train):
             #set up adaptive for this training set
             test_set = test[i]
-            nLQ = self._genLearnerQueue( dp ,training_set)
+            nLQ = self._genLearnerQueue(dp ,training_set)
             self._copyLQParams(nLQ, base_lq)
             self.lq = nLQ
             #train adaptive

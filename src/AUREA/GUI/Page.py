@@ -19,12 +19,20 @@ def run_in_thread(fn):
     return run
 
 def thread_error_catch(fn):
+    """
+    A decorator to catch errors in a thread and pass them back to the
+    mainloop.
+    """
     def run(*k, **kw):        
+        self = k[0]
         try:
+            self.disableButtons()
             fn(*k, **kw)
+            self.enableButtons()
         except:
             import sys
-            k[0].root.root.report_callback_exception(*sys.exc_info())
+            #opens a window that displays the error
+            self.root.root.report_callback_exception(*sys.exc_info())
     return run
 
    
@@ -89,6 +97,16 @@ class Page(Frame):
 
         else:
             return True
+    def disableButtons(self):
+        """
+        Stub
+        """
+        pass
+    def enableButtons(self):
+        """
+        Stub
+        """
+        pass
 class HomePage(Page):
     """
     Corresponds to the Data Summary/Home page
@@ -291,6 +309,7 @@ class ImportDataPage(Page):
         self.softFileDeleteButton = []
         self.dataSettingButton=None
         self.addButton = None    
+        self.buttonList = []
 
     def drawPage(self):
         self.setAppTitle("Import Data")
@@ -301,6 +320,7 @@ class ImportDataPage(Page):
             self.softFileLabel[i].grid(row=r, column=0, pady=ypad)
             self.softFilePathE[i].grid(row=r, column=1, pady=ypad)
             self.softFileDialogButton[i].grid(row=r, column=2, pady=ypad)
+            
             if len(self.softFileLabel) != 1:
                 self.softFileDeleteButton[i].grid(row=r, column=3, pady=ypad)
             r += 1
@@ -329,18 +349,24 @@ class ImportDataPage(Page):
         #self.rowconfigure(numrows-1 , weight = 0 )
         self.rowconfigure(numrows-1 , weight = 1 )
         self.columnconfigure( 1, weight = 1 )
-
-
+        
     def setUpPage(self):
+        self.buttonList = []
         self.softFileDisplay()
         self.geneNetworkDisplay()
         #there can be only 1
         if self.addButton is None:
-            self.addButton = Button(self, text="Add another file",command=self.softfileadd)
-            self.downloadButton = Button(self, text="Download...", command=self.downloadSOFTdialog)
-            self.dataSettingsButton = Button(self, text="Data Settings", command=self.root.menu.data_settings)
+            a=self.addButton = Button(self, text="Add another file",command=self.softfileadd)
+            b=self.downloadButton = Button(self, text="Download...", command=self.downloadSOFTdialog)
+            c=self.dataSettingsButton = Button(self, text="Data Settings", command=self.root.menu.data_settings)
+            self.buttonList.append(a)
+            self.buttonList.append(b)
+            self.buttonList.append(c)
+            
+        
         self.geneSynonymDisplay()    
-        self.import_button = Button(self, text="Import Files", command=self.importFiles)
+        d = self.import_button = Button(self, text="Import Files", command=self.importFiles)
+        self.buttonList.append(d)
         self.import_button.config(state=DISABLED)
 
     def clearGrid(self):
@@ -386,7 +412,8 @@ class ImportDataPage(Page):
         if self.gnPath is None:
             self.gnPath = StringVar()
         self.gnPathE = Entry(self, textvariable=self.gnPath,width=50)
-        self.gnDialogButton = Button(self, text = "Browse ...",command=self.gnfiledialog)
+        a = self.gnDialogButton = Button(self, text = "Browse ...",command=self.gnfiledialog)
+        self.buttonList.append(a)
         self.gnText = Label(self, text="Required for DiRaC, Adaptive (c2.biocarta.v2.5.symbols.gmt)")
         self._italicFont(self.gnText)
 
@@ -395,7 +422,8 @@ class ImportDataPage(Page):
         if self.gsynPath is None:
             self.gsynPath = StringVar()
         self.gsynPathE = Entry(self, textvariable=self.gsynPath, width=50)
-        self.gsynDialogButton = Button(self, text = "Browse ...",command=self.gsynfiledialog) 
+        a=self.gsynDialogButton = Button(self, text = "Browse ...",command=self.gsynfiledialog) 
+        self.buttonList.append(a)
         self.gsynText = Label(self, text="Recommended for DiRaC, Adaptive (Homo_sapiens.gene_info.gz)")
         self._italicFont(self.gsynText)
 
@@ -407,7 +435,6 @@ class ImportDataPage(Page):
             options['filetypes'] = [('gzipped SOFT', '.soft.gz'), ('SOFT', '.soft'),('Comma Separated', '.csv')]
         options['parent'] = self
         options['initialdir'] = 'data'
-        options['initialfile'] = 'GDS2545.soft.gz'
 
         options['title'] = "AUREA - Select data file."
         response = tkFileDialog.askopenfilename(**options)
@@ -496,9 +523,7 @@ class ImportDataPage(Page):
         Imports the files.
         called by importFiles
         """
-        float("a")
         if self.checkFiles():
-            self.remote.disableAllButtons() 
             self.root.controller.unloadFiles()
             self.import_button.config(state=DISABLED)
             for path in self.softFilePath:
@@ -511,7 +536,36 @@ class ImportDataPage(Page):
             ni = self.root.controller.getNetworkInfo()
             if ni is not None:
                 self.root.controller.updateState(self.remote.NetworkImport, 1)
-            
+           
+    def disableButtons(self):
+        """
+        disables all buttons
+        """
+        self.remote.disableAllButtons()
+        for b in self.buttonList:
+            b.config(state=DISABLED)
+
+        for b in self.softFileDialogButton:
+            b.config(state=DISABLED)
+
+        for b in  self.softFileDeleteButton:
+            b.config(state=DISABLED)
+
+    def enableButtons(self):
+        """
+        Enables the all(valid) buttons
+        """
+        for b in self.buttonList:
+            b.config(state=NORMAL)
+        
+        for b in self.softFileDialogButton:
+            b.config(state=NORMAL)
+
+        for b in  self.softFileDeleteButton:
+            b.config(state=NORMAL)
+        self.remote.stateChange()
+
+ 
     def checkFiles(self):
         """
         Makes sure we have the necessary info to perform import
@@ -568,8 +622,8 @@ class ClassDefinitionPage(Page):
 
     def setUpClassPartitionPage(self):
         if self._updatedSamples():
-            self.className1.set('a')
-            self.className2.set('b')
+            self.className1.set('')
+            self.className2.set('')
             self.sample_list = self.root.controller.getSamples()
             self.subset_list = self.root.controller.getSubsets()
             s1 = self.s1 = Scrollbar(self, orient=VERTICAL)
@@ -865,7 +919,6 @@ class TrainClassifiers(Page):
         self.dirac_button.grid(row=4, column=0)
         self.auto_button.grid(row=5, column=0)
 
-        self.enableButtons()
 
         self.target_message.grid(row=6, column=0, columnspan=2)
         self.auto_maxtimeE.grid(row=7,column=1)
@@ -913,7 +966,7 @@ class TrainClassifiers(Page):
         Enables the all(valid) buttons
         """
         def netLoaded():
-            m = self.root.remote
+            m = self.remote
             nisat = m.getDepVector([m.NetworkImport])
             return m.dependenciesSatisfied(self.root.controller.dependency_state, nisat)
 
@@ -928,45 +981,46 @@ class TrainClassifiers(Page):
         else:
             self.dirac_button.config(state=NORMAL)
             self.auto_button.config(state=NORMAL)
-            self.root.remote.stateChange()
+            self.remote.stateChange()
 
     @run_in_thread
+    @thread_error_catch
     def trainDirac(self):
         self.disableButtons()
         self.root.controller.trainDirac()
         self.root.controller.updateState(self.remote.TrainDirac, 1)
         self.root.controller.updateState(self.remote.TrainAny, 1)
-        self.enableButtons()
         DiracResults(self)
         
     @run_in_thread
+    @thread_error_catch
     def trainTSP(self):
         self.disableButtons()
         self.root.controller.trainTSP()
         self.root.controller.updateState(self.remote.TrainTSP, 1)
         self.root.controller.updateState(self.remote.TrainAny, 1)
-        self.enableButtons()
         TSPResults(self) 
 
     @run_in_thread
+    @thread_error_catch
     def trainKTSP(self):
         self.disableButtons()
         self.root.controller.updateState(self.remote.TrainKTSP, 1)
         self.root.controller.updateState(self.remote.TrainAny, 1)
         self.root.controller.trainkTSP()
-        self.enableButtons()
         KTSPResults(self)
         
     @run_in_thread
+    @thread_error_catch
     def trainTST(self):
         self.disableButtons()
         self.root.controller.trainTST()
         self.root.controller.updateState(self.remote.TrainTST, 1)
         self.root.controller.updateState(self.remote.TrainAny, 1)
-        self.enableButtons()
         TSTResults(self)
 
     @run_in_thread
+    @thread_error_catch
     def trainAdaptive(self):
         self.disableButtons()
         if self.adaptiveGood():
@@ -974,7 +1028,6 @@ class TrainClassifiers(Page):
             self.root.controller.updateState(self.remote.TrainAdaptive, 1)
             self.root.controller.updateState(self.remote.TrainAny, 1)
             AdaptiveResults(self)
-        self.enableButtons()
        
     def clearPage(self):
         self.clearGrid()
@@ -1178,26 +1231,57 @@ class EvaluateClassifiers(Page):
             s.adaptive_button.config(state=NORMAL)
             s.dirac_button.config(state=NORMAL)
 
+    def disableButtons(self):
+        """
+        disables all buttons
+        """
+        self.remote.disableAllButtons()
+        for b in self.buttonList:
+            b.config(state=DISABLED)
+
+    def enableButtons(self):
+        """
+        Enables the all(valid) buttons
+        """
+        def netLoaded():
+            m = self.remote
+            nisat = m.getDepVector([m.NetworkImport])
+            return m.dependenciesSatisfied(self.root.controller.dependency_state, nisat)
+
+        for b in self.buttonList:
+            b.config(state=NORMAL)
+
+        if not netLoaded():
+            self.dirac_button.config(state=DISABLED)
+            self.adaptive_button.config(state=DISABLED)
+        else:
+            self.dirac_button.config(state=NORMAL)
+            self.adaptive_button.config(state=NORMAL)
+        self.remote.stateChange()
+
     @run_in_thread
+    @thread_error_catch
     def cvDirac(self):
         self.root.controller.crossValidateDirac()
     @run_in_thread
+    @thread_error_catch
     def cvTSP(self):
         self.root.controller.crossValidateTSP()
     @run_in_thread
+    @thread_error_catch
     def cvKTSP(self):
         self.root.controller.crossValidateKTSP()
     @run_in_thread
+    @thread_error_catch
     def cvTST(self):
         try:
-            float("asdf")
             self.root.controller.crossValidateTST()
-            float("asdf")
             a = 1
         except Exception:
             import sys
             self.root.root.report_callback_exception(*sys.exc_info())
     @run_in_thread
+    @thread_error_catch
     def cvAdaptive(self):
         if self.adaptiveGood():
             self.root.controller.crossValidateAdaptive( self.auto_target_acc.get(), self.auto_maxtime.get())
