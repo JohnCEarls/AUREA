@@ -1048,11 +1048,12 @@ class TrainClassifiers(Page):
     @run_in_thread
     @thread_error_catch
     def trainAdaptive(self):
-        self.root.controller.trainAdaptive(self.auto_target_acc.get(), self.auto_maxtime.get())
-        self.root.controller.updateState(self.remote.TrainAdaptive, 1)
-        self.root.controller.updateState(self.remote.TrainAny, 1)
-        self.thread_message_queue.put(('adaptiveResult',None))
-       
+        if self.adaptiveGood():
+            self.root.controller.trainAdaptive(self.auto_target_acc.get(), self.auto_maxtime.get())
+            self.root.controller.updateState(self.remote.TrainAdaptive, 1)
+            self.root.controller.updateState(self.remote.TrainAny, 1)
+            self.thread_message_queue.put(('adaptiveResult',None))
+           
     def clearPage(self):
         self.clearGrid()
         self.grid_forget()
