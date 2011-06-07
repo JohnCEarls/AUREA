@@ -1014,7 +1014,7 @@ class TrainClassifiers(Page):
         self.root.controller.trainDirac()
         self.root.controller.updateState(self.remote.TrainDirac, 1)
         self.root.controller.updateState(self.remote.TrainAny, 1)
-        self.thread_message_queue.put(('tspResult',None))
+        self.thread_message_queue.put(('diracResult',None))
 
     @run_in_thread
     @thread_error_catch
