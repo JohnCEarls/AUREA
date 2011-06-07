@@ -4,7 +4,7 @@ import tkMessageBox
 import os
 from AUREA.GUI.Results import *
 import platform
-
+import Queue
 import re
 import threading
 
@@ -13,7 +13,8 @@ def run_in_thread(fn):
     A decorator that causes a function to be run in a thread
     see:http://amix.dk/blog/post/19346
     """
-    def run(*k, **kw):        
+    def run(*k, **kw):
+                
         t = threading.Thread(target=fn, args=k, kwargs=kw)
         t.start()
     return run
@@ -29,10 +30,13 @@ def thread_error_catch(fn):
             self.disableButtons()
             fn(*k, **kw)
             self.enableButtons()
-        except:
+        except Exception, e:
+            self.thread_message_queue.put(('error', sys.exc_info()))
+            """
             import sys
             #opens a window that displays the error
             self.root.root.report_callback_exception(*sys.exc_info())
+            """
     return run
 
    
@@ -47,6 +51,28 @@ class Page(Frame):
         self.root = root
         self.remote = root.remote
         self.id = id
+        self.thread_message_queue = Queue.Queue()
+        self.checkTMQ()
+
+    def checkTMQ(self):
+        """
+        Handles thread-based message passing
+        """
+        if not self.thread_message_queue.empty():
+            type, msg = self.thread_message_queue.get()
+            if type == 'error':
+                self.root.root.report_callback_exception(*msg)
+            elif type == 'tspResult':
+                TSPResults(self)
+            elif type == 'tstResult':
+                TSTResults(self)
+            elif type == 'diracResult':
+                DiracResults(self)
+            elif type == 'ktspResult':
+                KTSPResults(self)
+            elif type == 'adaptiveResult':
+                AdaptiveResults(self)
+        self.after(1000, self.checkTMQ)
 
     def drawPage(self):
         raise ImplementationError(self.id, 'drawPage')
@@ -365,8 +391,7 @@ class ImportDataPage(Page):
             
         
         self.geneSynonymDisplay()    
-        d = self.import_button = Button(self, text="Import Files", command=self.importFiles)
-        self.buttonList.append(d)
+        self.import_button = Button(self, text="Import Files", command=self.importFiles)
         self.import_button.config(state=DISABLED)
 
     def clearGrid(self):
@@ -986,48 +1011,47 @@ class TrainClassifiers(Page):
     @run_in_thread
     @thread_error_catch
     def trainDirac(self):
-        self.disableButtons()
         self.root.controller.trainDirac()
         self.root.controller.updateState(self.remote.TrainDirac, 1)
         self.root.controller.updateState(self.remote.TrainAny, 1)
-        DiracResults(self)
-        
+        self.thread_message_queue.put(('tspResult',None))
+
     @run_in_thread
     @thread_error_catch
     def trainTSP(self):
-        self.disableButtons()
         self.root.controller.trainTSP()
         self.root.controller.updateState(self.remote.TrainTSP, 1)
         self.root.controller.updateState(self.remote.TrainAny, 1)
-        TSPResults(self) 
+        self.thread_message_queue.put(('tspResult',None))
+
 
     @run_in_thread
     @thread_error_catch
     def trainKTSP(self):
-        self.disableButtons()
         self.root.controller.updateState(self.remote.TrainKTSP, 1)
         self.root.controller.updateState(self.remote.TrainAny, 1)
         self.root.controller.trainkTSP()
-        KTSPResults(self)
-        
+        self.thread_message_queue.put(('ktspResult',None))
+
+       
     @run_in_thread
     @thread_error_catch
     def trainTST(self):
-        self.disableButtons()
         self.root.controller.trainTST()
         self.root.controller.updateState(self.remote.TrainTST, 1)
         self.root.controller.updateState(self.remote.TrainAny, 1)
-        TSTResults(self)
+        self.thread_message_queue.put(('tstResult',None))
+
+
+       
 
     @run_in_thread
     @thread_error_catch
     def trainAdaptive(self):
-        self.disableButtons()
-        if self.adaptiveGood():
-            self.root.controller.trainAdaptive(self.auto_target_acc.get(), self.auto_maxtime.get())
-            self.root.controller.updateState(self.remote.TrainAdaptive, 1)
-            self.root.controller.updateState(self.remote.TrainAny, 1)
-            AdaptiveResults(self)
+        self.root.controller.trainAdaptive(self.auto_target_acc.get(), self.auto_maxtime.get())
+        self.root.controller.updateState(self.remote.TrainAdaptive, 1)
+        self.root.controller.updateState(self.remote.TrainAny, 1)
+        self.thread_message_queue.put(('adaptiveResult',None))
        
     def clearPage(self):
         self.clearGrid()
