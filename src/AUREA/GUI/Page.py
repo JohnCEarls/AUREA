@@ -72,7 +72,7 @@ class Page(Frame):
                 KTSPResults(self)
             elif type == 'adaptiveResult':
                 AdaptiveResults(self)
-            elif type = 'adaptiveMessage':
+            elif type == 'adaptiveMessage':
                 tkMessageBox.showerror(message=msg)
 
         self.after(1000, self.checkTMQ)
