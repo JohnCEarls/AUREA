@@ -72,6 +72,9 @@ class Page(Frame):
                 KTSPResults(self)
             elif type == 'adaptiveResult':
                 AdaptiveResults(self)
+            elif type = 'adaptiveMessage':
+                tkMessageBox.showerror(message=msg)
+
         self.after(1000, self.checkTMQ)
 
     def drawPage(self):
@@ -118,9 +121,8 @@ class Page(Frame):
             errmsg += "Adaptive requires a maximum running time."
 
         if len(errmsg) > 0:
-           tkMessageBox.showerror(message=errmsg)
-           return False
-
+            self.thread_message_queue.put(('adaptiveMessage', errmsg)) 
+            return False
         else:
             return True
     def disableButtons(self):
