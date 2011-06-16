@@ -1198,12 +1198,12 @@ class EvaluateClassifiers(Page):
         e = s.adaptive_button = Button(self, text="Adaptive...", command=s.cvAdaptive )
         s.auto_target_acc_label = Label(self, text="Target Accuracy:")
         s.auto_maxtime_label = Label(self, text="Maximum Time(sec):")
-        if s.auto_target_acc is None:
-            s.auto_target_acc = StringVar()
-        s.auto_target_accE = Entry(self, textvariable=s.auto_target_acc)
         if s.auto_maxtime is None:
             s.auto_maxtime = StringVar()
         s.auto_maxtimeE = Entry(self, textvariable=self.auto_maxtime) 
+        if s.auto_target_acc is None:
+            s.auto_target_acc = StringVar()
+        s.auto_target_accE = Entry(self, textvariable=s.auto_target_acc)
         s.target_message = Label(self, text="Please specify max time & target accuracy for Adaptive", fg="red")
         s.buttonList = [a,b,c,d,e]
 
