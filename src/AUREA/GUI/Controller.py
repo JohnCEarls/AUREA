@@ -89,6 +89,7 @@ class Controller:
     def setApp(self, app):
         self.app = app
         self.remote = app.remote
+        self.queue = self.app.thread_message_queue
 
     def updateState(self, dependency, satisfied):
         """
@@ -114,30 +115,30 @@ class Controller:
         """
         Note raises urllib2.URLError when the download attempt fails
         """
-        self.app.status.clear()
-        self.app.status.set("Downloading " + softfilename)
+        self.queue.put(('statusbarclear',None))
+        self.queue.put(('statusbarset',"Downloading " + softfilename))
         dl = SOFTDownloader(softfilename, output_directory=self.config.getSetting("datatable", "Data Folder")[0])
-        self.app.status.clear()
+        self.queue.put(('statusbarclear',None))
         return dl.getFilePath()
 
     def loadFiles(self):
         """
         Loads all of the specified files
         """
-        self.app.status.clear()
+        self.queue.put(('statusbarclear',None))
         self.parseSOFTFiles()
         self.buildDataTables()
         self.buildDataPackage() 
         if self.geneNetworkFile:
             self.parseNetworkFile()
         if self.geneSynonymFile:
-            self.app.status.set("Loading Synonyms")
+            self.queue.put(('statusbarset',"Loading Synonyms"))
             self.datapackage.addSynonyms(self.geneSynonymFile) 
-        self.app.status.clear()
-        self.app.status.set("Data import complete")
+        self.queue.put(('statusbarclear',None))
+        self.queue.put(('statusbarset',"Data import complete"))
     
     def unloadFiles(self):
-        self.app.status.clear()
+        self.queue.put(('statusbarclear',None))
         self.softparser = []
         self.geneNetworkParser = None
         self.datapackage = None
@@ -150,7 +151,7 @@ class Controller:
         adds SOFTparser objects to softparser
         """
         for file in self.softFile:
-            self.app.status.set("Parsing " + file)
+            self.queue.put(('statusbarset',"Parsing " + file))
             if file[-3:] == "csv":
                 self.tmpfile = file
                 self._done = False
@@ -174,13 +175,13 @@ class Controller:
                 #self.softparser.append(CSVParser(file,probe_column=probe_column.get(), gene_column=gene_column.get() ))
             else:
                 self.softparser.append(SOFTParser(file))
-            self.app.status.clear()
+            self.queue.put(('statusbarclear',None))
 
     def buildDataTables(self):
         """
         Builds a table for each data file
         """
-        self.app.status.set("Building tables")
+        self.queue.put(('statusbarset',"Building tables"))
         collision = self.config.getSetting("datatable", "Gene Collision Rule")[0]
         bad_data =self.config.getSetting("datatable", "Bad Data Value")[0] 
         gene_column = self.config.getSetting("datatable", "Gene Column")[0]
@@ -198,12 +199,12 @@ class Controller:
         Merges all the data tables into one package from which we pull our
         data for learning
         """
-        self.app.status.set("Building data package")
+        self.queue.put(('statusbarset',"Building data package"))
         self.datapackage = dataPackager()
         for dt in self.datatable:
             self.datapackage.addDataTable(dt)
         self.datapackage.mergeTables()
-        self.app.status.clear()
+        self.queue.put(('statusbarclear',None))
 
     def getDataPackagingResults(self):
         """
@@ -237,11 +238,11 @@ class Controller:
         """
         Parse network file and add networks to datapackage
         """    
-        self.app.status.set("Parsing network file")
+        self.queue.put(('statusbarset',"Parsing network file"))
         self.geneNetworkParser = GMTParser(self.geneNetworkFile)
-        self.app.status.set("Loading gene networks")
+        self.queue.put(('statusbarset',"Loading gene networks"))
         self.datapackage.addGeneNetwork(self.geneNetworkParser.getAllNetworks())
-        self.app.status.clear()
+        self.queue.put(('statusbarclear',None))
     
     def createClassification(self, page):
         """
@@ -412,8 +413,8 @@ class Controller:
 
 
     def trainDirac(self, crossValidate=False):
-        self.app.status.clear()
-        self.app.status.set("Preparing Dirac")
+        self.queue.put(('statusbarclear',None))
+        self.queue.put(('statusbarset',"Preparing Dirac"))
         min_net = self.config.getSetting("dirac","Minimum Network Size")[0]
         row_key = self.config.getSetting("dirac","Row Key(genes/probes)")[0]
         numTopNetworks = self.config.getSetting("dirac","Number of Top Networks")[0]
@@ -426,19 +427,19 @@ class Controller:
         if crossValidate:
             return d
         
-        self.app.status.set("Training Dirac")
+        self.queue.put(('statusbarset',"Training Dirac"))
         d.train()
         self.dirac = d
-        self.app.status.set("Training Complete, Checking Accuracy")
+        self.queue.put(('statusbarset',"Training Complete, Checking Accuracy"))
         self.dirac_acc = self._getLearnerAccuracy(self.dirac, row_key)
-        self.app.status.set("Accuracy Check Complete")
+        self.queue.put(('statusbarset',"Accuracy Check Complete"))
     
 
     def trainTSP(self, crossValidate=False):
         """
         Performs the training of TSP
         """
-        self.app.status.set("Preparing TSP")
+        self.queue.put(('statusbarset',"Preparing TSP"))
         filters = self.config.getSetting("tsp","filters")
         row_key = self.config.getSetting("tsp","Row Key(genes/probes)")[0]
          
@@ -451,19 +452,19 @@ class Controller:
         t = tsp.TSP(data_vector, num_genes, class_vector, vecFilter)
         if crossValidate:
             return t
-        self.app.status.set("Training TSP")
+        self.queue.put(('statusbarset',"Training TSP"))
         self.tsp = t
         t.train()
-        self.app.status.set("Training Complete, Checking Accuracy")
+        self.queue.put(('statusbarset',"Training Complete, Checking Accuracy"))
         self.tsp_acc = self._getLearnerAccuracy(self.tsp, row_key)
-        self.app.status.set("Accuracy Check Complete")
+        self.queue.put(('statusbarset',"Accuracy Check Complete"))
 
 
     def trainTST(self, crossValidate=False):
         """
         Performs the training of tst
         """
-        self.app.status.set("Preparing TST")
+        self.queue.put(('statusbarset',"Preparing TST"))
         filters = self.config.getSetting("tst","filters")
         row_key = self.config.getSetting("tst","Row Key(genes/probes)")[0]
          
@@ -476,18 +477,18 @@ class Controller:
         if crossValidate:
             return t
         self.tst = t
-        self.app.status.set("Training TST")
+        self.queue.put(('statusbarset',"Training TST"))
         t.train()
-        self.app.status.set("Training Complete, Checking Accuracy")
+        self.queue.put(('statusbarset',"Training Complete, Checking Accuracy"))
         self.tst_acc = self._getLearnerAccuracy(self.tst, row_key)
-        self.app.status.set("Accuracy Check Complete")
+        self.queue.put(('statusbarset',"Accuracy Check Complete"))
 
 
     def trainkTSP(self, crossValidate=False):
         """
         Performs the training of k-TSP
         """
-        self.app.status.set("Preparing k-TSP")
+        self.queue.put(('statusbarset',"Preparing k-TSP"))
         maxk = self.config.getSetting("ktsp","Maximum K value")[0]
         cross_remove = self.config.getSetting("ktsp","Remove for Cross Validation")[0]
         num_cross = self.config.getSetting("ktsp","Number of Cross Validation Runs")[0]
@@ -505,16 +506,17 @@ class Controller:
         k = ktsp.KTSP( data_vector, num_genes, class_vector, vecFilter, maxk, cross_remove, num_cross)
         if crossValidate:
             return k
-        self.app.status.set("Training k-TSP")
+        self.queue.put(('statusbarset',"Training k-TSP"))
         k.train()
         self.ktsp = k
-        self.app.status.set("Training Complete, Checking Accuracy")
+        self.queue.put(('statusbarset',"Training Complete, Checking Accuracy"))
+        
         self.ktsp_acc = self._getLearnerAccuracy(self.ktsp, row_key)
-        self.app.status.set("Accuracy Check Complete")
+        self.queue.put(('statusbarset',"Accuracy Check Complete"))
 
 
     def trainAdaptive(self, target_accuracy, maxTime  ):
-        self.app.status.set("Configuring adaptive training")
+        self.queue.put(('statusbarset',"Configuring adaptive training"))
         
         acc = float(target_accuracy)
         mtime = int(maxTime)
@@ -524,7 +526,7 @@ class Controller:
         #build learner queue
         self._adaptiveSetup()
         #create adaptive object
-        adaptive = Adaptive(self.learnerqueue, app_status_bar = self.app.status)
+        adaptive = Adaptive(self.learnerqueue, app_status_bar = self.queue)
         top_acc, top_settings, top_learner = adaptive.getLearner(target_accuracy, maxTime)
         #store adaptive results (really should be in adaptive)
         self.adaptive_history = adaptive.getHistory()
@@ -535,24 +537,25 @@ class Controller:
         self.adaptive_setting_string  = adaptive.getSettingString(top_settings)
         if self.adaptive is not None:
             row_key = top_settings['data_type']
-            self.app.status.set("Training Complete, Checking Accuracy")
+            self.queue.put(('statusbarset',"Training Complete, Checking Accuracy"))
             self.adaptive_acc_tuple = self._getLearnerAccuracy(self.adaptive, row_key)
-            self.app.status.set("Accuracy Check Complete")
+            self.queue.put(('statusbarset',"Accuracy Check Complete"))
         else:
             #none of the algorithms ran, maybe timeout is to low
-            self.app.status.set("Adaptive failed to run. Is the timeout too low?")
+            self.queue.put(('statusbarset',"Adaptive failed to run. Is the timeout too low?"))
         
 
     def _adaptiveSetup(self):
         self._adaptiveSetupLearnerQueue()
-        self.app.status.set("Configuring dirac")
+        self.queue.put(('statusbarset',"Configuring dirac"))
         self._adaptiveSetupDirac()
-        self.app.status.set("Configuring tsp")
+        self.queue.put(('statusbarset',"Configuring tsp"))
         self._adaptiveSetupTSP()
-        self.app.status.set("Configuring tst")
+        self.queue.put(('statusbarset',"Configuring tst"))
         self._adaptiveSetupTST()
-        self.app.status.set("Configuring ktsp")
+        self.queue.put(('statusbarset',"Configuring ktsp"))
         self._adaptiveSetupKTSP()
+        self.queue.put(('statusbarset',"Relational learners configured"))
 
 
     def _adaptiveSetupLearnerQueue(self):
@@ -663,34 +666,34 @@ class Controller:
   
     def crossValidateDirac(self):
         dirac = self.trainDirac(crossValidate = True)
-        self.app.status.set("Cross Validating")
+        self.queue.put(('statusbarset',"Cross Validating"))
         self.dirac_cv = dirac.crossValidate()
-        self.app.status.set("Dirac had an MCC of " + str(self.dirac_cv)[:4])
+        self.queue.put(('statusbarset',"Dirac had an MCC of " + str(self.dirac_cv)[:4]))
 
     def crossValidateTSP(self):
         tsp = self.trainTSP(crossValidate = True)
-        self.app.status.set("Cross Validating")
+        self.queue.put(('statusbarset',"Cross Validating"))
         self.tsp_cv = tsp.crossValidate()
-        self.app.status.set("TSP had an MCC of " + str(self.tsp_cv)[:4])
+        self.queue.put(('statusbarset',"TSP had an MCC of " + str(self.tsp_cv)[:4]))
 
     def crossValidateTST(self):
         tst = self.trainTST(crossValidate = True)
-        self.app.status.set("Cross Validating")
+        self.queue.put(('statusbarset',"Cross Validating"))
         self.tst_cv = tst.crossValidate()
-        self.app.status.set("TST had an MCC of " + str(self.tst_cv)[:4])
+        self.queue.put(('statusbarset',"TST had an MCC of " + str(self.tst_cv)[:4]))
 
     def crossValidateKTSP(self):
         ktsp = self.trainkTSP(crossValidate = True)
-        self.app.status.set("Cross Validating")
+        self.queue.put(('statusbarset',"Cross Validating"))
         self.ktsp_cv = ktsp.crossValidate()
-        self.app.status.set("KTSP had an MCC of " + str(self.ktsp_cv)[:4])
+        self.queue.put(('statusbarset',"KTSP had an MCC of " + str(self.ktsp_cv)[:4]))
   
     def crossValidateAdaptive(self, target_acc, maxtime):
         self._adaptiveSetup()
         #create adaptive object
-        adaptive = Adaptive(self.learnerqueue, app_status_bar = self.app.status)
+        adaptive = Adaptive(self.learnerqueue, app_status_bar = self.queue)
         self.adaptive_cv = adaptive.crossValidate(target_acc, maxtime)
-        self.app.status.set("Adaptive had an MCC of " + str(self.adaptive_cv)[:4])
+        self.queue.put(('statusbarset',"Adaptive had an MCC of " + str(self.adaptive_cv)[:4]))
 
  
     def _checkRowKey(self, row_key, srcStr="Not Given"):

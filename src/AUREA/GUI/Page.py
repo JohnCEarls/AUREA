@@ -51,31 +51,9 @@ class Page(Frame):
         self.root = root
         self.remote = root.remote
         self.id = id
-        self.thread_message_queue = Queue.Queue()
-        self.checkTMQ()
+        self.thread_message_queue = self.root.thread_message_queue     
 
-    def checkTMQ(self):
-        """
-        Handles thread-based message passing
-        """
-        if not self.thread_message_queue.empty():
-            type, msg = self.thread_message_queue.get()
-            if type == 'error':
-                self.root.root.report_callback_exception(*msg)
-            elif type == 'tspResult':
-                TSPResults(self)
-            elif type == 'tstResult':
-                TSTResults(self)
-            elif type == 'diracResult':
-                DiracResults(self)
-            elif type == 'ktspResult':
-                KTSPResults(self)
-            elif type == 'adaptiveResult':
-                AdaptiveResults(self)
-            elif type == 'adaptiveMessage':
-                tkMessageBox.showerror(message=msg)
 
-        self.after(1000, self.checkTMQ)
 
     def drawPage(self):
         raise ImplementationError(self.id, 'drawPage')
@@ -338,6 +316,7 @@ class ImportDataPage(Page):
         self.dataSettingButton=None
         self.addButton = None    
         self.buttonList = []
+        
 
     def drawPage(self):
         self.setAppTitle("Import Data")
@@ -935,6 +914,7 @@ class TrainClassifiers(Page):
         Page.__init__(self, root, 'Train')
         self.auto_target_acc = None
         self.auto_maxtime = None
+        
 
     def drawPage(self):
         self.setAppTitle("Train Classifiers")
@@ -1206,6 +1186,7 @@ class EvaluateClassifiers(Page):
         Page.__init__(self, root, 'Evaluate')
         self.auto_target_acc = None
         self.auto_maxtime = None
+        
 
     def setUpPage(s):
         self = s
@@ -1301,12 +1282,8 @@ class EvaluateClassifiers(Page):
     @run_in_thread
     @thread_error_catch
     def cvTST(self):
-        try:
-            self.root.controller.crossValidateTST()
-            a = 1
-        except Exception:
-            import sys
-            self.root.root.report_callback_exception(*sys.exc_info())
+        self.root.controller.crossValidateTST()
+       
     @run_in_thread
     @thread_error_catch
     def cvAdaptive(self):

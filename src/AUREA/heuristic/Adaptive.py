@@ -15,6 +15,7 @@ class Adaptive:
         print_status is a boolean, if True then messages will be printed to stdout
         """
         self.lq = learnerQueue
+        #app_status_bar is now thread_queue from App
         self.app_status_bar = app_status_bar
         self.print_status = print_status
         self.history = []
@@ -108,7 +109,7 @@ class Adaptive:
         Takes the msg and displays it in the status bar if provided and/or prints it if print_status is True.
         """
         if self.app_status_bar is not None:
-            self.app_status_bar.set( msg )
+            self.app_status_bar.put( ('statusbarset', msg) )
         if self.print_status:
             print msg
 

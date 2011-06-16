@@ -8,11 +8,16 @@ import os.path
 import shutil
 import sys
 import platform
+import Queue
+import tkMessageBox
+
+from AUREA.GUI.Results import *
 class App(Frame):
     def __init__(self, root, controller):
         
         root.report_callback_exception = self.report_callback_exception
         Frame.__init__(self, root)
+        self.thread_message_queue = Queue.Queue()
         root.rowconfigure( 0, weight = 1 )
         root.columnconfigure( 0, weight = 1 )
         self.grid(sticky=W+E+N+S )
@@ -25,6 +30,9 @@ class App(Frame):
         self._initApp()
         self.rowconfigure( 1, weight = 1 )
         self.columnconfigure( 1, weight = 1 )
+        
+        self.checkTMQ()
+        
 
     def _initApp(self):
         """
@@ -51,12 +59,38 @@ class App(Frame):
         numcolumns, numrows = self.grid_size()
         self.status.grid(row=numrows,column=0, columnspan=numcolumns, sticky=W+E+S)
         self.update_idletasks()
-       
+    def checkTMQ(self):
+        """
+        Handles thread-based message passing
+        """
+        if not self.thread_message_queue.empty():
+            type, msg = self.thread_message_queue.get()
+            if type == 'error':
+                self.report_callback_exception(*msg)
+            elif type == 'tspResult':
+                TSPResults(self.pages[0])
+            elif type == 'tstResult':
+                TSTResults(self.pages[0])
+            elif type == 'diracResult':
+                DiracResults(self.pages[0])
+            elif type == 'ktspResult':
+                KTSPResults(self.pages[0])
+            elif type == 'adaptiveResult':
+                AdaptiveResults(self.pages[0])
+            elif type == 'adaptiveMessage':
+                tkMessageBox.showerror(message=msg)
+            elif type == 'statusbarset':
+                self.status.set(msg)
+            elif type == 'statusbarclear':
+                self.status.clear()
+
+        self.after(500, self.checkTMQ)     
 
     def setAppTitle(self, title):
         self.AppTitle.set(title)
        
     def initPages(self):
+     
         self.pages.append(Page.HomePage(self))
         self.pages.append(Page.ImportDataPage(self))
         self.pages.append(Page.ClassDefinitionPage(self))
