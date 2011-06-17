@@ -14,7 +14,10 @@ def run_in_thread(fn):
     see:http://amix.dk/blog/post/19346
     """
     def run(*k, **kw):
-                
+        self = k[0]
+
+        self.disableButtons()
+        #Buttons reenabled in App.App.checkTMQ(), by 'releaseButtons' message
         t = threading.Thread(target=fn, args=k, kwargs=kw)
         t.start()
     return run
@@ -27,16 +30,10 @@ def thread_error_catch(fn):
     def run(*k, **kw):        
         self = k[0]
         try:
-            self.disableButtons()
             fn(*k, **kw)
-            self.enableButtons()
+            self.thread_message_queue.put(('releaseButtons',None))
         except Exception, e:
             self.thread_message_queue.put(('error', sys.exc_info()))
-            """
-            import sys
-            #opens a window that displays the error
-            self.root.root.report_callback_exception(*sys.exc_info())
-            """
     return run
 
    
@@ -105,14 +102,17 @@ class Page(Frame):
             return True
     def disableButtons(self):
         """
-        Stub
+        Stub-used when we are doing something that we need to keep
+        the user from interfering with.
+        Each page that needs this is responsible for overriding this
         """
         pass
     def enableButtons(self):
         """
-        Stub
+        Stub- okay for user to interact with GUI
         """
         pass
+
 class HomePage(Page):
     """
     Corresponds to the Data Summary/Home page

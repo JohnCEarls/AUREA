@@ -63,27 +63,33 @@ class App(Frame):
         """
         Handles thread-based message passing
         """
-        if not self.thread_message_queue.empty():
+        #I should really rewrite this to handle threads from the start
+        #this is a hacky thing added because windows gets snarky about
+        #not returning control back to the GUI when performing
+        #computationally intensive procedures
+        #meh
+        while not self.thread_message_queue.empty():
             type, msg = self.thread_message_queue.get()
             if type == 'error':
                 self.report_callback_exception(*msg)
             elif type == 'tspResult':
-                TSPResults(self.pages[0])
+                TSPResults(self.curr_page)                
             elif type == 'tstResult':
-                TSTResults(self.pages[0])
+                TSTResults(self.curr_page)
             elif type == 'diracResult':
-                DiracResults(self.pages[0])
+                DiracResults(self.curr_page)
             elif type == 'ktspResult':
-                KTSPResults(self.pages[0])
+                KTSPResults(self.curr_page)
             elif type == 'adaptiveResult':
-                AdaptiveResults(self.pages[0])
+                AdaptiveResults(self.curr_page)
             elif type == 'adaptiveMessage':
                 tkMessageBox.showerror(message=msg)
             elif type == 'statusbarset':
                 self.status.set(msg)
             elif type == 'statusbarclear':
                 self.status.clear()
-
+            elif type == 'releaseButtons':
+                self.curr_page.enableButtons()
         self.after(500, self.checkTMQ)     
 
     def setAppTitle(self, title):
@@ -140,6 +146,10 @@ class App(Frame):
         displays exceptions
         TYVM : http://stackoverflow.com/questions/4770993/silent-exceptions-in-python-tkinter-should-i-make-them-louder-how
         """
+        #several local functions
+        #a lot of try/except blocks so errors in error catching
+        #does not stop display of errors 
+        #(i.e. cant be sure of the state of a crashed system)
         def getSysInfo():
             """
             Returns a string containing as much system info as we can get
@@ -219,6 +229,8 @@ class App(Frame):
                 o.close()
 
         if self.err_disp:
+            #if we are already displaying one error
+            #lets not display more, no avalanche of popups
             return
         try:#clear buttons
             self.remote.disableAllButtons()
