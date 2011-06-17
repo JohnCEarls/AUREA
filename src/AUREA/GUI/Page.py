@@ -951,9 +951,9 @@ class TrainClassifiers(Page):
         s.auto_maxtime_label = Label(self, text="Maximum Time(sec):")
         if s.auto_maxtime is None:
             s.auto_maxtime = StringVar()
-        s.auto_maxtimeE = Entry(self, textvariable=self.auto_maxtime) 
         if s.auto_target_acc is None:
             s.auto_target_acc = StringVar()
+        s.auto_maxtimeE = Entry(self, textvariable=self.auto_maxtime) 
         s.auto_target_accE = Entry(self, textvariable=s.auto_target_acc)
         s.dirac_warning = Label(self, text="Gene Network file required", fg="red")
         s.adaptive_warning = Label(self, text="Gene Network file required", fg="red")

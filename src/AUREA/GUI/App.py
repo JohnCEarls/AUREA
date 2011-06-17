@@ -140,6 +140,84 @@ class App(Frame):
         displays exceptions
         TYVM : http://stackoverflow.com/questions/4770993/silent-exceptions-in-python-tkinter-should-i-make-them-louder-how
         """
+        def getSysInfo():
+            """
+            Returns a string containing as much system info as we can get
+            """
+            import sys, os
+            sysString = ""
+            nl = os.linesep
+            u = "Unavailable" + nl
+            sysString +="Platform:"            
+            try:
+                sysString += sys.platform + nl
+            except:
+                sysString += u
+            sysString += "Python version: "
+            try:
+                sysString += '.'.join([str(x) for x in sys.version_info]) + nl
+            except:
+                sysString += u
+            sysString += "Path: "
+            try:
+                sysString += ' ,'.join(sys.path) + nl
+            except:
+                sysString += u
+            return sysString
+
+        def getInstanceInfo(self):
+            """
+            Returns a string with information about this AUREA instance
+            """
+            insStr = ""
+            nl = os.linesep
+            u = "unavailable" + nl
+            insStr += "AUREA version: "
+            try:
+                import AUREA
+                insStr += AUREA.__version__ + nl
+            except:
+                insStr += u
+            insStr += "Current Page: "
+            try:
+                insStr += self.curr_page.id + nl
+            except:
+                insStr += u
+            insStr += "GUI State: "
+            try:
+                insStr +=  ",".join(map(str,self.controller.dependency_state))+nl
+            except:
+                insStr += u
+            insStr += "Data Files: "
+            try:
+                insStr += nl.join(self.controller.softFile)
+            except:
+                insStr += u
+
+            return insStr
+
+            
+                
+        def saveError(self,errString):
+            """
+            Saves errString(a string) to a text file
+            """
+            import tkFileDialog 
+            from datetime import datetime
+            dt = datetime(2000,1,1)
+            today = '-'.join(dt.today().isoformat('-').split(':')[:2])
+            options = {}
+            options['defaultextension'] = '' # couldn't figure out how this works
+            options['initialdir'] = 'data'
+            options['initialfile'] = 'AHREA-Error-' + today + '.txt'
+            options['parent'] = self
+            options['title'] = 'Save Results'
+            filename = tkFileDialog.asksaveasfilename(**options)
+            if filename:
+                o = open(filename, 'w')
+                o.write(errString)
+                o.close()
+
         if self.err_disp:
             return
         try:#clear buttons
@@ -153,12 +231,16 @@ class App(Frame):
         t.title("AUREA Error!!!!!")
         Label(t,text=msg).pack()
         import os
-        errmsg = 'Please copy this error and go to https://github.com/JohnCEarls/AUREAPackage/issues to report it'+ os.linesep
+        errmsg = 'Please copy or save this error and go to https://github.com/JohnCEarls/AUREAPackage/issues to report it'+ os.linesep
         errmsg += '(You may have to use Control-C or Apple-C to copy.)'+ os.linesep
         errmsg +=os.linesep.join(err)
+        errmsg += getSysInfo()
+        errmsg += getInstanceInfo(self)
         errBox = Text(t,wrap=WORD)
         errBox.pack()
         errBox.insert(END, errmsg) 
+        errSave = Button(t, text="Save...", command=lambda:saveError(self,errmsg))
+        errSave.pack()
         self.err_disp = True
 
 
