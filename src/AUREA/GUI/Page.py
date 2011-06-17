@@ -53,9 +53,17 @@ class Page(Frame):
 
 
     def drawPage(self):
+        """
+        Called when page is brought up for display
+        """
+
         raise ImplementationError(self.id, 'drawPage')
 
     def setUpPage(self):
+        """
+        Called when page is brought up for display
+        """
+
         raise ImplementationError(self.id, 'setUpPage')
 
     def clearPage(self):
@@ -1048,60 +1056,134 @@ class TestClassifiers(Page):
 
     def __init__(self, root):
         Page.__init__(self, root, 'Test')
+        self.className1 = None
+        self.className2 = None
+        self.unclassified_listbox = None
+        self.sample_list = []
+        self.subset_list = []
+        #a token prepended to the subset label
+        self.tok = "*ss: "
+
 
     def setUpPage(self):
-        self.sample_list = self.root.controller.getUntrainedSamples()
-        self.unclassified_listbox = Listbox(self)
-        maxlen = 0
-        for sample in self.sample_list:
-            if len(sample) > maxlen:
-                maxlen = len(sample)
-            self.unclassified_listbox.insert(END, sample)
-        self.unclassified_listbox.config(width=maxlen)
-        self.unclassifiedLabel = Label(self, text="Select Sample for Classification")
-        self.description = Text(self, height=10,width=50,background='white')
+        """
+        Called when you enter page
+        """
+        self.setUpClassifyFrame()
+        self.setUpClassPartitionPage()
+
+    def setUpClassifyFrame(self):
         s = self
-        s.classify_label= Label(self, text="Select method.")
-        s.dirac_button = Button(self, text="Dirac...", command=self.classifyDirac )
-        s.tsp_button = Button(self, text="TSP...", command= self.classifyTSP )
-        s.ktsp_button = Button(self, text="k-TSP...", command=self.classifyKTSP )
-        s.tst_button = Button(self, text="TST...", command=self.classifyTST )
-        s.adaptive_button = Button(self, text="Adaptive...", command=self.classifyAdaptive )
+        if self.className1 is None:
+            self.className1 = StringVar()
+        if self.className2 is None:
+            self.className2 = StringVar()
+        self.className1Label = Label(self, textvariable=self.className1)
+        self.className2Label = Label(self, textvariable=self.className2)
+        #putting buttons into a subframe
+        sf =self.subFrame = Frame(self)
+        s.classify_label= Label(sf, text="Select method.")
+        s.dirac_button = Button(sf, text="Dirac...", command=self.classifyDirac )
+        s.tsp_button = Button(sf, text="TSP...", command= self.classifyTSP )
+        s.ktsp_button = Button(sf, text="k-TSP...", command=self.classifyKTSP )
+        s.tst_button = Button(sf, text="TST...", command=self.classifyTST )
+        s.adaptive_button = Button(sf, text="Adaptive...", command=self.classifyAdaptive )
        
+    def setUpClassPartitionPage(self):
+        if self._updatedSamples():
+            cname1, _, cname2, _ =  self.root.controller.getClassificationInfo()
+            self.className1.set(cname1)
+            self.className2.set(cname2)
+            self.sample_list = self.root.controller.getUntrainedSamples()
+            self.subset_list = self.root.controller.getSubsets()
+            s1 = self.s1 = Scrollbar(self, orient=VERTICAL)
+            self.unclassified_listbox = Listbox(self, yscrollcommand=s1.set)
+            s1.config(command=self.unclassified_listbox.yview)
+            maxlen = 0
+            #add subsets to unclassified listbox
+            for subset_desc, _ in self.subset_list:
+                txt = self.tok + subset_desc
+                if len(txt) > maxlen:
+                    maxlen = len(txt)
+                self.unclassified_listbox.insert(END, txt)
+            #add samples to unclassified listbox
+            for sample in self.sample_list:
+                if len(sample) > maxlen:
+                    maxlen = len(sample)
+                self.unclassified_listbox.insert(END, sample)
+            self.unclassified_listbox.config(width=maxlen)
+            s2 = self.s2 = Scrollbar(self, orient=VERTICAL)
      
-    def poll(self):
-        now = self.unclassified_listbox.curselection()
-        if self.current != now:
-            self.displayDescription(now)
-            self.current = now
-        self.after(250, self.poll)
+            self.class1listbox = Listbox(self, width=maxlen, yscrollcommand=s2.set)
+            s2.config(command=self.class1listbox.yview)
+            self.class1addbutton = Button(self,text="<", command=self.add1)
+            self.class2addbutton = Button(self,text=">", command=self.add2)
+            self.class1removebutton = Button(self, text=">", command = self.rem1)
+            self.class2removebutton = Button(self, text="<", command = self.rem2) 
+            s3 = self.s3 = Scrollbar(self, orient=VERTICAL)
+            self.class2listbox = Listbox(self, width=maxlen, yscrollcommand=s3.set)
+            s3.config(command=self.class2listbox.yview)
+            self.unclassifiedLabel = Label(self, text="Select Partitioning")
+            self.description=Text(self,height=10,width=50,background='white')
+            self.enableLearnersButtons()
+        else:
+            self.disableLearnersButtons()
 
-    def displayDescription(self, cursor):
-        if len(cursor) > 0:
-            raw = self.unclassified_listbox.get(int(cursor[0]))
-            a = raw.split('].')
-            table = a[0][1:]
-            sample_id = a[1].strip()
-            text = self.root.controller.getSampleInfo(table, sample_id)
-            self.description.config(state=NORMAL)
-            self.description.delete(1.0, END)
-            self.description.insert(END, text)
-            self.description.config(state=DISABLED)
+    def disableLearnersButtons(self):
+        """
+        Disables the learners button
+        """
+        #TODO
+        pass
 
+    def enableLearnersButtons(self):
+        """
+        enables the learners button
+        """
+        #TODO
+        pass
+
+   
     def drawPage(self):
-        self.setAppTitle("Train Classifiers")
+        self.setAppTitle("Test Classifiers")
+        #draw Labels        
+        self.className1Label.grid(row=0,column=0, sticky=E)
+        self.unclassifiedLabel.grid(row=0, column=4)
+        self.columnconfigure( 1, weight = 1 )
+        self.className2Label.grid(row=0, column=7, sticky=E)
+        self.columnconfigure( 8, weight = 1 )
+        #draw partitioner
+        self.class1listbox.grid(row=1,rowspan=2, column=0, columnspan=2, sticky=N+S+E+W)
+        self.s2.grid(row=1, rowspan=2,column=2,sticky=N+S)
+        self.class1addbutton.grid(row=1, column=3)
+        self.unclassified_listbox.grid(row=1,rowspan=2, column=4, sticky=N+S+E+W)
+        self.s1.grid(row=1, rowspan=2,column=5,sticky=N+S)
+        self.class2addbutton.grid(row=1, column=6)
+        self.class2listbox.grid(row=1,rowspan=2, column=7, columnspan=2, sticky=N+S+E+W)
+        self.s3.grid(row=1, rowspan=2,column=9,sticky=N+S)
+        
 
-        self.unclassifiedLabel.grid(row=0, column=0)
-        self.unclassified_listbox.grid(row=1, column=0, rowspan=5, sticky = N+S+E+W)
-        self.description.grid(row=6,column=0, sticky=N+S+E+W)
+        self.class1removebutton.grid(row=2, column=3)
+        self.class2removebutton.grid(row=2, column=6)
+        #description
+        self.description.grid(row=3,column=0, columnspan=10, sticky=N+S+E+W)
         self.description.config(state=DISABLED)
+        self.current = None
+        self.poll()
 
-        self.classify_label.grid(row=0, column=1, sticky=E+W)
-        self.dirac_button.grid(row=4, column=1, sticky=E+W)
-        self.tsp_button.grid(row=1, column=1, sticky=E+W)
-        self.tst_button.grid(row=3, column=1, sticky=E+W)
-        self.ktsp_button.grid(row=2, column=1, sticky=E+W)
-        self.adaptive_button.grid(row=5, column=1, sticky=E+W)
+        self.grid(row=1,column=1, sticky=N+S+E+W)
+        numcolumns, numrows = self.grid_size()
+        #self.rowconfigure(numrows-1 , weight = 0 )
+        #self.rowconfigure(1, weight = 1 )
+        #self.rowconfigure(2, weight = 1 )
+        #self.columnconfigure( 4, weight = 1 )
+        self.subFrame.grid(row=1, rowspan=numrows-1, column=numcolumns, sticky=N+S+E+W)
+        self.classify_label.grid(row=0, column=0, sticky=E+W)
+        self.dirac_button.grid(row=4, column=0, sticky=E+W)
+        self.tsp_button.grid(row=1, column=0, sticky=E+W)
+        self.tst_button.grid(row=3, column=0, sticky=E+W)
+        self.ktsp_button.grid(row=2, column=0, sticky=E+W)
+        self.adaptive_button.grid(row=5, column=0, sticky=E+W)
         for i in range(7):
             self.rowconfigure(i, weight=1)
         self.current = None
@@ -1133,6 +1215,155 @@ class TestClassifiers(Page):
             self.adaptive_button.config(state=DISABLED)
         self.poll()
 
+    def _isSubsetLabel(self, txt):
+        """
+        Returns whether the txt contains the token defined in setUpClassPartitionPage
+        """
+        return txt[:len(self.tok)] == self.tok
+
+
+    def _updatedSamples(self):
+        """
+        Check if the sample list has changed
+        (True if we need to clear samples)
+        Note this returns True on initialization
+        """
+        new_sample_list = self.root.controller.getUntrainedSamples()
+        c = self.root.controller
+        ci =c.getClassificationInfo()
+        if self.className1 is None:
+            return True
+        if self.className1 != ci[0] or self.className2 != ci[1]:
+            return True
+        if ci[1] == 0:
+            return True
+        if len(new_sample_list) != len(self.sample_list):
+            return True
+        for i, sample in enumerate(new_sample_list):
+            if sample != self.sample_list[i]:
+                return True
+        return False
+        
+ 
+    def move(self, origin, dest):
+        if len(origin.curselection()) > 0:
+            current = origin.curselection()
+            try:
+                current = map(int, current)
+            except ValueError:
+                pass
+            if origin.get(current[0])[:len(self.tok)] != self.tok:
+                #not a subset
+                current.sort()
+                current.reverse()
+                
+                for f in current:
+                    self._swap(origin, dest, f)
+                    origin.selection_set(int(f))
+            else:
+                #subset 
+                self.moveSubset(origin, dest, origin.get(current[0])[len(self.tok):])
+
+    def _swap(self, origin, dest, f):
+        """
+        Moves the value at the given index to the destination
+        """
+        val = origin.get(f)
+        origin.delete(f)
+        dest.insert(END, val )
+
+    def moveSubset(self, origin, dest, subsetLabel):
+        values = origin.get(0,END)
+        delIndices = []
+        sssampleList = self._subsetSampleList(subsetLabel)
+        sssampleDict = {}
+        for x in sssampleList:
+            sssampleDict[x] = True
+        sslIndex = 0
+        for i, val in enumerate(values):
+            if val in sssampleDict:
+                dest.insert(END, val)
+                delIndices.append(i)
+            elif val[len(self.tok):] == subsetLabel:
+                delIndices.append(i)
+                dest.insert(0, self.tok + subsetLabel)
+        delIndices.reverse()
+        for i in delIndices:
+            origin.delete(i)
+        origin.selection_set(delIndices[-1])
+
+      
+    def add1(self):
+        self.move(self.unclassified_listbox, self.class1listbox)
+        self.current = None
+
+    def add2(self):
+        self.move(self.unclassified_listbox, self.class2listbox)
+        self.current = None
+
+    def rem1(self):
+        self.move( self.class1listbox,self.unclassified_listbox)
+
+    def rem2(self):
+        self.move( self.class2listbox,self.unclassified_listbox)
+
+    def poll(self):
+        now, lbox = self._currentList()   
+        if self.current != (now, lbox):
+            self.displayDescription(now, lbox)
+            self.current = (now, lbox)
+        self.after(250, self.poll)
+
+    def _currentList(self):
+        """
+        Returns a 2-tuple
+        (tuple containing selected, currently selected listbox object)
+        """
+        uncList = self.unclassified_listbox.curselection()
+        c1List = self.class1listbox.curselection()
+        c2List = self.class2listbox.curselection()
+        now = tuple()
+        lb = None
+        if len(uncList) > 0:
+            now = uncList
+            lb = self.unclassified_listbox
+        if len(c1List) > 0:
+            now = c1List
+            lb = self.class1listbox
+        if len(c2List) > 0:
+            now = c2List
+            lb = self.class2listbox
+        return (now, lb)
+         
+    def _subsetDescription(self, subsetLabel):
+        mystr = "Subset: " + subsetLabel[len(self.tok):]
+        mystr += os.linesep
+        mystr += "Contains samples: " 
+        mystr += ' : '.join(self._subsetSampleList(subsetLabel[len(self.tok):]))
+        return mystr
+
+    def _subsetSampleList(self, subsetLabel):
+        for d, l in self.subset_list:
+            if d == subsetLabel:
+                return l
+ 
+    def displayDescription(self, cursor, listbox):
+        if len(cursor) > 0:
+            text = "No Description Available"
+            raw = listbox.get(int(cursor[0]))
+            if self._isSubsetLabel(raw):
+                text = self._subsetDescription(raw)
+            else:
+                a = raw.split('].')
+                table = a[0][1:]
+                sample_id = a[1].strip()
+                text = self.root.controller.getSampleInfo(table, sample_id)
+            self.description.config(state=NORMAL)
+            self.description.delete(1.0, END)
+            self.description.insert(END, text)
+            self.description.config(state=DISABLED)
+
+
     def clearPage(self):
         self.clearGrid()
         self.grid_forget()
@@ -1144,6 +1375,22 @@ class TestClassifiers(Page):
         sample_name = raw[1]
 
         self.root.controller.addUnclassified(table, sample_name)
+    def partition(self):
+        class1 = []
+        class2 = []
+        for i in xrange(self.class1listbox.size()):
+            if not self._isSubsetLabel(self.class1listbox.get(i)):
+                raw = self.class1listbox.get(i).split('].')
+                table = raw[0][1:]
+                sample_name = raw[1]
+                class1.append((table, sample_name))
+        
+        for i in xrange(self.class2listbox.size()):
+            if not self._isSubsetLabel(self.class2listbox.get(i)):
+                raw = self.class2listbox.get(i).split('].')
+                table = raw[0][1:]
+                sample_name = raw[1]
+                class2.append((table, sample_name))
 
 
     def classifyDirac(self):
