@@ -250,118 +250,293 @@ class AdaptiveResults(Results):
         self.save_button.grid(row=r, column=c, sticky=E)
 
 
-class DiracClassificationResults(Results):
+class ClassificationResults(Results):
     def __init__(self, root):
         Results.__init__(self, root)
+
+    def getStats(self, res):
+        import math
+        def MCC(TP,FP, TN, FN):
+            den = math.sqrt(float((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN)))
+            if den < .000001:
+                #http://en.wikipedia.org/wiki/Matthews_correlation_coefficient
+                den = 1.0
+            return float(TP*TN - FP*FN)/den
+        T0 = 0
+        F0 = 0
+        T1 = 0
+        F1 = 0
+        for pred, act, table, sample in res:
+            if pred == 0:
+                if act == 0:
+                    T0 += 1
+                else:
+                    F0 += 1
+            else:
+                if act == 1:
+                    T1 += 1
+                else:
+                    F1 += 1
+        mcc = MCC(T0,F0,T1,F1)
+        return  (T0, F0, T1, F1, mcc)
+
+    def getStatsString(self, res):
+        T0, F0, T1, F1, mcc = self.getStats(res)
+        sString = os.linesep*2
+        sString += "Accuracy" + os.linesep
+        sString += "="*(len(sString) -1)
+        sString += os.linesep
+        sString += "True class 1: " + str(T0) + os.linesep
+        sString += "False class 1: " + str(F0) + os.linesep
+        sString += "True class 2: " + str(T1) + os.linesep
+        sString += "False class 2: " + str(F1) + os.linesep
+        sString += "Matthew's Correlation: " + str(mcc)[:5] + os.linesep
+        return sString
+    
+    def getOutputString(self, res):
+        outStr = self.getClassifierString()
+        outStr += self.getResultsString(res)
+        return outStr
+
+
+    def getResultsString(self, res):
+        c1_name =self.root.root.controller.class1name
+        c2_name = self.root.root.controller.class2name
+        rStr = self.getStatsString(res)
+        rStr += os.linesep*2
+        rStr += "table\tsample\tActual\tClassification\tCorrect" + os.linesep
+        for pred, act, table, sample in res:
+            if pred == 0:
+                predstr = c1_name
+            else:
+                predstr = c2_name
+            if act == 0:
+                actstr = c1_name
+            else:
+                actstr = c2_name
+            
+            rStr += table + '\t'
+            rStr += sample + '\t'
+            rStr += actstr + '\t'
+            rStr += predstr + '\t'
+            rStr += '+' if pred == act else '-'
+            rStr += os.linesep
+        return rStr
+            
+class DiracClassificationResults(ClassificationResults):
+    def __init__(self, root):
+        ClassificationResults.__init__(self, root)
         self.getData()
         self.buildDisplay()
 
     def getData(self):
         self.dirac = self.root.root.controller.dirac
-        self.dirac_results = self.root.root.controller.dirac_classification
+        self.dirac_results = self.root.root.controller.dirac_classified_results
+        self.datapackage = self.root.root.controller.datapackage
+
+    def buildDisplay(self):
+        c1_name =self.root.root.controller.class1name
+        c2_name = self.root.root.controller.class2name
+        Label(self, text="Dirac Classification Results").grid(row=0, column =0, sticky=W)
+        T0, F0, T1, F1, mcc = self.getStats(self.dirac_results)
+        statString = ["True " + c1_name + ": " + str(T0), "False " + c1_name  + ": " + str(F0), "True " + c2_name  + ": " + str(T1),"False " + c2_name  + ": " + str(F1), "MCC: " + str(mcc)[:5]]
+        for i,ss in enumerate(statString):
+            Label(self, text=ss).grid( row=i+1, column=0, sticky=W)
+        
+        Label(self, text="For Complete Results, Save and view textfile").grid(row=6, column=0, sticky=W)
+        ostring = self.getOutputString(self.dirac_results)
+        Button(self, text="Save", command=lambda:self.saveResults(ostring)).grid(row=7,column=0, sticky=E)
+
+    def getClassifierString(self):
+        resultStr = "Dirac Classification Results" + os.linesep
+        resultStr += "="*(len(resultStr) - 1)
+        resultStr += os.linesep
+        resultStr += "Using the following networks for classification:"
+        resultStr += os.linesep
+        tn = self.dirac.getTopNetworks()
+        for net in tn:
+            resultStr += net + os.linesep
+        return resultStr          
+ 
+ 
+class TSPClassificationResults(ClassificationResults):
+    def __init__(self, root):
+        ClassificationResults.__init__(self, root)
+        self.getData()
+        self.buildDisplay()
+
+    def getData(self):
+        self.tsp = self.root.root.controller.tsp
+        self.tsp_results = self.root.root.controller.tsp_classified_results
         self.datapackage = self.root.root.controller.datapackage
         self.config = self.root.root.controller.config
 
     def buildDisplay(self):
         c1_name =self.root.root.controller.class1name
         c2_name = self.root.root.controller.class2name
+        Label(self, text="TSP Classification Results").grid(row=0, column =0, sticky=W)
+        T0, F0, T1, F1, mcc = self.getStats(self.tsp_results)
+        statString = ["True " + c1_name + ": " + str(T0), "False " + c1_name  + ": " + str(F0), "True " + c2_name  + ": " + str(T1),"False " + c2_name  + ": " + str(F1), "MCC: " + str(mcc)[:5]]
+        for i,ss in enumerate(statString):
+            Label(self, text=ss).grid( row=i+1, column=0, sticky=W)
+        
+        Label(self, text="For Complete Results, Save and view textfile").grid(row=6, column=0, sticky=W)
+        ostring = self.getOutputString(self.tsp_results)
+        Button(self, text="Save", command=lambda:self.saveResults(ostring)).grid(row=7,column=0, sticky=E)
 
-        if self.dirac_results == 0:
-            className = c1_name
-        else:
-            className = c2_name
-        self.result = Label(self, text = "classifies as " + className)
 
-        self.result.pack()    
+        save_button = Button(self, command=lambda:self.saveResults(ostring))
+
+    def getClassifierString(self):
+        resultStr = "TSP Classification Results" + os.linesep
+        resultStr += "="*(len(resultStr) - 1)
+        resultStr += os.linesep
+        resultStr += "Using the following genes for classification:"
+        resultStr += os.linesep
+        resultStr += "Note: Assigns to class 1 if gene1 is more expressed than gene2" + os.linesep
+        row_key = self.config.getSetting("tsp","Row Key(genes/probes)")[0]
+        ms = self.tsp.getMaxScores()
+        for genes in ms:
+            column = 0
+            tab = ''
+            for gene in genes:
+                gene_name = self.datapackage.getGeneName(gene, row_key)
+                resultStr += tab + gene_name
+                tab = '\t'
+                column += 1
+            resultStr += os.linesep
+        resultStr += os.linesep 
+        return resultStr          
  
-class TSPClassificationResults(Results):
+class KTSPClassificationResults(ClassificationResults):
     def __init__(self, root):
-        Results.__init__(self, root)
-        self.getData()
-        self.buildDisplay()
-
-    def getData(self):
-        self.tsp = self.root.root.controller.tsp
-        self.tsp_results = self.root.root.controller.tsp_classification
-        self.datapackage = self.root.root.controller.datapackage
-
-    def buildDisplay(self):
-        c1_name =self.root.root.controller.class1name
-        c2_name = self.root.root.controller.class2name
-
-        if self.tsp_results == 0: 
-            className = c1_name
-        else:
-            className = c2_name
-        self.result = Label(self, text = "classifies as " + className)
-
-        self.result.pack()
-
-class TSTClassificationResults(Results):
-    def __init__(self, root):
-        Results.__init__(self, root)
-        self.getData()
-        self.buildDisplay()
-
-    def getData(self):
-        self.tst = self.root.root.controller.tst
-        self.tst_results = self.root.root.controller.tst_classification
-        self.datapackage = self.root.root.controller.datapackage
-
-    def buildDisplay(self):
-        c1_name =self.root.root.controller.class1name
-        c2_name = self.root.root.controller.class2name
-
-        if self.tst_results == 0: 
-            className = c1_name
-        else:
-            className = c2_name
-        self.result = Label(self, text = "classifies as " + className)
-
-        self.result.pack()
-
-class KTSPClassificationResults(Results):
-    def __init__(self, root):
-        Results.__init__(self, root)
+        ClassificationResults.__init__(self, root)
         self.getData()
         self.buildDisplay()
 
     def getData(self):
         self.ktsp = self.root.root.controller.ktsp
-        self.ktsp_results = self.root.root.controller.ktsp_classification
+        self.ktsp_results = self.root.root.controller.ktsp_classified_results
         self.datapackage = self.root.root.controller.datapackage
+        self.config = self.root.root.controller.config
 
     def buildDisplay(self):
         c1_name =self.root.root.controller.class1name
         c2_name = self.root.root.controller.class2name
+        Label(self, text="TSP Classification Results").grid(row=0, column =0, sticky=W)
+        T0, F0, T1, F1, mcc = self.getStats(self.ktsp_results)
+        statString = ["True " + c1_name + ": " + str(T0), "False " + c1_name  + ": " + str(F0), "True " + c2_name  + ": " + str(T1),"False " + c2_name  + ": " + str(F1), "MCC: " + str(mcc)[:5]]
+        for i,ss in enumerate(statString):
+            Label(self, text=ss).grid( row=i+1, column=0, sticky=W)
+        
+        Label(self, text="For Complete Results, Save and view textfile").grid(row=6, column=0, sticky=W)
+        ostring = self.getOutputString(self.ktsp_results)
+        Button(self, text="Save", command=lambda:self.saveResults(ostring)).grid(row=7,column=0, sticky=E)
 
-        if self.ktsp_results == 0: 
-            className = c1_name
-        else:
-            className = c2_name
-        self.result = Label(self, text = "classifies as " + className)
 
-        self.result.pack()
+        save_button = Button(self, command=lambda:self.saveResults(ostring))
 
-class AdaptiveClassificationResults(Results):
+    def getClassifierString(self):
+        resultStr = "TSP Classification Results" + os.linesep
+        resultStr += "="*(len(resultStr) - 1)
+        resultStr += os.linesep
+        resultStr += "Using the following genes for classification:"
+        resultStr += os.linesep
+        resultStr += "Note: Assigns to class 1 if gene1 is more expressed than gene2" + os.linesep
+        row_key = self.config.getSetting("ktsp","Row Key(genes/probes)")[0]
+        ms = self.ktsp.getMaxScores()
+        for genes in ms:
+            column = 0
+            tab = ''
+            for gene in genes:
+                gene_name = self.datapackage.getGeneName(gene, row_key)
+                resultStr+= tab + gene_name
+                tab = '\t'
+                column += 1
+            resultStr+= os.linesep
+        resultStr+= os.linesep 
+        return resultStr          
+  
+ 
+class TSTClassificationResults(ClassificationResults):
     def __init__(self, root):
-        Results.__init__(self, root)
+        ClassificationResults.__init__(self, root)
+        self.getData()
+        self.buildDisplay()
+
+    def getData(self):
+        self.tst = self.root.root.controller.tst
+        self.tst_results = self.root.root.controller.tst_classified_results
+        self.datapackage = self.root.root.controller.datapackage
+        self.config = self.root.root.controller.config
+
+    def buildDisplay(self):
+        c1_name =self.root.root.controller.class1name
+        c2_name = self.root.root.controller.class2name
+        Label(self, text="TST Classification Results").grid(row=0, column =0, sticky=W)
+        T0, F0, T1, F1, mcc = self.getStats(self.tst_results)
+        statString = ["True " + c1_name + ": " + str(T0), "False " + c1_name  + ": " + str(F0), "True " + c2_name  + ": " + str(T1),"False " + c2_name  + ": " + str(F1), "MCC: " + str(mcc)[:5]]
+        for i,ss in enumerate(statString):
+            Label(self, text=ss).grid( row=i+1, column=0, sticky=W)
+        
+        Label(self, text="For Complete Results, Save and view textfile").grid(row=6, column=0, sticky=W)
+        ostring = self.getOutputString(self.tst_results)
+        Button(self, text="Save", command=lambda:self.saveResults(ostring)).grid(row=7,column=0, sticky=E)
+
+
+        save_button = Button(self, command=lambda:self.saveResults(ostring))
+
+    def getClassifierString(self):
+        resultStr = "TSP Classification Results" + os.linesep
+        resultStr += "="*(len(resultStr) - 1)
+        resultStr += os.linesep
+        resultStr += "Using the following genes for classification:"
+        resultStr += os.linesep
+        resultStr += "Note: Assigns to class 1 if gene1 is more expressed than gene2" + os.linesep
+        row_key = self.config.getSetting("tst","Row Key(genes/probes)")[0]
+        ms = self.tst.getMaxScores()
+        for genes in ms:
+            column = 0
+            tab = ''
+            for gene in genes:
+                gene_name = self.datapackage.getGeneName(gene, row_key)
+                resultStr+= tab + gene_name
+                tab = '\t'
+                column += 1
+            resultStr+= os.linesep
+        resultStr += os.linesep 
+        return resultStr          
+ 
+
+ 
+class AdaptiveClassificationResults(ClassificationResults):
+    def __init__(self, root):
+        ClassificationResults.__init__(self, root)
         self.getData()
         self.buildDisplay()
 
     def getData(self):
         self.adaptive = self.root.root.controller.adaptive
-        self.adaptive_results = self.root.root.controller.adaptive_classification
+        self.adaptive_results = self.root.root.controller.adaptive_classified_results
         self.datapackage = self.root.root.controller.datapackage
+        self.config = self.root.root.controller.config
 
     def buildDisplay(self):
         c1_name =self.root.root.controller.class1name
         c2_name = self.root.root.controller.class2name
+        Label(self, text="Adaptive Classification Results").grid(row=0, column =0, sticky=W)
+        T0, F0, T1, F1, mcc = self.getStats(self.tst_results)
+        statString = ["True " + c1_name + ": " + str(T0), "False " + c1_name  + ": " + str(F0), "True " + c2_name  + ": " + str(T1),"False " + c2_name  + ": " + str(F1), "MCC: " + str(mcc)[:5]]
+        for i,ss in enumerate(statString):
+            Label(self, text=ss).grid( row=i+1, column=0, sticky=W)
+        
+        Label(self, text="For Complete Results, Save and view textfile").grid(row=6, column=0, sticky=W)
+        ostring = self.getOutputString(self.tst_results)
+        Button(self, text="Save", command=lambda:self.saveResults(ostring)).grid(row=7,column=0, sticky=E)
 
-        if self.adaptive_results == 0:
-            className = c1_name
-        else:
-            className = c2_name
-        self.result = Label(self, text = "classifies as " + className)
 
-        self.result.pack()
+        save_button = Button(self, command=lambda:self.saveResults(ostring))
+
+    def getClassifierString(self):
+        return "blah"
+

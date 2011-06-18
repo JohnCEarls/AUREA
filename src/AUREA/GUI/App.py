@@ -18,6 +18,7 @@ class App(Frame):
         root.report_callback_exception = self.report_callback_exception
         Frame.__init__(self, root)
         self.thread_message_queue = Queue.Queue()
+        self.thread_classify_queue = Queue.Queue()
         root.rowconfigure( 0, weight = 1 )
         root.columnconfigure( 0, weight = 1 )
         self.grid(sticky=W+E+N+S )
@@ -66,13 +67,12 @@ class App(Frame):
         #I should really rewrite this to handle threads from the start
         #this is a hacky thing added because windows gets snarky about
         #not returning control back to the GUI when performing
-        #computationally intensive procedures
         #meh
         while not self.thread_message_queue.empty():
             type, msg = self.thread_message_queue.get()
-            if type == 'error':
+            if type == 'error':#pass stacktrace to error handler
                 self.report_callback_exception(*msg)
-            elif type == 'tspResult':
+            elif type == 'tspResult':#training completed
                 TSPResults(self.curr_page)                
             elif type == 'tstResult':
                 TSTResults(self.curr_page)
@@ -82,7 +82,7 @@ class App(Frame):
                 KTSPResults(self.curr_page)
             elif type == 'adaptiveResult':
                 AdaptiveResults(self.curr_page)
-            elif type == 'adaptiveMessage':
+            elif type == 'adaptiveMessage':#didnt put in the time or something
                 tkMessageBox.showerror(message=msg)
             elif type == 'statusbarset':
                 self.status.set(msg)
@@ -90,6 +90,12 @@ class App(Frame):
                 self.status.clear()
             elif type == 'releaseButtons':
                 self.curr_page.enableButtons()
+            elif type == 'classifyComplete':
+                self.curr_page.handleResults()#clear out messages
+                with self.curr_page.results_lock:
+                    self.curr_page.hRon = False
+                self.curr_page.displayResults()
+                self.status.clear()
         self.after(500, self.checkTMQ)     
 
     def setAppTitle(self, title):

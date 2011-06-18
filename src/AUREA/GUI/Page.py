@@ -108,6 +108,7 @@ class Page(Frame):
             return False
         else:
             return True
+
     def disableButtons(self):
         """
         Stub-used when we are doing something that we need to keep
@@ -115,6 +116,7 @@ class Page(Frame):
         Each page that needs this is responsible for overriding this
         """
         pass
+
     def enableButtons(self):
         """
         Stub- okay for user to interact with GUI
@@ -1061,9 +1063,14 @@ class TestClassifiers(Page):
         self.unclassified_listbox = None
         self.sample_list = []
         self.subset_list = []
+        self.buttonList = []
+        self.partition_queue = Queue.Queue()
+        self.results_queue = Queue.Queue()
         #a token prepended to the subset label
         self.tok = "*ss: "
-
+        self.classified_results = None
+        self.results_lock = threading.Lock()
+        self.curr_learner = None
 
     def setUpPage(self):
         """
@@ -1083,11 +1090,12 @@ class TestClassifiers(Page):
         #putting buttons into a subframe
         sf =self.subFrame = Frame(self)
         s.classify_label= Label(sf, text="Select method.")
-        s.dirac_button = Button(sf, text="Dirac...", command=self.classifyDirac )
-        s.tsp_button = Button(sf, text="TSP...", command= self.classifyTSP )
-        s.ktsp_button = Button(sf, text="k-TSP...", command=self.classifyKTSP )
-        s.tst_button = Button(sf, text="TST...", command=self.classifyTST )
-        s.adaptive_button = Button(sf, text="Adaptive...", command=self.classifyAdaptive )
+        a=s.dirac_button = Button(sf, text="Dirac...", command=self.classifyDirac )
+        b=s.tsp_button = Button(sf, text="TSP...", command= self.classifyTSP )
+        c=s.ktsp_button = Button(sf, text="k-TSP...", command=self.classifyKTSP )
+        d=s.tst_button = Button(sf, text="TST...", command=self.classifyTST )
+        e=s.adaptive_button = Button(sf, text="Adaptive...", command=self.classifyAdaptive )
+        s.buttonList = [a,b,c,d,e]
        
     def setUpClassPartitionPage(self):
         if self._updatedSamples():
@@ -1133,17 +1141,40 @@ class TestClassifiers(Page):
         """
         Disables the learners button
         """
-        #TODO
-        pass
+        for button in self.buttonList:
+            button.config(state=DISABLED)
 
     def enableLearnersButtons(self):
         """
         enables the learners button
         """
-        #TODO
-        pass
+        if self.root.controller.dirac is not None:
+            self.dirac_button.config(state=NORMAL)
+        else:
+            self.dirac_button.config(state=DISABLED)
 
-   
+        if self.root.controller.tsp is not None:
+            self.tsp_button.config(state=NORMAL)
+        else:
+            self.tsp_button.config(state=DISABLED)
+
+
+        if self.root.controller.ktsp is not None:
+            self.ktsp_button.config(state=NORMAL)
+        else:
+            self.ktsp_button.config(state=DISABLED)
+
+       
+        if self.root.controller.tst is not None:
+            self.tst_button.config(state=NORMAL)
+        else:
+            self.tst_button.config(state=DISABLED)
+
+        if self.root.controller.adaptive is not None:
+            self.adaptive_button.config(state=NORMAL)
+        else:
+            self.adaptive_button.config(state=DISABLED)
+
     def drawPage(self):
         self.setAppTitle("Test Classifiers")
         #draw Labels        
@@ -1173,10 +1204,6 @@ class TestClassifiers(Page):
 
         self.grid(row=1,column=1, sticky=N+S+E+W)
         numcolumns, numrows = self.grid_size()
-        #self.rowconfigure(numrows-1 , weight = 0 )
-        #self.rowconfigure(1, weight = 1 )
-        #self.rowconfigure(2, weight = 1 )
-        #self.columnconfigure( 4, weight = 1 )
         self.subFrame.grid(row=1, rowspan=numrows-1, column=numcolumns, sticky=N+S+E+W)
         self.classify_label.grid(row=0, column=0, sticky=E+W)
         self.dirac_button.grid(row=4, column=0, sticky=E+W)
@@ -1187,32 +1214,6 @@ class TestClassifiers(Page):
         for i in range(7):
             self.rowconfigure(i, weight=1)
         self.current = None
-        if self.root.controller.dirac is not None:
-            self.dirac_button.config(state=NORMAL)
-        else:
-            self.dirac_button.config(state=DISABLED)
-
-        if self.root.controller.tsp is not None:
-            self.tsp_button.config(state=NORMAL)
-        else:
-            self.tsp_button.config(state=DISABLED)
-
-
-        if self.root.controller.ktsp is not None:
-            self.ktsp_button.config(state=NORMAL)
-        else:
-            self.ktsp_button.config(state=DISABLED)
-
-       
-        if self.root.controller.tst is not None:
-            self.tst_button.config(state=NORMAL)
-        else:
-            self.tst_button.config(state=DISABLED)
-
-        if self.root.controller.adaptive is not None:
-            self.adaptive_button.config(state=NORMAL)
-        else:
-            self.adaptive_button.config(state=DISABLED)
         self.poll()
 
     def _isSubsetLabel(self, txt):
@@ -1230,18 +1231,21 @@ class TestClassifiers(Page):
         """
         new_sample_list = self.root.controller.getUntrainedSamples()
         c = self.root.controller
-        ci =c.getClassificationInfo()
+        c1name,c1Len, c2name,c2Len  = c.getClassificationInfo()
         if self.className1 is None:
+            #initialize
             return True
-        if self.className1 != ci[0] or self.className2 != ci[1]:
-            return True
-        if ci[1] == 0:
+        if self.className1.get() != c1name or self.className2.get() != c2name:
+            #change
             return True
         if len(new_sample_list) != len(self.sample_list):
+            #change
             return True
         for i, sample in enumerate(new_sample_list):
             if sample != self.sample_list[i]:
+                #change
                 return True
+        #classes have not changed
         return False
         
  
@@ -1368,13 +1372,10 @@ class TestClassifiers(Page):
         self.clearGrid()
         self.grid_forget()
 
-    def addUnc(self):
-        cursor = self.unclassified_listbox.curselection()
-        raw = self.unclassified_listbox.get(int(cursor[0])).split('].')
-        table = raw[0][1:]
-        sample_name = raw[1]
+    def addUnc(self, table, sample):
+        self.root.controller.addUnclassified(table, sample)
 
-        self.root.controller.addUnclassified(table, sample_name)
+
     def partition(self):
         class1 = []
         class2 = []
@@ -1391,38 +1392,174 @@ class TestClassifiers(Page):
                 table = raw[0][1:]
                 sample_name = raw[1]
                 class2.append((table, sample_name))
+        return (class1, class2)
 
+    def fillClassifyQueue(self):
+        class1, class2 = self.partition()
+        for table,sample in class1:
+            self.partition_queue.put( (0,table, sample) )
+        for table, sample in class2:
+            self.partition_queue.put( (1,table, sample) )
+        with self.results_lock:
+            self.hRon = True
+        #turn on results handling
+        self.handleResults()
+
+    def displayResults(self):
+        if self.curr_learner == 'dirac':
+            self.thread_message_queue.put(('statusbarclear', None))
+            DiracClassificationResults(self)
+        elif self.curr_learner == 'tsp':
+            self.thread_message_queue.put(('statusbarclear', None))
+            TSPClassificationResults(self)
+        elif self.curr_learner == 'tst':
+            self.thread_message_queue.put(('statusbarclear', None))
+            TSTClassificationResults(self)
+        elif self.curr_learner == 'ktsp':
+            self.thread_message_queue.put(('statusbarclear', None))
+            KTSPClassificationResults(self)
+        elif self.curr_learner == 'adaptive':
+            self.thread_message_queue.put(('statusbarclear', None))
+            AdaptiveClassificationResults(self)
+
+    def handleResults(self):
+        """
+        Receives results from learner as they are finished
+        """
+        
+        def getNames(pred, act):
+            #helper-returns string names for
+            #(predicted class name, actual class name)
+            c1name = self.className1.get()
+            c2name = self.className2.get()
+            if pred == 0:
+                predname = c1name
+            else:
+                predname = c2name
+            if act == 0:
+                actname = c1name
+            else:
+                actname = c2name
+            return (predname, actname)
+
+        while not self.results_queue.empty():
+            pred, act, table, sample = self.results_queue.get()
+            predname, actualname = getNames(pred, act)
+            msg = sample + " classified as " + predname
+            if pred == act:
+                msg += " : Correct"
+            else:
+                msg += " : Incorrect, was " + actualname
+            self.thread_message_queue.put( ('statusbarset', msg) ) 
+            self.classified_results.append( (pred, act, table, sample) )
+        with self.results_lock:
+            if self.hRon:
+                self.after(500, self.handleResults)
 
     def classifyDirac(self):
         if self.root.controller.dirac is not None:
-            self.addUnc()
-            self.root.controller.classifyDirac()
-            DiracClassificationResults(self)
+            self.curr_learner = 'dirac'
+            self.root.controller.dirac_classified_results=[]
 
+            self.classified_results = self.root.controller.dirac_classified_results
+            self.fillClassifyQueue()
+            self.threadedClassifyDirac()
+
+
+    @run_in_thread
+    @thread_error_catch
+    def threadedClassifyDirac(self):       
+        while not self.partition_queue.empty():
+            classNum, table, sample = self.partition_queue.get()
+            self.addUnc(table,sample)
+            msg = "Dirac classifying " + sample
+            self.thread_message_queue.put( ( 'statusbarset', msg) )
+            classification = self.root.controller.classifyDirac()
+            self.results_queue.put((classification, classNum, table, sample))
+        self.thread_message_queue.put( ('classifyComplete',None) )
+     
     def classifyTSP(self):
         if self.root.controller.tsp is not None:
-            self.addUnc()
-            self.root.controller.classifyTSP()
-            TSPClassificationResults(self) 
+            self.curr_learner = 'tsp'
+            self.root.controller.tsp_classified_results=[]
+            self.classified_results = self.root.controller.tsp_classified_results
+            self.fillClassifyQueue()
+            self.threadedClassifyTSP()
 
+    @run_in_thread
+    @thread_error_catch
+    def threadedClassifyTSP(self):
+        while not self.partition_queue.empty():
+            classNum, table, sample = self.partition_queue.get()
+            self.addUnc(table,sample)
+            msg = "TSP classifying " + sample
+            self.thread_message_queue.put( ( 'statusbarset', msg) )
+            classification = self.root.controller.classifyTSP()
+            self.results_queue.put((classification, classNum, table, sample))
+        self.thread_message_queue.put( ('classifyComplete',None) )
+                
     def classifyKTSP(self):
         if self.root.controller.ktsp is not None:
-            self.addUnc()
-            self.root.controller.classifykTSP()
-            KTSPClassificationResults(self)
-        
+            self.curr_learner = 'ktsp'
+            self.root.controller.ktsp_classified_results=[]
+            self.classified_results = self.root.controller.ktsp_classified_results
+            self.fillClassifyQueue()
+            self.threadedClassifyKTSP()
 
+    @run_in_thread
+    @thread_error_catch
+    def threadedClassifyKTSP(self):
+        while not self.partition_queue.empty():
+            classNum, table, sample = self.partition_queue.get()
+            self.addUnc(table,sample)
+            msg = "KTSP classifying " + sample
+            self.thread_message_queue.put( ( 'statusbarset', msg) )
+            classification = self.root.controller.classifykTSP()
+            self.results_queue.put((classification, classNum, table, sample))
+        self.thread_message_queue.put( ('classifyComplete',None) )
+     
+     
     def classifyTST(self):
         if self.root.controller.tst is not None:
-            self.addUnc()
-            self.root.controller.classifyTST()
-            TSTClassificationResults(self)
+            self.curr_learner = 'tst'
+            self.root.controller.tst_classified_results=[]
+            self.classified_results = self.root.controller.tst_classified_results
+            self.fillClassifyQueue()
+            self.threadedClassifyTST()
 
+    @run_in_thread
+    @thread_error_catch
+    def threadedClassifyTST(self):
+        while not self.partition_queue.empty():
+            classNum, table, sample = self.partition_queue.get()
+            self.addUnc(table,sample)
+            msg = "TST classifying " + sample
+            self.thread_message_queue.put( ( 'statusbarset', msg) )
+            classification = self.root.controller.classifyTST()
+            self.results_queue.put((classification, classNum, table, sample))
+        self.thread_message_queue.put( ('classifyComplete',None) )
+         
     def classifyAdaptive(self):
         if self.root.controller.adaptive is not None:
-            self.addUnc()
-            self.root.controller.classifyAdaptive()
-            AdaptiveClassificationResults(self)
+            self.curr_learner = 'adaptive'
+            self.root.controller.adaptive_classified_results=[]
+            self.classified_results = self.root.controller.adaptive_classified_results
+            self.fillClassifyQueue()
+            self.threadedClassifyAdaptive()
+
+
+    @run_in_thread
+    @thread_error_catch
+    def threadedClassifyAdaptive(self):
+        while not self.partition_queue.empty():
+            classNum, table, sample = self.partition_queue.get()
+            self.addUnc(table,sample)
+            msg = "Adaptive classifying " + sample
+            self.thread_message_queue.put( ( 'statusbarset', msg) )
+            classification = self.root.controller.classifyAdaptive()
+            self.results_queue.put((classification, classNum, table, sample))
+        self.thread_message_queue.put( ('classifyComplete',None) )
+         
 
 class EvaluateClassifiers(Page):
     """

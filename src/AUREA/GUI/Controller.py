@@ -49,6 +49,13 @@ class Controller:
         self.dirac_acc = None
         self.adaptive_acc_tuple = None
 
+        #for classification page
+        self.tsp_classified_results = []
+        self.ktsp_classified_results = []
+        self.tst_classified_results = []
+        self.dirac_classified_results = []
+        self.adaptive_classified_results = []
+
         self.tsp_cv = None
         self.ktsp_cv = None
         self.tst_cv = None
@@ -259,7 +266,7 @@ class Controller:
         """
         Returns the names and sizes of the partitioned classes 
         (c1name, c1size, c2name, c2size)
-        None is returned if classifications have not been created
+        ('',0,'',0) is returned if classifications have not been created
         """
         if self.datapackage is not None:
             classinfo = self.datapackage.getClassifications()
@@ -634,6 +641,7 @@ class Controller:
         self._checkRowKey(row_key)
         self.dirac.addUnclassified(dp.getUnclassifiedDataVector(row_key ))
         self.dirac_classification = self.dirac.classify()
+        return self.dirac_classification
 
     def classifyTSP(self):
         dp = self.datapackage
@@ -641,6 +649,7 @@ class Controller:
         self._checkRowKey(row_key)
         self.tsp.addUnclassified(dp.getUnclassifiedDataVector(row_key))
         self.tsp_classification = self.tsp.classify()
+        return self.tsp_classification
 
     def classifyTST(self):
         dp = self.datapackage
@@ -648,6 +657,7 @@ class Controller:
         self._checkRowKey(row_key)
         self.tst.addUnclassified(dp.getUnclassifiedDataVector(row_key))
         self.tst_classification = self.tst.classify()
+        return self.tst_classification
 
     def classifykTSP(self):
         dp = self.datapackage
@@ -655,6 +665,7 @@ class Controller:
         self._checkRowKey(row_key)
         self.ktsp.addUnclassified(dp.getUnclassifiedDataVector(row_key))
         self.ktsp_classification = self.ktsp.classify()
+        return self.ktsp_classification
 
     def classifyAdaptive(self):
         dp = self.datapackage
@@ -663,7 +674,8 @@ class Controller:
         row_key = settings['data_type']
         learner.addUnclassified(dp.getUnclassifiedDataVector(row_key))
         self.adaptive_classification = learner.classify()
-  
+        return self.adaptive_classification
+ 
     def crossValidateDirac(self):
         dirac = self.trainDirac(crossValidate = True)
         self.queue.put(('statusbarset',"Cross Validating"))
