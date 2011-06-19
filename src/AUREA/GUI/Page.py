@@ -1064,6 +1064,7 @@ class TestClassifiers(Page):
         self.sample_list = []
         self.subset_list = []
         self.buttonList = []
+        self.navButtonList = []
         self.partition_queue = Queue.Queue()
         self.results_queue = Queue.Queue()
         #a token prepended to the subset label
@@ -1095,7 +1096,7 @@ class TestClassifiers(Page):
         c=s.ktsp_button = Button(sf, text="k-TSP...", command=self.classifyKTSP )
         d=s.tst_button = Button(sf, text="TST...", command=self.classifyTST )
         e=s.adaptive_button = Button(sf, text="Adaptive...", command=self.classifyAdaptive )
-        s.buttonList = [a,b,c,d,e]
+        self.buttonList= [a,b,c,d,e]
        
     def setUpClassPartitionPage(self):
         if self._updatedSamples():
@@ -1124,18 +1125,17 @@ class TestClassifiers(Page):
      
             self.class1listbox = Listbox(self, width=maxlen, yscrollcommand=s2.set)
             s2.config(command=self.class1listbox.yview)
-            self.class1addbutton = Button(self,text="<", command=self.add1)
-            self.class2addbutton = Button(self,text=">", command=self.add2)
-            self.class1removebutton = Button(self, text=">", command = self.rem1)
-            self.class2removebutton = Button(self, text="<", command = self.rem2) 
+            a=self.class1addbutton = Button(self,text="<", command=self.add1)
+            b=self.class2addbutton = Button(self,text=">", command=self.add2)
+            c=self.class1removebutton = Button(self, text=">", command = self.rem1)
+            d=self.class2removebutton = Button(self, text="<", command = self.rem2) 
+            self.navButtonList = [a,b,c,d]
             s3 = self.s3 = Scrollbar(self, orient=VERTICAL)
             self.class2listbox = Listbox(self, width=maxlen, yscrollcommand=s3.set)
             s3.config(command=self.class2listbox.yview)
             self.unclassifiedLabel = Label(self, text="Select Partitioning")
             self.description=Text(self,height=10,width=50,background='white')
-            self.enableLearnersButtons()
-        else:
-            self.disableLearnersButtons()
+        self.enableLearnersButtons()
 
     def disableLearnersButtons(self):
         """
@@ -1215,6 +1215,18 @@ class TestClassifiers(Page):
             self.rowconfigure(i, weight=1)
         self.current = None
         self.poll()
+
+    def disableButtons(self):
+        self.disableLearnersButtons()
+        for b in self.navButtonList:
+            b.config(state=DISABLED)
+        self.remote.disableAllButtons()
+
+    def enableButtons(self):
+        self.enableLearnersButtons()
+        for b in self.navButtonList:
+            b.config(state = NORMAL)
+        self.remote.stateChange()
 
     def _isSubsetLabel(self, txt):
         """

@@ -3,6 +3,9 @@ import tkFileDialog
 import os
 from AUREA.heuristic.LearnerQueue import LearnerQueue
 class Results(Toplevel):
+    """
+    Base class for the results popups
+    """
     def __init__(self,root):
         Toplevel.__init__(self)
         self.root = root
@@ -423,7 +426,7 @@ class KTSPClassificationResults(ClassificationResults):
     def buildDisplay(self):
         c1_name =self.root.root.controller.class1name
         c2_name = self.root.root.controller.class2name
-        Label(self, text="TSP Classification Results").grid(row=0, column =0, sticky=W)
+        Label(self, text="KTSP Classification Results").grid(row=0, column =0, sticky=W)
         T0, F0, T1, F1, mcc = self.getStats(self.ktsp_results)
         statString = ["True " + c1_name + ": " + str(T0), "False " + c1_name  + ": " + str(F0), "True " + c2_name  + ": " + str(T1),"False " + c2_name  + ": " + str(F1), "MCC: " + str(mcc)[:5]]
         for i,ss in enumerate(statString):
@@ -525,18 +528,52 @@ class AdaptiveClassificationResults(ClassificationResults):
         c1_name =self.root.root.controller.class1name
         c2_name = self.root.root.controller.class2name
         Label(self, text="Adaptive Classification Results").grid(row=0, column =0, sticky=W)
-        T0, F0, T1, F1, mcc = self.getStats(self.tst_results)
+        T0, F0, T1, F1, mcc = self.getStats(self.adaptive_results)
         statString = ["True " + c1_name + ": " + str(T0), "False " + c1_name  + ": " + str(F0), "True " + c2_name  + ": " + str(T1),"False " + c2_name  + ": " + str(F1), "MCC: " + str(mcc)[:5]]
         for i,ss in enumerate(statString):
             Label(self, text=ss).grid( row=i+1, column=0, sticky=W)
         
         Label(self, text="For Complete Results, Save and view textfile").grid(row=6, column=0, sticky=W)
-        ostring = self.getOutputString(self.tst_results)
+        ostring = self.getOutputString(self.adaptive_results)
         Button(self, text="Save", command=lambda:self.saveResults(ostring)).grid(row=7,column=0, sticky=E)
 
 
         save_button = Button(self, command=lambda:self.saveResults(ostring))
 
     def getClassifierString(self):
-        return "blah"
+        #in order to get the classifier string we need to know what sort of 
+        #learning alg we are working with
+        learnerMap = ['', '', '', '']
+        learnerMap[LearnerQueue.dirac] = "DiRaC"
+        learnerMap[LearnerQueue.tsp] = "TSP"
+        learnerMap[LearnerQueue.tst] = "TST"
+        learnerMap[LearnerQueue.ktsp] = "k-TSP"
+        self.datapackage = self.root.root.controller.datapackage
+        c = self.root.root.controller
+        winner = c.adaptive_settings['learner']
+        
+        resultStr = "Adaptive Classification Results" + os.linesep
+        resultStr += "="*(len(resultStr) - 1)
+        resultStr += os.linesep
+        resultStr = "Using Learner : " + learnerMap[winner] +  os.linesep
+        resultStr = "See Adaptive more info  on homepage for more information"
+        resultStr += os.linesep
+        if winner == LearnerQueue.dirac:
+            tn = c.adaptive.getTopNetworks()
+            
+            for net in tn:                
+                resultStr += net + os.linesep
+        else:
+            l = c.adaptive.getMaxScores()
+            row_key = c.adaptive_settings['data_type'] 
+            for genes in l:
+                tab = ''
+                for gene in genes:
+                    gene_name = self.datapackage.getGeneName(gene, row_key)
+                    resultStr += tab + gene_name
+                    tab = '\t'
+                resultStr += os.linesep
+        resultStr += c.adaptive_setting_string 
+
+        return resultStr
 
