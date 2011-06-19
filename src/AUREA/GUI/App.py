@@ -246,15 +246,20 @@ class App(Frame):
         err = traceback.format_exception(*args)
         msg = "An Error has occurred."
         t = Toplevel(self)
-        t.title("AUREA Error!!!!!")
+        t.title("AUREA Error")
         Label(t,text=msg).pack()
         import os
-        errmsg = 'Please copy or save this error and go to https://github.com/JohnCEarls/AUREAPackage/issues to report it'+ os.linesep
-        errmsg += '(You may have to use Control-C or Apple-C to copy.)'+ os.linesep
+        errmsg = 'Please save this error to a text file and go to https://github.com/JohnCEarls/AUREA/issues to report it.'+ os.linesep
+        errmsg += 'If you do not want to create a github account, you may email the error file to earls3@illinois.edu.' + os.linesep
         errmsg +=os.linesep.join(err)
         errmsg += getSysInfo()
         errmsg += getInstanceInfo(self)
+        scroll = Scrollbar(t)
+        scroll.pack(side=RIGHT, fill=Y)
+        
         errBox = Text(t,wrap=WORD)
+        scroll.config(command=errBox.yview)
+        errBox.config(yscrollcommand=scroll.set)
         errBox.pack()
         errBox.insert(END, errmsg) 
         errSave = Button(t, text="Save...", command=lambda:saveError(self,errmsg))
@@ -416,18 +421,50 @@ class AUREARemote(Frame):
         #Evaluate Performance
         self.navDep.append([aa.ClassCreation])
 
+    def getMessage(self, msg_key):
+        """
+        Returns the string associated with a message to be displayed
+        in the window that holds the AUREA picture
+        """
+        messages = {}
+        nl = os.linesep
+        #nav mouseover messages
+        #home page
+        messages['home'] = "Home:"+ 2*nl
+        messages['home'] += "View a summary of the current state of AUREA." +nl
+        messages['home'] += "Review imported files, statistics, classification results, etc."
+        #import page
+        messages['import'] = "Import Data:"+2*nl
+        messages['import'] += "Import the data on which to base the models." + nl
+        messages['import'] += "Browse for or download the data files for training and classification." + nl
+        messages['import'] += "Select the network and synonym files for DiRaC and Adaptive algorithms." 
+
+        #class definition 
+        messages['classd'] = 'Class Definition:' + 2*nl
+        messages['classd'] += "Label and partition the imported data into classes for training."
+        
+        #settings
+        messages['settings'] = "Learner Settings:" + 2*nl
+        messages['settings'] += "Configure the parameters of the learning algorithms."
+        
+        #train
+        messages['train'] = "Train Classifiers:" +2*nl
+        messages['train'] += "Train the learning algorithms."
+
+        #test
+        messages['test'] = "Test Classifiers:" + 2*nl
+        messages['test'] += "Use your trained classifiers to classify samples not in the training set"
+        #evaluate
+        messages['evaluate'] = "Evaluate Performance:" + 2*nl
+        messages['evaluate'] += "Perform k-fold cross validation on the learning algorithms."
+        return messages[msg_key]
+
+
     def buildNav(self):
         """
         Create button objects
         """
         import os
-        home_message = "Home:"+ 2*os.linesep + "View a summary of the current state of AUREA."
-        import_message = "Import Data:"+2*os.linesep+ "Import the data on which to base the models." + os.linesep + "Browse for or download the data files for training and classification." + os.linesep + "Select the network and synonym files for DiRaC and Adaptive algorithms."
-        class_message = "Label and partition the imported data into classes for training."
-        settings_message = "Configure the parameters of the learning algorithms."
-        train_message = "Train the learning algorithms according to your settings."
-        test_message = "Select a sample from the data and classify it."
-        evaluate_message = "Perform cross validation on the models."
         
         dp = self.m.displayPage
 
@@ -441,13 +478,13 @@ class AUREARemote(Frame):
         g=self.evaluate_button = Button(self, text="Evaluate Performance", command=lambda:dp('Evaluate'))
         
         bm = self.bindMessage
-        bm(a,home_message)
-        bm(b,import_message)
-        bm(c,class_message)
-        bm(d,settings_message)
-        bm(e,train_message)
-        bm(f,test_message)
-        bm(g,evaluate_message)
+        bm(a,self.getMessage('home'))
+        bm(b,self.getMessage('import'))
+        bm(c,self.getMessage('classd'))
+        bm(d,self.getMessage('settings'))
+        bm(e,self.getMessage('train'))
+        bm(f,self.getMessage('test'))
+        bm(g,self.getMessage('evaluate'))
         self.buttonList = [a,b,c,d,e,f,g]
         welcome_img = os.path.join(self.m.controller.workspace, 'data', 'AUREA-logo-200.pgm')
         self.photo = photo = PhotoImage(file=welcome_img)
@@ -518,14 +555,18 @@ class AUREAMenu(Menu):
     def buildHelp(self):
         helpmenu = Menu(self)
         self.add_cascade(label="Help", menu=helpmenu)
-        helpmenu.add_command(label="Content", command=self.unImplemented)
+        helpmenu.add_command(label="Content", command=self.getHelp)
         helpmenu.add_command(label="Report a Problem", command=self.reportProblem)
         helpmenu.add_command(label="About", command=self.about)
 
     def reportProblem(self):
-        msg = "Please go to https://github.com/JohnCEarls/AUREAPackage/issues to report any bugs. Thank you for helping make AUREA better."
+        msg = "Please go to https://github.com/JohnCEarls/AUREA/issues to report any bugs. Thank you for helping make AUREA better."
         tkMessageBox.showinfo("AUREA: report error", msg)
-    
+
+    def getHelp(self):
+        msg = "Please go to [documentation site] to read the documentation."
+        tkMessageBox.showinfo("AUREA: get help", msg)
+ 
     def about(self):
         msg = "AUREA v. " + AUREA.__version__
         msg += " Copyright (c) 2010-2011 John C. Earls"
