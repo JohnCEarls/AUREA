@@ -27,4 +27,34 @@ Move data (need to add data to the setup file the config.xml file needs to be av
 
 python setup.py bdist_wininst
 
+Gave up trying to get 32 bit to compile on 64bit.
 
+On 32bit
+Installed Python 2.7
+Added python to path
+
+Installed VS 2008(opened once to allow VS to update paths)
+Installed Git
+Downloaded swig
+Added swig to path(need all of swig files, not just executable)
+added PYTHON_INCLUDE and PYTHON_LIB to user variables
+
+Created ssh-key in git bash.
+
+cloned AUREA from github
+
+ran python setup.py build
+worked first time (wtf)
+
+ran python setup.py bdist_egg
+ran python setup.py bdist
+ran python setup.py bdist_wininst
+
+Installed python26 (www.python.org/download/releases/2.6/)
+Changed Path, Python_lib and Python_include
+
+ran python setup.py bdist_egg
+ran python setup.py bdist
+ran python setup.py bdist_wininst
+
+May try 64bit.
