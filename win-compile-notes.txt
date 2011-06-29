@@ -30,7 +30,7 @@ python setup.py bdist_wininst
 Gave up trying to get 32 bit to compile on 64bit.
 
 On 32bit
-Installed Python 2.7
+Installed Python 2.7 (note that it asks whether to install tcltk)
 Added python to path
 
 Installed VS 2008(opened once to allow VS to update paths)
@@ -57,4 +57,19 @@ ran python setup.py bdist_egg
 ran python setup.py bdist
 ran python setup.py bdist_wininst
 
-May try 64bit.
+On 64 bit
+
+Installed Python 2.7 (note that it asks whether to install tcltk)
+
+Installed Git
+Downloaded swig
+Added swig to path(need all of swig files, not just executable)
+
+Created ssh-key in git bash.
+
+cloned AUREA from github
+Installed portions of msdn library for VS 2008
+
+Without running VS2008, get that vcvarsall error
+-2008 does not install x64 compilers. had to expand C++ tools and select it.
+
