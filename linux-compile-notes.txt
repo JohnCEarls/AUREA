@@ -11,4 +11,5 @@ Get virtualenv
 virtualenv see http://stackoverflow.com/questions/1108974/switch-versions-of-python
 
 installed swig v1.3.36
-
+sudo apt-get install python-setuptools
+sudo apt-get install python2.6-dev 
