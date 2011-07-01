@@ -2,3 +2,13 @@ swig
 python-dev
 g++
 python-tk
+
+for multiple installs see http://achinghead.com/installing-multiple-versions-python.html
+
+Works pretty good.
+
+Get virtualenv
+virtualenv see http://stackoverflow.com/questions/1108974/switch-versions-of-python
+
+installed swig v1.3.36
+
