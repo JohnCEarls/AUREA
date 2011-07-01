@@ -4,9 +4,14 @@
 #settings
 version=1.6.1
 
+#64bit workstation
 arch=x86_64
 base_dir=/home/earls3/Price
 drop_dir=/home/earls3/Dropbox/Price/builds
+#32bit vm
+arch=i686
+base_dir=/home/john
+drop_dir=/home/john/Dropbox/Price/builds
 
 cd $base_dir/AUREA
 git pull
