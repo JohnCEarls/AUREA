@@ -83,10 +83,10 @@ ext_mod = [ buildExtension(name, src_dir, src_files) for name, src_files in getE
 
 #run setup
 setup (name = 'AUREA',
-        version='1.6.1', #edit AUREA/__init__.py
+        version='1.6.2', #edit AUREA/__init__.py
         author ='John C. Earls',
         author_email = 'earls3@illinois.edu',
-        url= 'https://github.com/JohnCEarls/AUREAPackage.git',
+        url= 'http://www.igb.uiuc.edu/labs/price/AUREA',
         description="""AUREA is a software suite that makes finding Relative Expression Learners easy.""",
         packages=['AUREA','AUREA.GUI', 'AUREA.learner', 'AUREA.packager', 'AUREA.parser','AUREA.heuristic', 'pyBabel'],
         package_dir={'AUREA': 'src/AUREA', 'pyBabel': 'src/pyBabel'},
