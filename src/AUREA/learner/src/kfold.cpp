@@ -90,7 +90,7 @@ bool kfold::checkFoldsGood( vector<int> & sample){
         if ((class1counter == class1size) 
             || (class2counter == class2size)){
             //Oh noes!!!!All our eggs are in one basket.
-            good == false;
+            good = false;
             break;
         }
      }
