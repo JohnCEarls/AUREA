@@ -455,6 +455,7 @@ class Controller:
         vecFilter = tsp.IntVector()
         for val in filters:
             vecFilter.push_back(val)
+        self.queue.put(('statusbarset',"Init TSP"))
 
         t = tsp.TSP(data_vector, num_genes, class_vector, vecFilter)
         if crossValidate:
