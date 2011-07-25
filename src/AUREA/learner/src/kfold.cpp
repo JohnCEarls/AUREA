@@ -107,10 +107,12 @@ vector<double> * kfold::getNextTrainingSet(){
     next_fold = next_fold + getFoldSize();
     curr_classSizes[0] = 0;
     curr_classSizes[1] = 0;
-    if (samp_vector.size() == it){
-        
-        return NULL;
-    }
+   
+
+    if (next_fold > samp_vector.size()) next_fold = samp_vector.size();
+    if (samp_vector.size() == it) return NULL;
+
+
     delete generated_data;
     generated_data = new vector<double>();
     for(int base_i = 0; base_i<class1size+class2size;base_i++){
@@ -121,9 +123,6 @@ vector<double> * kfold::getNextTrainingSet(){
             }
         }
     
-    }
-    if (next_fold > samp_vector.size()){
-        next_fold = samp_vector.size();
     }
     return generated_data;
 }
