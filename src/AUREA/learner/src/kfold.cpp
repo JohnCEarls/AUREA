@@ -73,8 +73,9 @@ bool kfold::checkFoldsGood( vector<int> & sample){
     bool good = true;
 
     if (class1size > fsize && class2size > fsize) return good;//shortcircuit pigeon
-    int class1counter, class2counter;
-    for( int i = 0; i < sample.size();i++ ){
+    int class1counter=0;
+    int class2counter=0;
+    for(unsigned int i = 0; i < sample.size();i++ ){
         //the only way for this to happen is if all of one class ends up in a
         //fold
         if (i%fsize == 0){//new fold
@@ -109,8 +110,8 @@ vector<double> * kfold::getNextTrainingSet(){
     curr_classSizes[1] = 0;
    
 
-    if (next_fold > samp_vector.size()) next_fold = samp_vector.size();
-    if (samp_vector.size() == it) return NULL;
+    if (next_fold > (int)samp_vector.size()) next_fold = (int)samp_vector.size();
+    if ((int)samp_vector.size() == it) return NULL;
 
 
     delete generated_data;
@@ -168,8 +169,6 @@ return true if sample is in training set
 return false is sample is to be used for crossvalidation
 **/
 bool kfold::trainingData(int sample){
-    int ksize = getFoldSize();
-    int temp_it = it;
     for(int i=it; i < next_fold;i++){
         if(samp_vector[i] == sample){
             return false;
@@ -185,7 +184,7 @@ int kfold::getFoldSize(){
     return ksize; 
 }
 void printVect(vector<double> a, int rows){
-    for(int i=0;i<a.size();i++){
+    for(unsigned int i=0;i<a.size();i++){
         if (i%rows == 0){cout << endl;}
         cout << a.at(i) << " ";
     }
