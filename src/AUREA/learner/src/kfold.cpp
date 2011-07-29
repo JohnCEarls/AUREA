@@ -48,7 +48,7 @@ vector<int> kfold::generateSampleVector(){
         samples[i] = i;        
     }
     for(int i=class1size+class2size-1;i>0;i--){//fisher-yates shuffle
-        int j = rand() % i;
+        int j = rand() % (i+1);
         int temp = samples[i];
         samples[i] = samples[j];
         samples[j] = temp;
