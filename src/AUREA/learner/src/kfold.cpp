@@ -109,7 +109,7 @@ vector<double> * kfold::getNextTrainingSet(){
     curr_classSizes[0] = 0;
     curr_classSizes[1] = 0;
    
-
+    //fold overflow
     if (next_fold > (int)samp_vector.size()) next_fold = (int)samp_vector.size();
     if ((int)samp_vector.size() == it) return NULL;
 
