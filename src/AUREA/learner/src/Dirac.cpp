@@ -547,21 +547,28 @@ vector<int> Dirac::getTopNetworks(int numTopNets, vector<double> & rankMatchingS
             ties.push_back(i);
         }
     }
-    //cout << endl;
-    //manage ties
-    vector<double> dist_cp;
-    
-    for(int i = 0; i < (int)ties.size();i++){
-        dist_cp.push_back(dist[ties[i]]);
-    }
-    //partition ties on distance
-    std::partial_sort(dist_cp.begin(), dist_cp.begin()+(numTopNets-topNets.size()), dist_cp.end(), cmp);
-    double dist_part_score = dist_cp[numTopNets-topNets.size()];
-    for(int i = 0; i< (int)ties.size();i++){
-        if(dist[ties[i]] >= dist_part_score && (int)topNets.size() < numTopNets){//add top distances
-                topNets.push_back(ties[i]);
+    if (ties.size()){
+        //cout << endl;
+        //manage ties
+        vector<double> dist_cp;
+        
+        for(int i = 0; i < (int)ties.size();i++){
+            dist_cp.push_back(dist[ties[i]]);
+        }
+        //partition ties on distance
+        std::partial_sort(dist_cp.begin(), dist_cp.begin()+(numTopNets-topNets.size()), dist_cp.end(), cmp);
+        //double checking that nothing funny is going on
+        if((numTopNets-topNets.size())-1 < 0) cout << "Error: Dirac.cpp line: " << __LINE__ << endl;
+
+
+        double dist_part_score = dist_cp[(numTopNets-topNets.size())-1];
+
+        for(int i = 0; i< (int)ties.size();i++){
+            if(dist[ties[i]] >= dist_part_score && (int)topNets.size() < numTopNets){//add top distances
+                    topNets.push_back(ties[i]);
+            } 
         } 
-    } 
+    }
     return topNets;   
 }
 /**
