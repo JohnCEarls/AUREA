@@ -1,6 +1,6 @@
 ##Set-ExecutionPolicy Unrestricted (run on command line in admin mode)
 Get-ChildItem Env:
-$pyVs = @(6,7)
+$pyVs = @(7)
 $origPath = $env:Path
 foreach($v in $pyVs){
 
@@ -16,13 +16,6 @@ $test = $env:PYTHON_LIB
 "
 Building ...
 "
-python setup.py bdist_egg
-python setup.py bdist_wininst
-python setup.py bdist
-cp C:\Users\earls3\AUREA\dist\AUREA-1.6.1.win-amd64.zip C:\Users\earls3\AUREA\dist\AUREA-1.6.1.win-amd64-py2.$v.zip 
-rm C:\Users\earls3\AUREA\dist\AUREA-1.6.1.win-amd64.zip
+python setup.py build
 }
-$env:Path = $origPath
-$env:Path
-
-cp C:\Users\earls3\AUREA\dist\* C:\Users\earls3\Dropbox\Price\builds
+$env:PYTHONPATH = "C:\Users\earls3\AUREA\build\lib.win-amd64-2.7"
