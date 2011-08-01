@@ -19,8 +19,8 @@ Building ...
 python setup.py bdist_egg
 python setup.py bdist_wininst
 python setup.py bdist
-cp C:\Users\earls3\AUREA\dist\AUREA-1.6.1.win-amd64.zip C:\Users\earls3\AUREA\dist\AUREA-1.6.1.win-amd64-py2.$v.zip 
-rm C:\Users\earls3\AUREA\dist\AUREA-1.6.1.win-amd64.zip
+cp C:\Users\earls3\AUREA\dist\AUREA-1.6.2.win-amd64.zip C:\Users\earls3\AUREA\dist\AUREA-1.6.2.win-amd64-py2.$v.zip 
+rm C:\Users\earls3\AUREA\dist\AUREA-1.6.2.win-amd64.zip
 }
 $env:Path = $origPath
 $env:Path
