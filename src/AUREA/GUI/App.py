@@ -564,7 +564,7 @@ class AUREAMenu(Menu):
         tkMessageBox.showinfo("AUREA: report error", msg)
 
     def getHelp(self):
-        msg = "Please go to [documentation site] to read the documentation."
+        msg = "Please go to [http://www.igb.uiuc.edu/labs/price/AUREA/] for documentation."
         tkMessageBox.showinfo("AUREA: get help", msg)
  
     def about(self):
