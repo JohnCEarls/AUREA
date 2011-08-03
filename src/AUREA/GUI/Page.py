@@ -864,8 +864,11 @@ class ClassDefinitionPage(Page):
            tkMessageBox.showerror(message="You must enter labels for the classes.")
            return False
         if self.class1listbox.size() == 0 or self.class2listbox.size() == 0:
-           tkMessageBox.showerror(message="Each class must have at least one label.")
+           tkMessageBox.showerror(message="Each class must have at least one sample to train on.")
            return False
+        if (self.className1.get().strip() == self.className2.get().strip()):
+            tkMessageBox.showerror(message="Each class label must be unique.")
+            return False
         self.root.controller.createClassification(self)
         class1 = []
         class2 = []
