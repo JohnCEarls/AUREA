@@ -569,7 +569,7 @@ class AUREAMenu(Menu):
  
     def about(self):
         msg = "AUREA v. " + AUREA.__version__
-        msg += " Copyright (c) 2010-2011 John C. Earls"
+        msg += " Copyright (c) 2010-2011 The N.D. Price Lab"
         tkMessageBox.showinfo("AUREA", msg)
         
 
