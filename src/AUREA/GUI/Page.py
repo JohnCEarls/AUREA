@@ -970,6 +970,7 @@ class TrainClassifiers(Page):
         s.adaptive_warning = Label(self, text="Gene Network file required", fg="red")
         s.target_message = Label(self, text="Please specify max time & target accuracy for Adaptive", fg="red")
         s.buttonList = [a,b,c,d,e]
+        s.enableButtons()
 
     def disableButtons(self):
         """
