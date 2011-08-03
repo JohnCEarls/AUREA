@@ -630,17 +630,19 @@ class ClassDefinitionPage(Page):
         self.className2Label = Label(self, text="Class 2:")
         if self.className1 is None:
             self.className1 = StringVar()
+            self.className1.set('Class 1')
         self.className1E = Entry(self, textvariable=self.className1, width=50)
         self.className1E.bind("<Key>", unlockDefine)
         if self.className2 is None:
             self.className2 = StringVar()
+            self.className1.set('Class 2')
         self.className2E = Entry(self, textvariable=self.className2, width=50)
         self.className2E.bind("<Key>", unlockDefine)
 
     def setUpClassPartitionPage(self):
         if self._updatedSamples():
-            self.className1.set('')
-            self.className2.set('')
+            self.className1.set('Class 1')
+            self.className2.set('Class 2')
             self.sample_list = self.root.controller.getSamples()
             self.subset_list = self.root.controller.getSubsets()
             s1 = self.s1 = Scrollbar(self, orient=VERTICAL)
