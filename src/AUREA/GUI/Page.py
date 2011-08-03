@@ -383,7 +383,8 @@ class ImportDataPage(Page):
         
         self.geneSynonymDisplay()    
         self.import_button = Button(self, text="Import Files", command=self.importFiles)
-        self.import_button.config(state=DISABLED)
+        if len(self.SOFTFilePath) > 0 and len(self.SOFTFilePath[0].get().strip()) == 0:#only disable if there are no files
+            self.import_button.config(state=DISABLED)
 
     def clearGrid(self):
         for widget in self.grid_slaves():
