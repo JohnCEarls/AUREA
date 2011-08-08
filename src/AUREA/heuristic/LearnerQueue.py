@@ -292,9 +292,16 @@ class LearnerQueue:
         self.minWeight = wMin/2.0
 
     def _getNext(self):
+        """
+        Returns the next algorithms settings
+        (the complexity, settings dict)
+        Returns None when all of the queues are empty
+        """
         poss = []
-        min = float('inf')
+        def_min = float('inf')
         curr = None
+        min_complexity = None 
+        min_settings = None 
         for x in range(4):
             #cycle through the queues looking for the best score
             if not self._queue[x].empty():
@@ -304,8 +311,8 @@ class LearnerQueue:
                 est_time = self.getEstimatedTime(x, complexity)
                 
                 weighted_time = est_time/self.weight[x]
-                if  weighted_time < min:
-                    min = weighted_time
+                if  weighted_time < def_min:
+                    def_min = weighted_time
                     min_complexity = complexity
                     min_settings = next_settings
                     if curr is not None:
@@ -314,7 +321,10 @@ class LearnerQueue:
                     curr = next 
                 else:
                     self._queue[x].put(next)
-        return (min_complexity, min_settings) 
+        if min_complexity is None:
+            return None
+        else:
+            return (min_complexity, min_settings) 
 
     def trainLearner(self, settings, complexity):
         """
