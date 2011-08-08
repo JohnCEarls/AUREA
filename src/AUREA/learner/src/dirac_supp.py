@@ -13,6 +13,18 @@ class Dirac:
     Issue 5.
     """
     def __init__(self, data, numGenes,classSizes, geneNet, geneNetSize, numTopNetworks, netMap):
+        """        
+Creates a Dirac learner object
+    data - DoubleVector with data
+    numgenes - number of genes per sample
+    classSizes = IntVector of size 2 where a[0] = class 1 size
+    geneNet - an intvector that contains indices of genes that are part of a gene netwotk
+    geneNetSize - Describes the size of each gene network, used to mark the start and end of networks in geneNet. (i.e. if gNS[0] = 5 that means the first five gene indices in geneNet are for network 0.
+    ((geneNet, geneNetSize) = dp.getGeneNetVector('gene'))
+    numTopNetworks - int, number of networks to use for classification
+    
+    netMap - maps a gene network to a human readable name. (dp.gene_net_map)
+        """ 
         if netMap is None:
             raise Exception("You need to add the Gene Network Map")
         #copy geneNet and geneNetSize
