@@ -1,6 +1,6 @@
 ##Set-ExecutionPolicy Unrestricted (run on command line in admin mode)
 Get-ChildItem Env:
-$Aversion = "1.6.1"
+$Aversion = "1.6.2"
 $pyVs = @(6,7)
 $origPath = $env:Path
 foreach($v in $pyVs){
