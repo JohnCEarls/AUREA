@@ -497,7 +497,7 @@ class ImportDataPage(Page):
 
     def downloadSOFT(self):
         softnumber = self.dsd_value.get().strip()
-        if re.match(r'\d{4}',softnumber) is None or len(softnumber) != 4:
+        if not re.match(r'\d{3,4}',softnumber):
             tkMessageBox.showerror(message="Invalid SOFT file number.")
             return
 
