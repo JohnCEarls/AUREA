@@ -196,8 +196,7 @@ class KTSPResults(Results):
         for genes in topk:
             column = 0
             tab = ''
-            #tsp and ktsp are opposite in their classification order
-            genes = (genes[1], genes[0])
+            genes = (genes[0], genes[1])
             for gene in genes:
                 gene_name = self.datapackage.getGeneName(gene, row_key)
                 resultString += tab + gene_name
