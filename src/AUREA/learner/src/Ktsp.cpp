@@ -42,8 +42,9 @@ Ktsp::Ktsp( vector<double> & data, int numGenes, vector<int> & classSizes,vector
     this->filters = filters;
     
     buildWilcoxonRanking(data);
-    
-    if(maxK>1){
+    if(this->m == 0){
+        this->ourK = maxK;
+    }else if(maxK>1){
         this->ourK = crossValidation(data); 
     } else {
         this->ourK = 1;
