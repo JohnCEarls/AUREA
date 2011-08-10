@@ -159,6 +159,17 @@ class Controller:
             self.datapackage.addSynonyms(self.geneSynonymFile) 
         self.queue.put(('statusbarclear',None))
         self.queue.put(('statusbarset',"Data import complete"))
+
+    def validFileFormat(self, filename):
+        """
+        Takes a file name (not a full path) and returns true
+        if it is a parseable format
+        NOTE: if you add a parser, edit this method
+        """
+        import re
+        gdssoft = re.compile(r'GDS\d{3,4}\.soft[\.gz]?')
+        csv = re.compile(r'\w+\.csv')
+        return gdssoft.match(filename) or csv.match(filename)
     
     def unloadFiles(self):
         self.queue.put(('statusbarclear',None))

@@ -608,6 +608,7 @@ class ImportDataPage(Page):
         for path in self.softFilePath:
             if not os.path.exists(path.get()):
                 goodFiles = False
+            
         if not goodFiles:
            tkMessageBox.showerror(message="SOFT file path is invalid")
            return False
@@ -617,6 +618,11 @@ class ImportDataPage(Page):
         if not os.path.exists(self.gsynPath.get()) and len(self.gsynPath.get()) > 0:
             tkMessageBox.showerror(message="Gene Synonym file path is invalid")
             return False
+        for path in self.softFilePath:
+            if not self.root.controller.validFileFormat(os.path.split(path.get())[1]):
+                tkMessageBox.showerror(message=path.get()+" is not a valid file type.")
+                return False
+
         return True
 
 class ClassDefinitionPage(Page):
