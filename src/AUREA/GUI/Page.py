@@ -968,8 +968,8 @@ class TrainClassifiers(Page):
         self.target_message.grid(row=6, column=0, columnspan=2)
         self.auto_maxtimeE.grid(row=7,column=1)
         self.auto_maxtime_label.grid(row=7, column=0)
-        self.auto_target_acc_label.grid(row=8, column=0)
-        self.auto_target_accE.grid(row=8, column=1)
+        #self.auto_target_acc_label.grid(row=8, column=0)
+        #self.auto_target_accE.grid(row=8, column=1)
 
         for x in self.buttonList:
             x.grid(sticky=E+W)
@@ -985,17 +985,18 @@ class TrainClassifiers(Page):
         d=s.tst_button = Button(self, text="Train TST...", command=self.trainTST )
   
         e=s.auto_button = Button(self, text="Adaptive Training...", command=self.trainAdaptive )
-        s.auto_target_acc_label = Label(self, text="Target Accuracy:")
+        #s.auto_target_acc_label = Label(self, text="Target Accuracy:")
         s.auto_maxtime_label = Label(self, text="Maximum Time(sec):")
         if s.auto_maxtime is None:
             s.auto_maxtime = StringVar()
         if s.auto_target_acc is None:
             s.auto_target_acc = StringVar()
+            s.auto_target_acc.set("1.0")
         s.auto_maxtimeE = Entry(self, textvariable=self.auto_maxtime) 
-        s.auto_target_accE = Entry(self, textvariable=s.auto_target_acc)
+        #s.auto_target_accE = Entry(self, textvariable=s.auto_target_acc)
         s.dirac_warning = Label(self, text="Gene Network file required", fg="red")
         s.adaptive_warning = Label(self, text="Gene Network file required", fg="red")
-        s.target_message = Label(self, text="Please specify max time & target accuracy for Adaptive", fg="red")
+        s.target_message = Label(self, text="Please specify max time for Adaptive", fg="red")
         s.buttonList = [a,b,c,d,e]
         s.enableButtons()
 
@@ -1621,15 +1622,16 @@ class EvaluateClassifiers(Page):
         b= s.ktsp_button = Button(self, text="k-TSP...", command=s.cvKTSP )
         c = s.tst_button = Button(self, text="TST...", command=s.cvTST )
         e = s.adaptive_button = Button(self, text="Adaptive...", command=s.cvAdaptive )
-        s.auto_target_acc_label = Label(self, text="Target Accuracy:")
+        #s.auto_target_acc_label = Label(self, text="Target Accuracy:")
         s.auto_maxtime_label = Label(self, text="Maximum Time(sec):")
         if s.auto_maxtime is None:
             s.auto_maxtime = StringVar()
         s.auto_maxtimeE = Entry(self, textvariable=self.auto_maxtime) 
         if s.auto_target_acc is None:
             s.auto_target_acc = StringVar()
-        s.auto_target_accE = Entry(self, textvariable=s.auto_target_acc)
-        s.target_message = Label(self, text="Please specify max time & target accuracy for Adaptive", fg="red")
+            s.auto_target_acc.set("1.0")
+        #s.auto_target_accE = Entry(self, textvariable=s.auto_target_acc)
+        s.target_message = Label(self, text="Please specify max time for Adaptive", fg="red")
         s.buttonList = [a,b,c,d,e]
 
 
@@ -1650,9 +1652,9 @@ class EvaluateClassifiers(Page):
         r += 1
         s.auto_maxtime_label.grid( row=r, column=0)
         s.auto_maxtimeE.grid(row=r, column=1) 
-        r += 1
-        s.auto_target_acc_label.grid(row=r, column=0)
-        s.auto_target_accE.grid(row=r, column=1)
+        #r += 1
+        #s.auto_target_acc_label.grid(row=r, column=0)
+        #s.auto_target_accE.grid(row=r, column=1)
         for x in s.buttonList:
             x.grid(sticky=E+W)
         for x in range(9):
