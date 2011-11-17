@@ -187,7 +187,7 @@ Given an index into either the probe or gene array(determined by the type parame
         organized as
         [(className1, [ (table, sample_id), (table, sample_id) ...]),
          (className2, [ (table, sample_id), (table, sample_id) ...])]
-         
+        returns [] if classifications have not been set yet         
         """
         return self.classifications
 
