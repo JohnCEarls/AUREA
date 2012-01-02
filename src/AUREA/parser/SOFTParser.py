@@ -312,6 +312,10 @@ exist in the table"""
         c.close()
         conn.close()
  
+class GDSSOFTParser(SOFTParser):
+    def __init__(self, filename):
+        SOFTParser.__init__(filename)
+
 class entity:
     """
     A container for meta-data provided by the soft file.

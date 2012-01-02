@@ -349,11 +349,13 @@ This builds the geneNet Vector from the provided information.  It uses gene syno
         """
         pB = pyBabel.Extensions.ext(cache_dir=self.merge_cache)
         try:
-            self.probes = pB.mergeProbes(idLists=[table.probes for table in self.data_tables])
+            idLists = []
+            for table in self.data_tables:
+                idLists.append([probe for probe in table.probes if probe not in ['MAX', 'MIN', 'AVE']])
+            self.probes = pB.mergeProbes(idLists=idLists)
         except pyBabel.Extensions.pyBabelError, E:#unable to merge on probes
             print E.value            
             self.probes = [] 
-        
         self.probe_index = {}
         for i, probeset in enumerate(self.probes):
             self.probe_index[probeset] = i
@@ -453,7 +455,11 @@ Adds a table of synonyms to allow cross referencing between geneNets and dataset
         numSamples = len(dv) /numGenes
         for i in range(numGenes):
             str_buff = "'" 
-            str_buff += self.getGeneName(index = i, type=key)
+            if key == 'probe':
+                tmp = self.getGeneName(index=i, type=key).split('-')
+                str_buff += tmp[-1] + "','" + " ".join(tmp[:-1])
+            else:
+                str_buff += self.getGeneName(index = i, type=key)
             str_buff += "'"
             for j in range(numSamples):
                 dv_index = j*numGenes + i
@@ -472,8 +478,12 @@ Adds a table of synonyms to allow cross referencing between geneNets and dataset
         c1name, c1samples = classifications[0]
         c2name, c2samples = classifications[1]
         numColumns = len(c1samples)
-        header = "'" 
-        header += key 
+        header = "'"
+        if key == 'probe': 
+            header += "probe','gene"
+        else:
+            header += key 
+        
         for s1heading in [table + "." + sample for table, sample in c1samples]:
             header += "','" + s1heading
         for s2heading in [table + "." + sample for table, sample in c2samples]:
