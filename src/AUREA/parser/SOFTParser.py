@@ -30,11 +30,11 @@ Note the docs do not describe everything.
             #if its zipped, lets unzip
             import gzip 
             f = gzip.open(filename,'rb')
-            self.raw_content = f.readlines()
+            self.raw_content = f #.readlines()
             f.close()
         else:
             f = open(filename,'r')
-            self.raw_content = f.readlines()
+            self.raw_content = f #.readlines()
             f.close()
         self._getData()
 
@@ -312,6 +312,10 @@ exist in the table"""
         c.close()
         conn.close()
  
+class GDSSOFTParser(SOFTParser):
+    def __init__(self, filename):
+        SOFTParser.__init__(filename)
+
 class entity:
     """
     A container for meta-data provided by the soft file.
