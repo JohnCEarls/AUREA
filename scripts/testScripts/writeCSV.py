@@ -1,6 +1,9 @@
 from AUREA.parser.SOFTParser import SOFTParser
 from AUREA.packager.DataCleaner import DataTable
 from AUREA.packager.DataPackager import dataPackager
+
+# victor: use this file
+
 if __name__ == "__main__":
     path = "/home/earls3/Price/AUREA/workspace/data/"
     f1 = "GDS2545.soft.gz"

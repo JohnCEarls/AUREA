@@ -37,16 +37,16 @@ class CSVParser:
         Called automatically by constructor.
         Parses the csv file
         """
-        clean = s._clean
-        s.column_heading = []
-        s.table = []
-        s.id_ref_column = None
-        s.identifier_column = None
-        for line in s.raw_content:
-            if len(s.column_heading) == 0:
-                s.column_heading = [clean(x) for x in line.strip().split(',')]
+        clean = self._clean
+        self.column_heading = []
+        self.table = []
+        self.id_ref_column = None
+        self.identifier_column = None
+        for line in self.raw_content:
+            if len(self.column_heading) == 0:
+                self.column_heading = [clean(x) for x in line.strip().split(',')]
             else:
-                s.table.append(line.strip().split(','))
+                self.table.append(line.strip().split(','))
 
     def getTable(self, lock=False):
         """
