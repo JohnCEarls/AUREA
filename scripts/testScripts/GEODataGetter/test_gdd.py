@@ -1,10 +1,11 @@
 import unittest, sys, os
 
-sys.path.append(os.environ['AUREA_SRC'])
+sys.path.append(os.path.join(os.environ['AUREA_HOME'], 'src'))
 sys.path.append(os.path.join(os.environ['TRENDS_HOME'], 'pylib'))
 
 from warn import *
-from parser.GEODataGetter import GEODataGetter
+from AUREA.parser.GEODataGetter import GEODataGetter
+from GEO import GEO
 
 class TestGDD(unittest.TestCase):
     
@@ -19,7 +20,7 @@ class TestGDD(unittest.TestCase):
 
     def _test_add_sample(self, gdd, test_ids):
         sample=Sample(geo_id).populate()
-        data=sample.expression_data(id_type) # data ignored (so far)
+        data=sample.expression_data(id_type) # return value not really used
         dt.add_sample(sample, id_type)
         warn("%s: %d x %d(%d) (n_samples, n_genes, n_probes)" % 
              (geo_id, len(dt.getSamples()), dt.getNumGenes(), dt.getNumProbes()))

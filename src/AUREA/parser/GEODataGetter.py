@@ -1,8 +1,7 @@
-import os
+import os, yaml
 from warn import *
-from GEO.Sample import Sample
-from GEO.Dataset import Dataset
-from GEO.Series import Series
+from GEO import GEO
+from GEO.Factory import Factory
 from AUREA.parser.affyprobe2genesymbol import AffyProbe2GeneSymbol
 
 class GEODataGetter(object):
@@ -33,16 +32,20 @@ class GEODataGetter(object):
 
     def expand_geo_ids(self):
         '''
-        convert all geo_ids to sample geo_ids (eg dataset ids or series ids)
+        convert all geo_ids to sample geo_ids (ie expand dataset ids or series ids)
         '''
         sample_ids=[]
+        factory=Factory()
         for geo_id in self.geo_ids:
-            id_class=self.get_id_class(geo_id)
-            geo=id_class(geo_id)
-            sample_ids.extend(geo.sample_ids)
+            geo=factory.newGEO(geo_id)
+            try: sample_ids.extend(geo.sample_ids)
+            except AttributeError: pass
         self.geo_ids=sample_ids
                 
     def table(self):
+        ''' 
+        Return the object's data table: 
+        '''
         try: return self._table
         except AttributeError: return self._build_table()
 
@@ -53,6 +56,7 @@ class GEODataGetter(object):
         for sample_id in self.geo_ids: # they're all sample ids after above call
             self.add_sample(Sample(sample_id))
 
+        table=[]
         self._table=table
         return table
 
