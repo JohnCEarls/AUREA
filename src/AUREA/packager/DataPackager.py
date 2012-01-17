@@ -116,9 +116,9 @@ Given an index into either the probe or gene array(determined by the type parame
         
 
     def getClassVector(self):
-        """
-        This returns an intVector with the number of genes in each class.  This should map to columns in the dataVector, for example a vector containing (4,5,8) means that the first class is the first 4 columns, the second class is the 5th-8th column, etc.)  Bear in mind I'm a programmer and count from zero. 
-        """
+
+        """         This returns an intVector with the number of genes in each class.  This should map to columns in the dataVector, for example a vector containing (4,5,8) means that the first class is the first 4 columns, the second class is the 5th-8th column, etc.)  Bear in mind I'm a programmer and count from zero. """
+
         if self.class_vector:
             return self.class_vector
         else:
