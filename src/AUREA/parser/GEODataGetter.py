@@ -1,6 +1,7 @@
-import os, yaml
+import os, yaml, re
 from warn import *
 from GEO import GEO
+from GEO.Sample import Sample
 from GEO.Factory import Factory
 from AUREA.parser.affyprobe2genesymbol import AffyProbe2GeneSymbol
 
@@ -11,7 +12,10 @@ class GEODataGetter(object):
         self.probe_index={}
         self.gene_index={}
         self.samples=[]
+        self.sample_index={}
         self.af2gs=AffyProbe2GeneSymbol()
+        self.preferred_id_type='gene'
+        self.second_type='probe'
 
 	# need to set:
 	# self.dt_id
@@ -22,48 +26,30 @@ class GEODataGetter(object):
 	# self.matrix (2D data matrix: [gene/probe index][sample_index]
 	# self.subsets (as necessary) (subsets set but not used by DataTable, others might access)
 
-    def add_geo_id(self, geo_id):
-        if geo_id not in self.geo_ids: 
-            self.geo_ids.append(geo_id)
+    def n_samples(self):
+        return len(self.samples)
 
-    def add_geo_ids(self, geo_ids):
-        for geo_id in geo_ids:
-            self.add_geo_id(geo_id)
-
-    def expand_geo_ids(self):
-        '''
-        convert all geo_ids to sample geo_ids (ie expand dataset ids or series ids)
-        '''
-        sample_ids=[]
+    def add_geo(self, geo):
         factory=Factory()
-        for geo_id in self.geo_ids:
-            geo=factory.newGEO(geo_id)
-            try: sample_ids.extend(geo.sample_ids)
-            except AttributeError: pass
-        self.geo_ids=sample_ids
-                
-    def table(self):
-        ''' 
-        Return the object's data table: 
-        '''
-        try: return self._table
-        except AttributeError: return self._build_table()
+        s_ids=[]
+        if factory.id2class(geo.geo_id) == Sample:
+            s_ids=[geo.geo_id]
+        else:
+            s_ids=[geo.sample_ids]
+        for sample_id in s_ids:
+            sample=Sample(sample_id)
+            self.add_sample(sample)
+        
+    def add_geo_id(self, geo_id):
+        factory=Factory()
+        geo=factory.newGEO(geo_id)
+        self.add_geo(geo)
 
-    def _build_table(self):
-        # have to make sure that the gene/probe lists correspond exactly to 
-        # the order of data in the table
-        self.expand_geo_ids()
-        for sample_id in self.geo_ids: # they're all sample ids after above call
-            self.add_sample(Sample(sample_id))
-
-        table=[]
-        self._table=table
-        return table
 
     ########################################################################
     # Build self.table, self.gene_index, self.probe_index, self.sample_index
 
-    def add_sample(self, sample): # sample is a GEO.Sample object
+    def add_sample(self, sample, id_type='gene'): # sample is a GEO.Sample object
         # need to populate: new column to self.data_table, self.genes or self.probes, 
         # self.samples, self.gene_index or self.probe_index
         # and maybe more, like self.sample_description
@@ -74,29 +60,35 @@ class GEODataGetter(object):
         if not re.search('^gene|probe$', id_type):
             raise Exception('id_type must be one of "gene" or "probe"')
         if sample.geo_id in self.samples: # sample.geo_id is used as the sample name
-            return
+            return                        # already added
+
+        # add the sample name:
+        self.samples.append(sample.geo_id)
+        sample_i=self.n_samples()
+        self.sample_index[sample.geo_id]=sample_i
 
         # get the data as a vector hash (pass on exceptions)
-        try:
-            (id_type, sample_data)=sample.expression_data(id_type='gene')
-        except:
-            (id_type, sample_data)=sample.expression_data(id_type='probe')
-            
-        # add genes in sample to matrix, backfilling new genes:
+        try:    (id_type, sample_data)=sample.expression_data(id_type='gene')
+        except: (id_type, sample_data)=sample.expression_data(id_type='probe')
+#        warn("GEOD.add_sample: id_type is %s" % id_type)
+#        warn("                 sample_data is %s" % sample_data)
+
+        # add genes in sample to matrix, backfilling new genes, and converting types if necessary:
         for (gene_id, exp_val) in sample_data.items():
             if id_type == 'probe':
                 probe_id=gene_id
                 gene_id=self.probe2gene(gene_id)
-            try:             i=id2index[gene_id]
-            except KeyError: i=self._backfill(gene_id)
-            self.matrix[i].append(exp_val)
+            try:             gi=self.gene_index[gene_id]
+            except KeyError: gi=self.add_gene(gene_id)
+            row=self.matrix[gi]
+            warn("%s (%s): gi=%d, si=%d: %s" %(gene_id, probe_id, gi, sample_i, exp_val))
+            self.matrix[gi].append(exp_val)
         
         # for any genes in the table but not in the sample, set their value to 0
-        for gene_id in self.genes:
+        for gene_id in self.genes():
             if gene_id not in sample_data:
                 i=self.gene_index[gene_id]
-                j=self.sample_index[sample.geo_id]
-                self.matrix[i][j]=0.0
+                self.matrix[i].append(0.0)
         
 
         
@@ -107,17 +99,35 @@ class GEODataGetter(object):
         return self.af2gs.g2ps(gene_id)
 
 
-    def _backfill(self, gene_id):
+    ########################################################################
+    # Backfill a gene:
+    # - Set expression values in samples to 0
+    # - Add gene id to self.gene_index, probe_id to probe_index
+    # return new index
+    def add_gene(self, gene_id):
         gene_index=self.gene_index
         i=len(gene_index)
-        gene_index[gene_id]=i
+        gene_index[gene_id]=i   # hash assignment, not array
+#        warn("add_gene(%s): index=%d" % (gene_id, i))
 
+        # add new row to self matrix:
+        new_row=[0]*self.n_samples()
+        self.matrix.append(new_row)
+#        warn("add_gene(%s): matrix has %d rows, %d samples" % (gene_id, len(self.matrix), self.n_samples()))
+
+        # add to self.probe_index, checking for conflicts
         for probe_id in self.gene2probes(gene_id):
+            if probe_id in self.probe_index and self.probe_index[probe_id] != i: 
+                raise Exception("duplicate probe_index for %s: old=%s, new=%s" % (gene_id, probe_id, self.probe_index[probe_id], i))
             self.probe_index[probe_id]=i
         return i
 
 
+    def genes(self):
+        return self.gene_index.keys()
 
+    def probes(self):
+        return self.probe_index.keys()
 
 
 

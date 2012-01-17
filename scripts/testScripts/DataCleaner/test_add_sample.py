@@ -6,6 +6,11 @@ from packager.DataCleaner import DataTable
 from GEO.Sample import Sample
 from warn import *
 
+'''
+Tests adding a sample to a DataTable; may be obsolete, in favor of GEODataGetter? 
+However, code is still relevent to GEODataGetter, can be salvaged.
+'''
+
 class TestAddSample(unittest.TestCase):
     
     def setUp(self):
@@ -21,7 +26,7 @@ class TestAddSample(unittest.TestCase):
         id_list=['200003_s_at', '1438_at', '200707_at', '200773_x_at', '200981_x_at', '91682_at']
         self._test_add_sample('GSM15718',  'probe', id_list)
         
-    def test_add_2(self):
+#    def test_add_2(self):
         
 
     def _test_add_sample(self, geo_id, id_type, id_list):

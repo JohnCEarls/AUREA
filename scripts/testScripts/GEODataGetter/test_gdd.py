@@ -6,6 +6,7 @@ sys.path.append(os.path.join(os.environ['TRENDS_HOME'], 'pylib'))
 from warn import *
 from AUREA.parser.GEODataGetter import GEODataGetter
 from GEO import GEO
+from GEO.Sample import Sample
 
 class TestGDD(unittest.TestCase):
     
@@ -16,15 +17,19 @@ class TestGDD(unittest.TestCase):
         gdd=GEODataGetter()
         geo_id='GSM00001'
         gdd.add_geo_id(geo_id)
-        table=gdd.table()
+        matrix=gdd.matrix
+#        warn("matrix is %s" % matrix)
 
-    def _test_add_sample(self, gdd, test_ids):
-        sample=Sample(geo_id).populate()
-        data=sample.expression_data(id_type) # return value not really used
-        dt.add_sample(sample, id_type)
-        warn("%s: %d x %d(%d) (n_samples, n_genes, n_probes)" % 
-             (geo_id, len(dt.getSamples()), dt.getNumGenes(), dt.getNumProbes()))
-#        warn("%s: dt.data_table is\n%s" %(geo_id, dt.data_table))
+        sample=Sample(geo_id)
+        (id_type, sample_data)=sample.expression_data(id_type='probe')
+        si=gdd.sample_index[geo_id]
+        for id,exp_val in sample_data.items():
+            gi=gdd.probe_index[id]
+            self.assertEqual(matrix[gi][si], exp_val, msg="%s: [%s][%s]=%s" % (id, gi,si, exp_val))
+
+
+        
+
 
         # check to see that all genes present; also, indexes
         # check to see that all probes present; also, indexes
