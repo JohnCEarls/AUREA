@@ -1,0 +1,437 @@
+<?xml version="1.0" ?>
+<!--this is the default config file for AHREA -->
+<ahrea>
+  <datacleaner>
+    <datatable>
+      <settings>
+        <setting>
+          <name>
+            Data Folder
+          </name>
+          <value type="string">
+            data
+          </value>
+        </setting>            
+	<setting>
+	  <name>
+            Bad Data Value 
+	  </name>
+	  <value type="float">
+            0.0                 
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+            Gene Collision Rule 
+	  </name>
+	  <value type="string">
+            MAX                 
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+            Gene Column
+	  </name>
+	  <value type="string">
+            IDENTIFIER
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+            Probe Column
+	  </name>
+	  <value type="string">
+            ID_REF
+	  </value>
+	</setting>
+      </settings>
+    </datatable>
+  </datacleaner>
+  <learner>
+    <dirac>
+      <settings>
+	<setting>
+	  <name>
+            Row Key(genes/probes)
+	  </name>
+	  <value type="string">
+            gene
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+	    Number of Top Networks           
+	  </name>
+	  <value type="integer">
+	    1
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+	    Minimum Network Size 
+	  </name>
+	  <value type="integer">
+	    3
+	  </value>
+	</setting>
+      </settings>
+    </dirac>
+    <tsp>
+      <settings>
+	<setting>
+	  <name>
+            Row Key(genes/probes)
+	  </name>
+	  <value type="string">
+            probe 
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+	    filters
+	  </name>
+	  <value type="integer">
+	    10
+	  </value>
+	  <value type="integer">
+	    10
+	  </value>
+	</setting>
+      </settings>
+    </tsp>
+    <tst>
+      <settings>
+	<setting>
+	  <name>
+            Row Key(genes/probes)
+	  </name>
+	  <value type="string">
+            probe 
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+	    filters
+	  </name>
+	  <value type="integer">
+	    10
+	  </value>
+	  <value type="integer">
+	    10
+	  </value>
+	  <value type="integer">
+	    10
+	  </value>
+	</setting>
+      </settings>
+    </tst>
+    <ktsp>
+      <settings>
+	<setting>
+	  <name>
+            Row Key(genes/probes)
+	  </name>
+	  <value type="string">
+	    probe
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+	    Maximum K value
+	  </name>
+	  <value type="integer">
+	    10
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+	    Remove for Cross Validation
+	  </name>
+	  <value type="integer">
+	    0
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+	    Number of Cross Validation Runs
+	  </name>
+	  <value type="integer">
+	    1
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+	    filters
+	  </name>
+	  <value type="integer">
+	    20
+	  </value>
+	  <value type="integer">
+	    20
+	  </value>
+	</setting>
+      </settings>
+    </ktsp>
+    <adaptive>
+      <settings>
+	<setting>
+	  <name>
+	    Wilcoxon Row Key (gene/probe)
+	  </name>
+	  <value type="string">
+	    probe
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+            Initial Weight (dirac,tsp,tst,ktsp)
+	  </name>
+	  <value type="float">
+	    1.0
+	  </value>
+	  <value type="float">
+	    1.0
+	  </value>
+	  <value type="float">
+	    1.0
+	  </value>
+	  <value type="float">
+	    1.0
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+            Minimum Weight
+	  </name>
+	  <value type="float">
+	    0.5
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+	    Dirac-Row Key(gene/probe)
+	  </name>
+	  <value type="string">
+	    gene
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+	    Dirac-Min. Network Size Range
+	  </name>
+	  <value type="integer">
+	    3
+	  </value>
+	  <value type="integer">
+	    15
+	  </value>
+	  <value type="integer">
+	    3
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+            Dirac-Num Top Networks Range
+	  </name>
+	  <value type="integer">
+	    1
+	  </value>
+	  <value type="integer">
+	    7
+	  </value>
+	  <value type="integer">
+	    2
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+            TSP-Row Key(gene/probe)
+	  </name>
+	  <value type="string">
+	    probe
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+            TSP-Only use equal filters
+	  </name>
+	  <value type="boolean">
+	    0
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+            TSP-Filter 1 Range
+	  </name>
+	  <value type="integer">
+	    10
+	  </value>
+	  <value type="integer">
+	    1000
+	  </value>
+	  <value type="integer">
+	    10
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+            TSP-Filter 2 Range
+	  </name>
+	  <value type="integer">
+	    10
+	  </value>
+	  <value type="integer">
+	    1000
+	  </value>
+	  <value type="integer">
+	    10
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+            TST-Row Key(gene/probe)
+	  </name>
+	  <value type="string">
+	    probe
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+            TST-Only use equal filters
+	  </name>
+	  <value type="boolean">
+	    0
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+            TST-Filter 1 Range
+	  </name>
+	  <value type="integer">
+	    10
+	  </value>
+	  <value type="integer">
+	    500
+	  </value>
+	  <value type="integer">
+	    50
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+            TST-Filter 2 Range
+	  </name>
+	  <value type="integer">
+	    10
+	  </value>
+	  <value type="integer">
+	    500
+	  </value>
+	  <value type="integer">
+	    50
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+            TST-Filter 3 Range
+	  </name>
+	  <value type="integer">
+	    10
+	  </value>
+	  <value type="integer">
+	    500
+	  </value>
+	  <value type="integer">
+	    50
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+            k-TSP-Row Key(gene/probe)
+	  </name>
+	  <value type="string">
+	    probe
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+	    k-TSP-Only use equal filters
+	  </name>
+	  <value type="boolean">
+	    0
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+            k-TSP-Filter 1 Range
+	  </name>
+	  <value type="integer">
+	    41
+	  </value>
+	  <value type="integer">
+	    1000
+	  </value>
+	  <value type="integer">
+	    10
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+            k-TSP-Filter 2 Range
+	  </name>
+	  <value type="integer">
+	    41
+	  </value>
+	  <value type="integer">
+	    1000
+	  </value>
+	  <value type="integer">
+	    10
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+            Maximum k Range
+	  </name>
+	  <value type="integer">
+	    3
+	  </value>
+	  <value type="integer">
+	    20
+	  </value>
+	  <value type="integer">
+	    2
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+	    Number of Internal CV to find k Range
+	  </name>
+	  <value type="integer">
+	    1
+	  </value>
+	  <value type="integer">
+	    2
+	  </value>
+	  <value type="integer">
+	    1
+	  </value>
+	</setting>
+	<setting>
+	  <name>
+	    Number to leave out on Internal CV to find k Range
+	  </name>
+	  <value type="integer">
+	    0
+	  </value>
+	  <value type="integer">
+	    1
+	  </value>
+	  <value type="integer">
+	    1
+	  </value>
+	</setting>
+      </settings>
+    </adaptive>
+  </learner>
+</ahrea>

@@ -6,7 +6,8 @@ from GEO.Factory import Factory
 from AUREA.parser.affyprobe2genesymbol import AffyProbe2GeneSymbol
 
 class GEODataGetter(object):
-    def __init__(self):
+    def __init__(self, name):
+        self.name=name
         self.geo_ids=[]
         self.matrix=[]
         self.probe_index={}
@@ -16,6 +17,7 @@ class GEODataGetter(object):
         self.af2gs=AffyProbe2GeneSymbol()
         self.preferred_id_type='gene'
         self.second_type='probe'
+        self.subsets=[]
 
 	# need to set:
 	# self.dt_id
@@ -39,6 +41,11 @@ class GEODataGetter(object):
         for sample_id in s_ids:
             sample=Sample(sample_id)
             self.add_sample(sample)
+
+        try: self.subsets.extend(geo.subsets)
+        except AttributeError: pass
+            
+
         
     def add_geo_id(self, geo_id):
         factory=Factory()
@@ -70,19 +77,16 @@ class GEODataGetter(object):
         # get the data as a vector hash (pass on exceptions)
         try:    (id_type, sample_data)=sample.expression_data(id_type='gene')
         except: (id_type, sample_data)=sample.expression_data(id_type='probe')
-#        warn("GEOD.add_sample: id_type is %s" % id_type)
-#        warn("                 sample_data is %s" % sample_data)
 
         # add genes in sample to matrix, backfilling new genes, and converting types if necessary:
-        for (gene_id, exp_val) in sample_data.items():
+        for gene_id, exp_val in sample_data.items():
             if id_type == 'probe':
                 probe_id=gene_id
                 gene_id=self.probe2gene(gene_id)
             try:             gi=self.gene_index[gene_id]
             except KeyError: gi=self.add_gene(gene_id)
             row=self.matrix[gi]
-            warn("%s (%s): gi=%d, si=%d: %s" %(gene_id, probe_id, gi, sample_i, exp_val))
-            self.matrix[gi].append(exp_val)
+            row.append(exp_val) # Is this slow?
         
         # for any genes in the table but not in the sample, set their value to 0
         for gene_id in self.genes():
@@ -108,7 +112,6 @@ class GEODataGetter(object):
         gene_index=self.gene_index
         i=len(gene_index)
         gene_index[gene_id]=i   # hash assignment, not array
-#        warn("add_gene(%s): index=%d" % (gene_id, i))
 
         # add new row to self matrix:
         new_row=[0]*self.n_samples()

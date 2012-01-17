@@ -107,8 +107,16 @@ class DataTable:
         self.csv = None #so garbage collection can pick it up
 
 
-    def getGEOData(self, geoDD):
-
+    def getGEOData(self, geoDG):
+        '''
+        Take a GEODataGetter and produce a DataTable object
+        '''
+        self.dt_id=geoDG.name
+        self.samples=copy.deepcopy(geoDG.samples)
+        self.genes=copy.deepcopy(geoDG.genes)
+        self.probes=copy.deepcopy(geoDG.probes)
+        self.data_table=copy.deepcopy(geoDG.matrix)
+        
 	# need to set:
 	# self.dt_id
 	# self.samples (list of sample names)

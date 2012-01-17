@@ -7,7 +7,7 @@ class AffyProbe2GeneSymbol(Mongoid):
 
     def p2g(self, probe_id):
         ''' translate a probe_id to a gene symbol '''
-        '''
+        ''' retain this for debugging purposes
         query={'affy_probe':probe_id}
         warn("looking for %s in %s" % (query, self.mongo().name))
         record=self.mongo().find_one(query)

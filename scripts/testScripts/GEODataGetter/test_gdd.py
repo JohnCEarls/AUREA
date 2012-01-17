@@ -14,8 +14,8 @@ class TestGDD(unittest.TestCase):
         pass
         
     def test_add_sample(self):
-        gdd=GEODataGetter()
         geo_id='GSM00001'
+        gdd=GEODataGetter(geo_id)
         gdd.add_geo_id(geo_id)
         matrix=gdd.matrix
 #        warn("matrix is %s" % matrix)
