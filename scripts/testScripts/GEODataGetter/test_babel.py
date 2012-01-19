@@ -13,7 +13,7 @@ class TestBabel(unittest.TestCase):
         pass
         
     def test_babel(self):
-        gdg=GEODataGetter()
+        gdg=GEODataGetter('gdd_name_goes_here')
         pairs=[
             ['DDR1', '1007_s_at'],
             ['RFC2', '1053_at'],

@@ -13,7 +13,9 @@ class AffyProbe2GeneSymbol(Mongoid):
         record=self.mongo().find_one(query)
         warn("found %s" % record)
         '''
-        return self.mongo().find_one({'affy_probe':probe_id})['gene_symbol']
+        try: return self.mongo().find_one({'affy_probe':probe_id})['gene_symbol']
+        except TypeError as e: raise Exception('no gene symbol for %s (%s)' % (probe_id, type(e)))
+        except KeyError as e: raise Exception('no gene symbol for %s (%s)' % (probe_id, type(e)))
         
     def g2ps(self, gene_id):
         return [x['affy_probe'] for x in list(self.mongo().find({"gene_symbol":gene_id}))]
