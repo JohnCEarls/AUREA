@@ -5,7 +5,6 @@ sys.path.append(os.path.join(os.environ['TRENDS_HOME'], 'pylib'))
 
 from warn import *
 from AUREA.parser.GEODataGetter import GEODataGetter
-from GEO import GEO
 from GEO.Sample import Sample
 
 class TestGDD(unittest.TestCase):

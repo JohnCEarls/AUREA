@@ -1,8 +1,10 @@
 import os, yaml, re
 from warn import *
-from GEO import GEO
+import GEO
+
 from GEO.Sample import Sample
 from GEO.Factory import Factory
+
 from AUREA.parser.affyprobe2genesymbol import AffyProbe2GeneSymbol
 
 class GEODataGetter(object):
@@ -16,6 +18,7 @@ class GEODataGetter(object):
         self.sample_descriptions={}
         self.sample_index={}
         self.af2gs=AffyProbe2GeneSymbol()
+        (self.p2g, self.g2p)=self.af2gs.all()
         self.preferred_id_type='gene'
         self.second_type='probe'
         self.subsets=[]
@@ -58,6 +61,7 @@ class GEODataGetter(object):
 
     ########################################################################
     # Build self.table, self.gene_index, self.probe_index, self.sample_index
+    # return number of genes for which no expression value can be assigned
 
     def add_sample(self, sample, id_type='gene'): # sample is a GEO.Sample object
         # need to populate: new column to self.data_table, self.genes or self.probes, 
@@ -77,31 +81,38 @@ class GEODataGetter(object):
         sample_i=self.n_samples()
         self.sample_index[sample.geo_id]=sample_i
         try: self.sample_descriptions[sample.geo_id]=sample.description
-        except AttributeError: warn("no sample.description for %s" % sample.geo_id)
+        except AttributeError: 
+            warn("no sample.description for %s" % sample.geo_id)
+            warn("other descriptions: %s" % sample.descriptions())
 
         # get the data as a vector hash (pass on exceptions)
         try:    (id_type, sample_data)=sample.expression_data(id_type='gene')
         except: (id_type, sample_data)=sample.expression_data(id_type='probe')
 
         # add genes in sample to matrix, backfilling new genes, and converting types if necessary:
+        n_skipped=0
         for gene_id, exp_val in sample_data.items():
             if id_type == 'probe':
                 probe_id=gene_id
-                try: gene_id=self.probe2gene(gene_id)
+#                try: gene_id=self.probe2gene(gene_id)
+                try: gene_id=self.p2g[gene_id]
                 except Exception as e: 
-                    warn("%s: %s, skipping" % (sample.geo_id, e))
+                    if 'DEBUG' in os.environ: warn("%s: %s, skipping" % (sample.geo_id, e))
+                    n_skipped+=1
                     continue
             try:             gi=self.gene_index[gene_id]
             except KeyError: gi=self.add_gene(gene_id)
             row=self.matrix[gi]
             row.append(exp_val) # Is this slow?
-        
+        warn ("skipped %d of %d genes" % (n_skipped, len(sample_data)))
+
         # for any genes in the table but not in the sample, set their value to 0
         for gene_id in self.genes():
             if gene_id not in sample_data:
                 i=self.gene_index[gene_id]
                 self.matrix[i].append(0.0)
         
+
 
         
     def probe2gene(self, probe_id):
@@ -127,7 +138,8 @@ class GEODataGetter(object):
 #        warn("add_gene(%s): matrix has %d rows, %d samples" % (gene_id, len(self.matrix), self.n_samples()))
 
         # add to self.probe_index, checking for conflicts
-        for probe_id in self.gene2probes(gene_id):
+#        for probe_id in self.gene2probes(gene_id):
+        for probe_id in self.g2p[gene_id]:
             if probe_id in self.probe_index and self.probe_index[probe_id] != i: 
                 raise Exception("duplicate probe_index for %s: old=%s, new=%s" % (gene_id, probe_id, self.probe_index[probe_id], i))
             self.probe_index[probe_id]=i

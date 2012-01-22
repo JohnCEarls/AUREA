@@ -5,23 +5,29 @@ sys.path.append(os.path.join(os.environ['TRENDS_HOME'], 'pylib'))
 
 from warn import *
 from AUREA.parser.GEODataGetter import GEODataGetter
-from GEO import GEO
 from GEO.Series import Series
+
+gdd=None
 
 class TestGDD(unittest.TestCase):
     
     def setUp(self):
+#        os.environ['DEBUG']=str(True)
         pass
-        
+       
     def test_add_series(self):
         geo_id='GSE10072'
-        gdd=GEODataGetter(geo_id)
+        global gdd
+        if not gdd:
+            gdd=GEODataGetter(geo_id)
         gdd.add_geo_id(geo_id)
         matrix=gdd.matrix
 #        warn("matrix is %s" % matrix)
 
-        series=Series(geo_id)
-        for sample_id in series['sample_ids']:
+        series=Series(geo_id).populate()
+        self.assertEqual(series.title, 'Gene expression signature of cigarette smoking and its role in lung adenocarcinoma development and survival') # just to ensure that it's in the db
+
+        for sample_id in series.sample_ids:
             sample=Sample(sample_id)
             (id_type, sample_data)=sample.expression_data(id_type='probe')
             si=gdd.sample_index[geo_id]
