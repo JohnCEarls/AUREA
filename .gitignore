@@ -19,3 +19,4 @@ scripts/data/
 src/AHREA/packager/\\
 dist/*
 *.prof
+*.out

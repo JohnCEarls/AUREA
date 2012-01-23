@@ -7,6 +7,8 @@ from warn import *
 from AUREA.parser.GEODataGetter import GEODataGetter
 from GEO import GEO
 from GEO.Sample import Sample
+from GEO.Series import Series
+from GEO.Dataset import Dataset
 
 class TestGDD(unittest.TestCase):
     
@@ -18,7 +20,6 @@ class TestGDD(unittest.TestCase):
         gdd=GEODataGetter(geo_id)
         gdd.add_geo_id(geo_id)
         matrix=gdd.matrix
-#        warn("matrix is %s" % matrix)
 
         sample=Sample(geo_id)
         (id_type, sample_data)=sample.expression_data(id_type='probe')
@@ -27,13 +28,16 @@ class TestGDD(unittest.TestCase):
             gi=gdd.probe_index[id]
             self.assertEqual(matrix[gi][si], exp_val, msg="%s: [%s][%s]=%s" % (id, gi,si, exp_val))
 
+    def test_add_series(self):
+        geo_id='GSE10072'
+        gdd=GEODataGetter(geo_id)
+        series=Series(geo_id)
+        gdd.add_geo(series)
 
-        
 
+    def test_add_dataset(self):
+        pass
 
-        # check to see that all genes present; also, indexes
-        # check to see that all probes present; also, indexes
-        # check to see that len(samples)==1
 
 
 

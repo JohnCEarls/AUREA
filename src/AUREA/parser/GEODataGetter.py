@@ -33,24 +33,31 @@ class GEODataGetter(object):
 
     def add_geo(self, geo):
         factory=Factory()
+
         s_ids=[]
-        if factory.id2class(geo.geo_id) == Sample:
-            s_ids=[geo.geo_id]
-        else:
-            s_ids=[geo.sample_ids]
+        if factory.id2class(geo.geo_id) == Sample: s_ids=[geo.geo_id]
+        else: s_ids=[geo.sample_ids]
+            
         for sample_id in s_ids:
             sample=Sample(sample_id)
             self.add_sample(sample)
 
-        try: self.subsets.extend(geo.subsets)
-        except AttributeError: pass
-            
+        self.add_entities(geo)
 
         
     def add_geo_id(self, geo_id):
         factory=Factory()
         geo=factory.newGEO(geo_id)
         self.add_geo(geo)
+
+
+    ########################################################################
+    def add_entities(self, geo):
+        # 
+            
+        # add sample_descriptions: dict
+        # add subsets
+        # need formats...
 
 
     ########################################################################
