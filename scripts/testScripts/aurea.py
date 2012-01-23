@@ -32,7 +32,8 @@ def runAUREA(in1, in2, learner, config_file):
     #pickle_file.close()
     trained_learner = None
     if learner == 'tsp':
-        print dp.probes
+        """ removed pickling
+        #print dp.probes
         if False: 
             trained_learner = trainTSP( dp, config)
             pickle_file = open("tsp.pkl", 'wb')
@@ -42,7 +43,9 @@ def runAUREA(in1, in2, learner, config_file):
             pickle_files = open("tsp.pkl", 'rb')
             trained_learner = pickle.load(pickle_files)
             pickle_files.close()
-        print dp.probes
+        #print dp.probes
+        """
+        trained_learner = trainTSP( dp, config)
         return extractTSP(dp, config, trained_learner)
     elif learner == 'tst':
         trained_learner = trainTST( dp, config)
@@ -67,19 +70,26 @@ def buildData(file1, file2, config):
     probe_column = config.getSetting("datatable", "Probe Column")[0]
 
     gnf = GMTParser.GMTParser(gnfile)
+    #VC: edit here
+    #create GEO Data Getter
     f1 = CSVParser.CSVParser(file1, probe_column_name=probe_column, gene_column_name=gene_column)
     f2 = CSVParser.CSVParser(file2, probe_column_name=probe_column, gene_column_name=gene_column)
+    #create a data table
     dt1 = DataCleaner.DataTable(probe_column, gene_column, collision, bad_data)
     dt1.getCSVData(f1)
     dt2 = DataCleaner.DataTable(probe_column, gene_column, collision, bad_data)
     dt2.getCSVData(f2)
-
+    #VC: done edit
+    
     dp = DataPackager.dataPackager(merge_cache=".")
     dp.addGeneNetwork(gnf.getAllNetworks())
     dp.addSynonyms(synfile)
+    #add data table
     dp.addDataTable(dt1)
     dp.addDataTable(dt2)
     
+
+    #create subsets(classes)
     dp.createClassification("f1")
     for samp in f1.getDataColumnHeadings():
         dp.addToClassification("f1", dt1.dt_id, samp)
@@ -98,8 +108,8 @@ def extractTSP( datapackage, config, tsp):
     #Note: classification rule is, if gene 1 is more highly expressed than gene 2 then classify as phenotype 1 otherwise phenotype 2
     output_object['gene_pairs'] = []
     for g1_index, g2_index in max_scores:
-        print g1_index
-        print g2_index
+        #print g1_index
+        #print g2_index
         output_object['gene_pairs'].append( (datapackage.getGeneName(g1_index, row_key), datapackage.getGeneName(g2_index, row_key)) )
     return json.dumps(output_object)
 
@@ -135,9 +145,9 @@ def extractTST( datapackage, config, tst):
     orders = ['g1,g2,g3', 'g1,g3,g2', 'g2,g1,g3', 'g2,g3,g1', 'g3,g1,g2', 'g3,g2,g1']
     output_object['tables'] = []
     ptable = tst.ptable
-    print ptable
+    #print ptable
     for triplet in ptable:
-        print triplet
+        #print triplet
         order_map = {}
         for o, order in enumerate(orders):
             order_map[order] = (triplet[0][o], triplet[1][o])
@@ -217,7 +227,9 @@ def trainkTSP(datapackage, config ):
 
 if __name__ == "__main__":
     from optparse import OptionParser
-    
+    """
+sample call:   python aurea.py -anormal.csv -btumor.csv -ltsp -cconfig.xml
+ """
     parser = OptionParser()
     parser.add_option("-a", "--table_1", dest="input_file_one",
                         help="csv file for class 1")
@@ -236,8 +248,6 @@ if __name__ == "__main__":
     if options.output_file is None:
         print runAUREA(options.input_file_one, options.input_file_two, options.learner, options.config_file)
 
-    print options.input_file_one
-    print options.input_file_two
 
 
     
