@@ -72,6 +72,8 @@ def buildData(file1, file2, config):
     gnf = GMTParser.GMTParser(gnfile)
     #VC: edit here
     #create GEO Data Getter
+    #f1=GEODataGetter()
+
     f1 = CSVParser.CSVParser(file1, probe_column_name=probe_column, gene_column_name=gene_column)
     f2 = CSVParser.CSVParser(file2, probe_column_name=probe_column, gene_column_name=gene_column)
     #create a data table
