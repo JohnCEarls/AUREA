@@ -227,7 +227,9 @@ def trainkTSP(datapackage, config ):
 
 if __name__ == "__main__":
     from optparse import OptionParser
-    
+    """
+sample call:   python aurea.py -anormal.csv -btumor.csv -ltsp -cconfig.xml
+ """
     parser = OptionParser()
     parser.add_option("-a", "--table_1", dest="input_file_one",
                         help="csv file for class 1")
