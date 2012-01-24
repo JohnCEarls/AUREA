@@ -112,9 +112,9 @@ class CSVParser:
         Returns the data column headings
         """
         if self.gene_column_name ==self.probe_column_name:
-            return self.getColumnHeadings[1:]
+            return self.getColumnHeadings()[1:]
         else:
-            return self.getColumnHeadings[2:]
+            return self.getColumnHeadings()[2:]
 
     def getKeyColumnHeadings(self):
         """

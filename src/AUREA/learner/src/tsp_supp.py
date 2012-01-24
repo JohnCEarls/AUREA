@@ -40,6 +40,8 @@ class TSP:
             filter[0] = temp
         self.filter = filter
         self.unclassified_data_vector = None
+        self.maxScore1 = None
+        self.maxScore2 = None
 
     def train(self):
         """
@@ -86,4 +88,50 @@ class TSP:
         K-fold testing of the given data, returns the Matthews correlation coefficient [-1.0, 1.0].
         """
         return crossValidate(self.data, self.numGenes, self.classSizes, self.filter, k)
+
+    def _makeList(self, vector):
+        temp_list = []
+        for x in xrange(len(vector)):
+            temp_list.append(vector[x])
+        return temp_list
+    def _makeVector(self, aList, vtype):
+        if vtype == 'd':
+            myVector = DoubleVector()
+        else:
+            myVector = IntVector()
+        for x in aList:
+            myVector.push_back(x)
+        return myVector
+
+    def __getstate__(self):
+        print "HERE"
+        odict = self.__dict__.copy()
+        odict['data'] = self._makeList(self.data) 
+        odict['classSizes'] = self._makeList(self.classSizes)
+        odict['filter'] = self._makeList(self.filter)
+
+        if self.unclassified_data_vector is not None:
+            odict['unclassified_data_vector'] = self._makeList(self.unclassified_data_vector)
+
+        if self.maxScore1 is not None:
+            odict['maxScore1'] = self._makeList(self.maxScore1)
+        if self.maxScore2 is not None:
+            odict['maxScore2'] = self._makeList(self.maxScore2)
+        return odict
+
+    def __setState__(self, odict):
+        odict['data'] = self._makeVector(odict['data'], 'd') 
+        odict['classSizes'] = self._makeVector(odict['classSizes'], 'i')
+        odict['filter'] = self._makeVector(odict['filter'])
+
+        if odict['unclassified_data_vector'] is not None:
+            odict['unclassified_data_vector'] = self._makeVector(odict['unclassified_data_vector'])
+
+        if self.maxScore1 is not None:
+            odict['maxScore1'] = self._makeVector(odict['maxScore1'])
+        if self.maxScore2 is not None:
+            odict['maxScore2'] = self._makeVector(odict['maxScore2'])
+        self.__dict__.update(odict)
+       
+        
 }
