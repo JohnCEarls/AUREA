@@ -192,7 +192,7 @@ class Controller:
                 def addCSV():
                     self.softparser.append(CSVParser(self.tmpfile, probe_column_name=self.tmp_probe_column.get(), gene_column_name=self.tmp_gene_column.get() ))
                     self.d.destroy()
-                    
+                #TODO: this does not not belong here                    
                 self.d = dialog = Toplevel(self.app)
                 dialog.protocol('WM_DELETE_window', dialog.destroy)
                 Label(dialog, text="Enter settings for " + file).grid(row=0, column=0, columnspan=2)
