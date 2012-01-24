@@ -22,7 +22,6 @@ class TestGDD(unittest.TestCase):
             gdd=GEODataGetter(geo_id)
         gdd.add_geo_id(geo_id)
         matrix=gdd.matrix
-#        warn("matrix is %s" % matrix)
 
         series=Series(geo_id).populate()
         self.assertEqual(series.title, 'Gene expression signature of cigarette smoking and its role in lung adenocarcinoma development and survival') # just to ensure that it's in the db
