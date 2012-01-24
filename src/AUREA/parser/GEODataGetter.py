@@ -79,6 +79,7 @@ class GEODataGetter(object):
         # need to populate: new column to self.data_table, self.genes or self.probes, 
         # self.samples, self.gene_index or self.probe_index
         # and maybe more, like self.sample_description
+        warn("adding %s" % sample.geo_id)
 
         # ok, some sanity checking first: 
         if not isinstance(sample, Sample):
@@ -88,7 +89,7 @@ class GEODataGetter(object):
         if sample.geo_id in self.samples: # sample.geo_id is used as the sample name
             return                        # already added
 
-        # add the sample name:
+        # add the sample name, description, index:
         self.samples.append(sample.geo_id)
         sample_i=self.n_samples()
         self.sample_index[sample.geo_id]=sample_i
@@ -101,20 +102,23 @@ class GEODataGetter(object):
         # get the data as a vector hash (pass on exceptions)
         try:    (id_type, sample_data)=sample.expression_data(id_type='gene')
         except: (id_type, sample_data)=sample.expression_data(id_type='probe')
+        index=self.gene_index if id_type=='gene' else self.probe_index
+        
 
         # add genes in sample to matrix, backfilling new genes, and converting types if necessary:
         for gene_id, exp_val in sample_data.items():
-            index=self.gene_index
-            if id_type == 'probe':
-                probe_id=gene_id # not sure we actually use this...
-                index=self.probe_index
+            if id_type == 'probe': # ...unless it's not
+                probe_id=gene_id 
                 try: gene_id=self.p2g[gene_id] # look up the gene_id
                 except: pass    # leave gene_id and probe_id the same
+            else:
+                probe_id=self.g2p[gene_id]
 
-            try: gi=index[gene_id]
-            except KeyError: gi=self.add_gene(gene_id)
+            # get row index (i_row):
+            try: i_row=index[gene_id]
+            except KeyError: i_row=self.add_gene(gene_id, probe_id)
                 
-            row=self.matrix[gi]
+            row=self.matrix[i_row]
             row.append(exp_val) # Is this slow?
 
         # for any genes in the table but not in the sample, set their value to 0
@@ -141,7 +145,7 @@ class GEODataGetter(object):
     # - Add gene id to self.gene_index, probe_id to probe_index
     # Note: It's possibe that gene_id is really a probe_id for an unmapped gene
     # return new index
-    def add_gene(self, gene_id):
+    def add_gene(self, gene_id, probe_id):
         gene_index=self.gene_index
         i=len(gene_index)
         gene_index[gene_id]=i   # hash assignment, not array
@@ -152,12 +156,15 @@ class GEODataGetter(object):
 #        warn("add_gene(%s): matrix has %d rows, %d samples" % (gene_id, len(self.matrix), self.n_samples()))
 
         # add to self.probe_index, checking for conflicts
-#        for probe_id in self.gene2probes(gene_id):
-        try: probe_ids=self.g2p[gene_id]
-        except KeyError: probe_ids=[gene_id] # happens when probe_id has no mapping
+        if probe_id != gene_id:
+            try: probe_ids=self.g2p[gene_id]
+            except KeyError: probe_ids=[gene_id] # happens when probe_id has no mapping
+        else:
+            probe_ids=[probe_id]
+
         for probe_id in probe_ids:
             if probe_id in self.probe_index and self.probe_index[probe_id] != i: 
-                raise Exception("duplicate probe_index for %s: old=%s, new=%s" % (gene_id, probe_id, self.probe_index[probe_id], i))
+                raise Exception("duplicate probe_index for %s(%s): old index=%d, new index=%d" % (gene_id, probe_id, self.probe_index[probe_id], i))
             self.probe_index[probe_id]=i
         return i
 
