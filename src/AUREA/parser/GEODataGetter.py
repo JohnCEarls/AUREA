@@ -37,19 +37,20 @@ class GEODataGetter(object):
 
     def add_geo(self, geo):
         factory=Factory()
+
         s_ids=[]
-        if factory.id2class(geo.geo_id) == Sample:
-            s_ids=[geo.geo_id]
-        else:
-            s_ids=geo.sample_id
-#            s_ids=geo['sample_id']
+        cls=factory.id2class(geo.geo_id)
+        if cls == GEO.Sample.Sample: s_ids=[geo.geo_id]
+        else: 
+            try: s_ids=geo.sample_id
+            except AttributeError:
+                raise Exception("no samples for %s" % geo.geo_id)
+            
         for sample_id in s_ids:
             sample=Sample(sample_id)
             self.add_sample(sample)
 
-        try: self.subsets.extend(geo.subsets)
-        except AttributeError: pass
-            
+        self.add_entities(geo)
 
         
     def add_geo_id(self, geo_id):
@@ -57,6 +58,16 @@ class GEODataGetter(object):
         geo=factory.newGEO(geo_id).populate()
 #        warn("geo is %s" % yaml.dump(geo))
         self.add_geo(geo)
+
+
+    ########################################################################
+    def add_entities(self, geo):
+        pass
+        # 
+            
+        # add sample_descriptions: dict
+        # add subsets
+        # need formats...
 
 
     ########################################################################
@@ -82,15 +93,15 @@ class GEODataGetter(object):
         self.sample_index[sample.geo_id]=sample_i
         try: self.sample_descriptions[sample.geo_id]=sample.description
         except AttributeError: 
-            warn("no sample.description for %s" % sample.geo_id)
-            warn("other descriptions: %s" % sample.descriptions())
+#            warn("no sample.description for %s" % sample.geo_id)
+#            warn("other descriptions: %s" % sample.descriptions())
+            pass
 
         # get the data as a vector hash (pass on exceptions)
         try:    (id_type, sample_data)=sample.expression_data(id_type='gene')
         except: (id_type, sample_data)=sample.expression_data(id_type='probe')
 
         # add genes in sample to matrix, backfilling new genes, and converting types if necessary:
-        n_skipped=0
         for gene_id, exp_val in sample_data.items():
             if id_type == 'probe':
                 probe_id=gene_id
@@ -98,13 +109,11 @@ class GEODataGetter(object):
                 try: gene_id=self.p2g[gene_id]
                 except Exception as e: 
                     if 'DEBUG' in os.environ: warn("%s: %s, skipping" % (sample.geo_id, e))
-                    n_skipped+=1
                     continue
             try:             gi=self.gene_index[gene_id]
             except KeyError: gi=self.add_gene(gene_id)
             row=self.matrix[gi]
             row.append(exp_val) # Is this slow?
-        warn ("skipped %d of %d genes" % (n_skipped, len(sample_data)))
 
         # for any genes in the table but not in the sample, set their value to 0
         for gene_id in self.genes():
@@ -139,7 +148,9 @@ class GEODataGetter(object):
 
         # add to self.probe_index, checking for conflicts
 #        for probe_id in self.gene2probes(gene_id):
-        for probe_id in self.g2p[gene_id]:
+        try: probe_ids=self.g2p[gene_id]
+        except KeyError: probe_ids=[gene_id] # happens when probe_id has no mapping
+        for probe_id in probe_ids:
             if probe_id in self.probe_index and self.probe_index[probe_id] != i: 
                 raise Exception("duplicate probe_index for %s: old=%s, new=%s" % (gene_id, probe_id, self.probe_index[probe_id], i))
             self.probe_index[probe_id]=i
@@ -149,7 +160,17 @@ class GEODataGetter(object):
     def genes(self):
         return self.gene_index.keys()
 
+    def n_genes(self):
+        return len(self.genes())
+
     def probes(self):
         return self.probe_index.keys()
+
+    def n_probes(self):
+        return len(self.probes())
+
+    def n_samples(self):
+        return len(self.samples)
+
 
 

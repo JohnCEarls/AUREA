@@ -74,13 +74,30 @@ class DataTable:
         #truth be told I am really worried about this
         #dont really have time to test it
         sstemp = self.sp.getSubsets()
-        for ssentity in sstemp: # victor: entities are _______ ?
+        for ssentity in sstemp: # victor: entities come from "^sample_thing=value"
             if 'subset_sample_id' in ssentity.attributes and len(ssentity.attributes['subset_sample_id']) != 0:
                 ss_samples = ssentity.attributes['subset_sample_id'][0].split(',')
                 ss_desc =  ssentity.attributes['subset_description'][0]
 
                 self.subsets.append( (ss_desc, ss_samples) )            
         self.sp = None #so garbage collection can pick it up
+
+    def getGEOData(self, geoDG):
+        '''
+        Take a GEODataGetter and produce a DataTable object
+        '''
+        self.dt_id=geoDG.name
+        self.genes=copy.deepcopy(geoDG.genes)
+        self.probes=copy.deepcopy(geoDG.probes)
+        self.data_table=copy.deepcopy(geoDG.matrix)
+        
+        self.samples=copy.deepcopy(geoDG.samples)
+        
+        
+	# need to set:
+	# self.sample_descriptions (list of sample descriptions, each of which might be a list of lines
+	# self.subsets (as necessary) (subsets set but not used by DataTable, others might access)
+
 
     def getCSVData(self, CSVParse):
         """
@@ -107,26 +124,6 @@ class DataTable:
         self.csv = None #so garbage collection can pick it up
 
 
-    def getGEOData(self, geoDG):
-        '''
-        Take a GEODataGetter and produce a DataTable object
-        '''
-        self.dt_id=geoDG.name
-        self.samples=copy.deepcopy(geoDG.samples)
-        self.genes=copy.deepcopy(geoDG.genes)
-        self.probes=copy.deepcopy(geoDG.probes)
-        self.data_table=copy.deepcopy(geoDG.matrix)
-        
-	# need to set:
-	# self.dt_id
-	# self.samples (list of sample names)
-	# self.sample_descriptions (list of sample descriptions, each of which might be a list of lines)
-	# self.genes (ordered list of gene names)
-	# self.probes (ordered list of probe names)
-	# self.data_table (2D data matrix: [gene/probe index][sample_index]
-        #      
-	# self.subsets (as necessary) (subsets set but not used by DataTable, others might access)
-        pass
             
 
 

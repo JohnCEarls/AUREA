@@ -413,6 +413,7 @@ class entity:
         for key, value in self.attributes.iteritems():
             retstr += "\t %s : %s \n"% (key, ','.join(value))
         return retstr   
+
 import urllib2
 import time
 import os
