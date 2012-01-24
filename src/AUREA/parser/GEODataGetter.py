@@ -35,7 +35,7 @@ class GEODataGetter(object):
     def n_samples(self):
         return len(self.samples)
 
-    def add_geo(self, geo):
+    def add_geo(self, geo, id_type='probe'):
         factory=Factory()
 
         s_ids=[]
@@ -48,16 +48,16 @@ class GEODataGetter(object):
             
         for sample_id in s_ids:
             sample=Sample(sample_id)
-            self.add_sample(sample)
+            self.add_sample(sample, id_type)
 
         self.add_entities(geo)
 
         
-    def add_geo_id(self, geo_id):
+    def add_geo_id(self, geo_id, id_type='probe'):
         factory=Factory()
         geo=factory.newGEO(geo_id).populate()
 #        warn("geo is %s" % yaml.dump(geo))
-        self.add_geo(geo)
+        self.add_geo(geo, id_type)
 
 
     ########################################################################
@@ -79,7 +79,7 @@ class GEODataGetter(object):
         # need to populate: new column to self.data_table, self.genes or self.probes, 
         # self.samples, self.gene_index or self.probe_index
         # and maybe more, like self.sample_description
-        warn("adding %s" % sample.geo_id)
+        warn("adding %s (%s)" % (sample.geo_id, id_type))
 
         # ok, some sanity checking first: 
         if not isinstance(sample, Sample):
@@ -102,9 +102,9 @@ class GEODataGetter(object):
         # get the data as a vector hash (pass on exceptions)
         try:    (id_type, sample_data)=sample.expression_data(id_type='gene')
         except: (id_type, sample_data)=sample.expression_data(id_type='probe')
-        index=self.gene_index if id_type=='gene' else self.probe_index
-        
-
+        if id_type=='gene': index=self.gene_index
+        else:               index=self.probe_index
+            
         # add genes in sample to matrix, backfilling new genes, and converting types if necessary:
         for gene_id, exp_val in sample_data.items():
             if id_type == 'probe': # ...unless it's not
@@ -113,10 +113,16 @@ class GEODataGetter(object):
                 except: pass    # leave gene_id and probe_id the same
             else:
                 probe_id=self.g2p[gene_id]
+            warn("gene_id=%s, probe_id=%s" % (gene_id, probe_id))
 
             # get row index (i_row):
-            try: i_row=index[gene_id]
-            except KeyError: i_row=self.add_gene(gene_id, probe_id)
+#            try: i_row=index[gene_id]
+            try: i_row=self.gene_index[gene_id]
+            except KeyError:    # first time for gene_id
+                try: probe_ids=self.g2p[gene_id]
+                except KeyError: probe_ids=[]
+                warn("%s (%s): no index for %s (%s)" %(sample.geo_id, id_type, gene_id, ','.join(probe_ids)))
+                i_row=self.add_gene(gene_id, probe_id)
                 
             row=self.matrix[i_row]
             row.append(exp_val) # Is this slow?
@@ -128,6 +134,7 @@ class GEODataGetter(object):
             if gene_id not in sample_data:
                 i=self.gene_index[gene_id]
                 self.matrix[i].append(0.0)
+                warn("setting %s %s[%i] to zero" % (sample.geo_id, gene_id, i))
         
 
 
@@ -149,6 +156,7 @@ class GEODataGetter(object):
         gene_index=self.gene_index
         i=len(gene_index)
         gene_index[gene_id]=i   # hash assignment, not array
+        warn("add_gene: gene_index[%s]=%i" % (gene_id, i))
 
         # add new row to self matrix:
         new_row=[0]*self.n_samples()
@@ -164,8 +172,13 @@ class GEODataGetter(object):
 
         for probe_id in probe_ids:
             if probe_id in self.probe_index and self.probe_index[probe_id] != i: 
-                raise Exception("duplicate probe_index for %s(%s): old index=%d, new index=%d" % (gene_id, probe_id, self.probe_index[probe_id], i))
+                raise Exception("duplicate probe_index for %s(%s): old g_index=%d, new index=%d" % (gene_id, probe_id, self.probe_index[probe_id], i))
             self.probe_index[probe_id]=i
+
+        warn("gene added: g=%s[%d], ps=%s[%s], " %(gene_id, gene_index[gene_id], 
+                                                   ",".join(probe_ids),
+                                                   ",".join([str(self.probe_index[x]) for x in probe_ids])
+                                                   ))
         return i
 
 
@@ -185,3 +198,38 @@ class GEODataGetter(object):
         return len(self.samples)
 
 
+    ########################################################################
+
+    def writeCSV(self, filename):
+        f=open(filename, 'w')
+
+        # write header (sample names in order)
+        f.write(",".join(self.samples)+"\n")
+        
+        # write each row:
+        for i in range(self.n_genes()):
+            gene_id=self.genes()[i]
+            probe_ids=' '.join(self.g2p[gene_id])
+            ids=','.join([gene_id, probe_ids])
+            i_row=self.gene_index[gene_id]
+            exp_vals=','.join(str(x) for x in self.matrix[i_row])
+            f.write(','.join([ids, exp_vals])+"\n")
+
+        f.close()
+        warn("%s written" % filename)
+
+    def write_gene_index(self, filename, mode='w'):
+        f=open(filename, mode)
+        for g in self.genes():
+            f.write("\t".join([g, str(self.gene_index[g])])+"\n")
+        
+    def write_probe_index(self, filename, mode='w'):
+        f=open(filename, mode)
+        for g in self.probes():
+            f.write("\t".join([g, str(self.probe_index[g])])+"\n")
+        
+    def write_sample_index(self, filename, mode='w'):
+        f=open(filename, mode)
+        for g in self.samples:
+            f.write("\t".join([g, str(self.sample_index[g])])+"\n")
+        
