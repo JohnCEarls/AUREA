@@ -63,6 +63,7 @@ class GEODataGetter(object):
     ########################################################################
     def add_entities(self, geo):
         pass
+
         # 
             
         # add sample_descriptions: dict
@@ -103,19 +104,22 @@ class GEODataGetter(object):
 
         # add genes in sample to matrix, backfilling new genes, and converting types if necessary:
         for gene_id, exp_val in sample_data.items():
+            index=self.gene_index
             if id_type == 'probe':
-                probe_id=gene_id
-#                try: gene_id=self.probe2gene(gene_id)
-                try: gene_id=self.p2g[gene_id]
-                except Exception as e: 
-                    if 'DEBUG' in os.environ: warn("%s: %s, skipping" % (sample.geo_id, e))
-                    continue
-            try:             gi=self.gene_index[gene_id]
+                probe_id=gene_id # not sure we actually use this...
+                index=self.probe_index
+                try: gene_id=self.p2g[gene_id] # look up the gene_id
+                except: pass    # leave gene_id and probe_id the same
+
+            try: gi=index[gene_id]
             except KeyError: gi=self.add_gene(gene_id)
+                
             row=self.matrix[gi]
             row.append(exp_val) # Is this slow?
 
         # for any genes in the table but not in the sample, set their value to 0
+        # what about probe ids not here?  Since we're appending, we could check 
+        # len(matrix[i]), take too long?
         for gene_id in self.genes():
             if gene_id not in sample_data:
                 i=self.gene_index[gene_id]
@@ -135,6 +139,7 @@ class GEODataGetter(object):
     # Backfill a gene:
     # - Set expression values in samples to 0
     # - Add gene id to self.gene_index, probe_id to probe_index
+    # Note: It's possibe that gene_id is really a probe_id for an unmapped gene
     # return new index
     def add_gene(self, gene_id):
         gene_index=self.gene_index
@@ -171,6 +176,5 @@ class GEODataGetter(object):
 
     def n_samples(self):
         return len(self.samples)
-
 
 
