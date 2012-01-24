@@ -1,11 +1,11 @@
-import unittest, sys, os
+import unittest, sys, os, bson
 
 sys.path.append(os.path.join(os.environ['AUREA_HOME'], 'src'))
 sys.path.append(os.path.join(os.environ['TRENDS_HOME'], 'pylib'))
 
 from warn import *
 from AUREA.parser.GEODataGetter import GEODataGetter
-from GEO.Series import Series
+import GEO
 
 gdd=None
 
@@ -15,25 +15,38 @@ class TestGDD(unittest.TestCase):
 #        os.environ['DEBUG']=str(True)
         pass
        
-    def test_add_series(self):
-        geo_id='GSE10072'
+    def test_GSE001(self):
+        self._test_add_series('GSE001')
+
+    def test_GSE10072(self):
+        self._test_add_series('GSE10072')
+
+    def _test_add_series(self, geo_id):
         global gdd
         if not gdd:
             gdd=GEODataGetter(geo_id)
         gdd.add_geo_id(geo_id)
         matrix=gdd.matrix
+        n_genes=gdd.n_genes()
+        n_probes=gdd.n_probes()
+        n_samples=gdd.n_samples()
+        warn("%s: %d(%d) x %d matrix" %(geo_id, n_genes, n_probes, n_samples))
 #        warn("matrix is %s" % matrix)
 
-        series=Series(geo_id).populate()
-        self.assertEqual(series.title, 'Gene expression signature of cigarette smoking and its role in lung adenocarcinoma development and survival') # just to ensure that it's in the db
+        series=GEO.Series.Series(geo_id).populate()
+        self.assertIsInstance(series._id, bson.objectid.ObjectId)
 
-        for sample_id in series.sample_ids:
-            sample=Sample(sample_id)
+        warn("checking samples...")
+        for sample_id in series.sample_id:
+            sample=GEO.Sample.Sample(sample_id)
             (id_type, sample_data)=sample.expression_data(id_type='probe')
-            si=gdd.sample_index[geo_id]
+            i_sample=gdd.sample_index[sample_id]
+
+            # check every gene in every sample...
             for id,exp_val in sample_data.items():
                 gi=gdd.probe_index[id]
-                self.assertEqual(matrix[gi][si], exp_val, msg="%s: [%s][%s]=%s" % (id, gi,si, exp_val))
+                self.assertAlmostEqual(matrix[gi][i_sample], exp_val, delta=0.001,
+                                   msg="%s: [%s][%s]=%s, not %s (%s)" % (id, gi, i_sample, matrix[gi][i_sample], exp_val, sample_id))
 
 
         

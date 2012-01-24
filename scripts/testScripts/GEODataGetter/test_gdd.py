@@ -4,10 +4,10 @@ sys.path.append(os.path.join(os.environ['AUREA_HOME'], 'src'))
 sys.path.append(os.path.join(os.environ['TRENDS_HOME'], 'pylib'))
 
 from warn import *
-from AUREA.parser.GEODataGetter import GEODataGetter
 from GEO.Sample import Sample
 from GEO.Series import Series
 from GEO.Dataset import Dataset
+from AUREA.parser.GEODataGetter import GEODataGetter
 
 class TestGDD(unittest.TestCase):
     
@@ -28,10 +28,11 @@ class TestGDD(unittest.TestCase):
             self.assertEqual(matrix[gi][si], exp_val, msg="%s: [%s][%s]=%s" % (id, gi,si, exp_val))
 
     def test_add_series(self):
-        geo_id='GSE10072'
+        geo_id='GSE001'
         gdd=GEODataGetter(geo_id)
         series=Series(geo_id)
         gdd.add_geo(series)
+        
 
 
     def test_add_dataset(self):
