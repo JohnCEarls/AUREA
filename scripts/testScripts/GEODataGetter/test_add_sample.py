@@ -22,7 +22,7 @@ class TestAddSample(unittest.TestCase):
         gdd.write_probe_index(os.path.join(os.path.dirname(__file__), 'GSM00001.probe_index'))
         gdd.write_sample_index(os.path.join(os.path.dirname(__file__), 'GSM00001.sample_index'))
 
-    def test_GSM254724(self):
+    def _test_GSM254724(self):
         self._test_add_sample('GSM254724')
 
         

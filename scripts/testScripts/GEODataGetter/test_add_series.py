@@ -17,20 +17,25 @@ class TestGDD(unittest.TestCase):
 
     def test_GSE001(self):
         GEO.GEOBase.data_dir=os.path.join(os.environ['TRENDS_HOME'], 't', 'fixtures', 'data', 'GEO')
+        warn("Sample.data_dir=%s" % GEO.Sample.Sample.data_dir)
+        warn("GEOBase.data_dir=%s" % GEO.GEOBase.data_dir)
+        self.assertEqual(GEO.Sample.Sample.data_dir, GEO.GEOBase.GEOBase.data_dir)
+
         self._test_add_series('GSE001')
         gdd.writeCSV(os.path.join(os.path.dirname(__file__), 'GSE001.csv'))
         gdd.write_gene_index(os.path.join(os.path.dirname(__file__), 'GSE001.gene_index'))
 
-
         # test specifics:
         matrix=gdd.matrix
 #        warn("matrix\n%s" % matrix)
-        i_row=gdd.probe_index['1294_at']
-        i_col=gdd.sample_index['GSM00003']
+        warn("matrix[%s][%s]=%f" %('UBA7', 'GSM003', matrix[gdd.gene_index['UBA7']][gdd.sample_index['GSM0003']]))
+        self.assertEqual(matrix[gdd.gene_index['UBA7']][gdd.sample_index['GSM0003']], 0)
+
+        i_row=gdd.probe_index['1294_at'] # should be the same as UBA7, the missing gene
+        i_col=gdd.sample_index['GSM0003']
         val=matrix[i_row][i_col]
         warn("matrix[%d][%d]=%s" % (i_row, i_col, val))
         self.assertEqual(matrix[gdd.probe_index['1294_at']][gdd.sample_index['GSM0003']], 0)
-        self.assertEqual(matrix[gdd.gene_index['UBA7']][gdd.sample_index['GSM0003']], 0)
 
 
     def _test_GSE10072(self):
@@ -52,6 +57,11 @@ class TestGDD(unittest.TestCase):
 
         series=GEO.Series.Series(geo_id).populate()
         self.assertIsInstance(series._id, bson.objectid.ObjectId)
+
+        warn("checking sample_index for all samples")
+        for sample_id in series.sample_id:
+            self.assertIn(sample_id, gdd.sample_index)
+            warn("sample_index[%s]=%s" %(sample_id, gdd.sample_index[sample_id]))
 
         warn("checking samples...")
         for sample_id in series.sample_id:
