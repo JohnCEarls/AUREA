@@ -39,7 +39,7 @@ class TestAddSample(unittest.TestCase):
         for id,exp_val in sample_data.items():
             if id not in gdd.probe_index: continue # some probes are skipped
             gi=gdd.probe_index[id]
-            self.assertEqual(matrix[gi][si], exp_val, 
+            self.assertAlmostEqual(matrix[gi][si], exp_val, delta=0.001,
                              msg="%s: [%s][%s]=%s, expected %s" % (id, gi,si, matrix[gi][si], exp_val))
 
 

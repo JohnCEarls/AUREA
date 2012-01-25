@@ -112,7 +112,11 @@ class GEODataGetter(object):
                 try: gene_id=self.p2g[gene_id] # look up the gene_id
                 except: pass    # leave gene_id and probe_id the same
             else:
-                probe_id=self.g2p[gene_id]
+                try: probe_id=self.g2p[gene_id]
+                except KeyError: 
+                    warn("Unknown gene, skipping: %s" %(gene_id))
+                    continue
+
             warn("gene_id=%s, probe_id=%s" % (gene_id, probe_id))
 
             # get row index (i_row):
@@ -126,6 +130,7 @@ class GEODataGetter(object):
                 
             row=self.matrix[i_row]
             row.append(exp_val) # Is this slow?
+            warn("%s setting %s[%d][%d]=%f" %(sample.geo_id, gene_id, i_row, len(row)-1, exp_val))
 
         # for any genes in the table but not in the sample, set their value to 0
         # what about probe ids not here?  Since we're appending, we could check 
