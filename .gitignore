@@ -20,3 +20,4 @@ src/AHREA/packager/\\
 dist/*
 *.prof
 *.out
+*_index

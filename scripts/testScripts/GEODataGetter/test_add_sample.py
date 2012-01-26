@@ -9,28 +9,27 @@ from GEO.Sample import Sample
 from warn import *
 
 
-gdd=None
+gdd=GEODataGetter(__file__)
+
 class TestAddSample(unittest.TestCase):
     
     def setUp(self):
-        pass
+        global gdd
+        gdd.clear()
 
     def test_GSM00001(self):
-        GEO.GEOBase.data_dir=os.path.join(os.environ['TRENDS_HOME'], 't', 'fixtures', 'data', 'GEO')
+        GEO.GEOBase._data_dir=os.path.join(os.environ['TRENDS_HOME'], 't', 'fixtures', 'data', 'GEO')
         self._test_add_sample('GSM00001')
         gdd.write_gene_index(os.path.join(os.path.dirname(__file__), 'GSM00001.gene_index'))
         gdd.write_probe_index(os.path.join(os.path.dirname(__file__), 'GSM00001.probe_index'))
         gdd.write_sample_index(os.path.join(os.path.dirname(__file__), 'GSM00001.sample_index'))
 
-    def _test_GSM254724(self):
+    def test_GSM254724(self):
         self._test_add_sample('GSM254724')
 
-        
     def _test_add_sample(self, geo_id):
         global gdd
-        if not gdd:
-            gdd=GEODataGetter(geo_id)
-        gdd.add_geo_id(geo_id, 'probe')
+        gdd.add_geo_id(geo_id)
         matrix=gdd.matrix
 
         sample=Sample(geo_id).populate()
@@ -39,6 +38,7 @@ class TestAddSample(unittest.TestCase):
         for id,exp_val in sample_data.items():
             if id not in gdd.probe_index: continue # some probes are skipped
             gi=gdd.probe_index[id]
+            warn("test_add_sample: matrix[%s(%d)][%s(%d)]=%f" %(id, gi, geo_id, si, matrix[gi][si]))
             self.assertAlmostEqual(matrix[gi][si], exp_val, delta=0.001,
                              msg="%s: [%s][%s]=%s, expected %s" % (id, gi,si, matrix[gi][si], exp_val))
 

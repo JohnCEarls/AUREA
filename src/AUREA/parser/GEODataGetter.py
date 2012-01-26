@@ -10,18 +10,9 @@ from AUREA.parser.affyprobe2genesymbol import AffyProbe2GeneSymbol
 class GEODataGetter(object):
     def __init__(self, name):
         self.name=name
-        self.geo_ids=[]
-        self.matrix=[]
-        self.probe_index={}
-        self.gene_index={}
-        self.samples=[]
-        self.sample_descriptions={}
-        self.sample_index={}
         self.af2gs=AffyProbe2GeneSymbol()
         (self.p2g, self.g2p)=self.af2gs.all()
-        self.preferred_id_type='gene'
-        self.second_type='probe'
-        self.subsets=[]
+        self.clear()
 
 	# need to set:
 	# self.dt_id
@@ -32,10 +23,17 @@ class GEODataGetter(object):
 	# self.matrix (2D data matrix: [gene/probe index][sample_index]
 	# self.subsets (as necessary) (subsets set but not used by DataTable, others might access)
 
-    def n_samples(self):
-        return len(self.samples)
+    def clear(self):
+        self.matrix=[]
+        self.probe_index={}
+        self.gene_index={}
+        self.samples=[]
+        self.sample_descriptions={}
+        self.sample_index={}
+        self.n_samples=0
+        self.samples_added=0
 
-    def add_geo(self, geo, id_type='probe'):
+    def add_geo(self, geo):
         factory=Factory()
 
         s_ids=[]
@@ -46,104 +44,59 @@ class GEODataGetter(object):
             except AttributeError:
                 raise Exception("no samples for %s" % geo.geo_id)
             
+        self.add_cols(len(s_ids))
         for sample_id in s_ids:
             sample=Sample(sample_id)
-            self.add_sample(sample, id_type)
+            self.add_sample(sample)
 
-        self.add_entities(geo)
+#        self.add_entities(geo)
 
         
-    def add_geo_id(self, geo_id, id_type='probe'):
-        factory=Factory()
-        geo=factory.newGEO(geo_id).populate()
-#        warn("geo is %s" % yaml.dump(geo))
-        self.add_geo(geo, id_type)
-
-
-    ########################################################################
-    def add_entities(self, geo):
-        pass
-
-        # 
-            
-        # add sample_descriptions: dict
-        # add subsets
-        # need formats...
-
+    def add_geo_id(self, geo_id):
+        geo=Factory().newGEO(geo_id).populate()
+        self.add_geo(geo)
+    
 
     ########################################################################
     # Build self.table, self.gene_index, self.probe_index, self.sample_index
     # return number of genes for which no expression value can be assigned
 
-    def add_sample(self, sample, id_type='gene'): # sample is a GEO.Sample object
-        # need to populate: new column to self.data_table, self.genes or self.probes, 
-        # self.samples, self.gene_index or self.probe_index
-        # and maybe more, like self.sample_description
-        warn("adding %s (%s)" % (sample.geo_id, id_type))
+    def add_cols(self, n_cols):
+        for row in self.matrix:
+            row.extend([0] * n_cols)
+        self.samples.extend([''] * n_cols)
+        self.n_samples+=n_cols
+
+    def add_sample(self, sample): # sample is a GEO.Sample object
 
         # ok, some sanity checking first: 
         if not isinstance(sample, Sample):
             raise Exception("%s: not a Sample object", sample)
-        if not re.search('^gene|probe$', id_type):
-            raise Exception('id_type must be one of "gene" or "probe"')
         if sample.geo_id in self.samples: # sample.geo_id is used as the sample name
             return                        # already added
 
         # add the sample name, description, index:
-        self.samples.append(sample.geo_id)
-        sample_i=self.n_samples()
-        self.sample_index[sample.geo_id]=sample_i
+        i_sample=self.samples_added 
+        self.samples_added+=1
+        self.samples[i_sample]=sample.geo_id
+
+        self.sample_index[sample.geo_id]=i_sample
         try: self.sample_descriptions[sample.geo_id]=sample.description
-        except AttributeError: 
-#            warn("no sample.description for %s" % sample.geo_id)
-#            warn("other descriptions: %s" % sample.descriptions())
-            pass
+        except AttributeError: pass
 
-        # get the data as a vector hash (pass on exceptions)
-        try:    (id_type, sample_data)=sample.expression_data(id_type='gene')
-        except: (id_type, sample_data)=sample.expression_data(id_type='probe')
-        if id_type=='gene': index=self.gene_index
-        else:               index=self.probe_index
-            
         # add genes in sample to matrix, backfilling new genes, and converting types if necessary:
-        for gene_id, exp_val in sample_data.items():
-            if id_type == 'probe': # ...unless it's not
-                probe_id=gene_id 
-                try: gene_id=self.p2g[gene_id] # look up the gene_id
-                except: pass    # leave gene_id and probe_id the same
-            else:
-                try: probe_id=self.g2p[gene_id]
-                except KeyError: 
-                    warn("Unknown gene, skipping: %s" %(gene_id))
-                    continue
-
-            warn("gene_id=%s, probe_id=%s" % (gene_id, probe_id))
-
-            # get row index (i_row):
-#            try: i_row=index[gene_id]
-            try: i_row=self.gene_index[gene_id]
-            except KeyError:    # first time for gene_id
-                try: probe_ids=self.g2p[gene_id]
-                except KeyError: probe_ids=[]
-                warn("%s (%s): no index for %s (%s)" %(sample.geo_id, id_type, gene_id, ','.join(probe_ids)))
-                i_row=self.add_gene(gene_id, probe_id)
-                
+        (id_type, sample_data)=sample.expression_data(id_type='probe') # id_type unused
+        for probe_id, exp_val in sample_data.items():
+            try: i_row=self.probe_index[probe_id]
+            except KeyError: i_row=self.add_gene(probe_id)
             row=self.matrix[i_row]
-            row.append(exp_val) # Is this slow?
-            warn("%s setting %s[%d][%d]=%f" %(sample.geo_id, gene_id, i_row, len(row)-1, exp_val))
+            try:
+                if row[i_sample] != 0:
+                    warn("overwriting matrix[%s][%s] with %f -> %f" %(probe_id, sample.geo_id, row[i_sample], exp_val))
+            except IndexError:
+                raise Exception("tried to access row[%d], len(row)=%d, probe_id=%s, i_row=%d" % (i_sample, len(row), probe_id, i_row))
+            row[i_sample]=exp_val
 
-        # for any genes in the table but not in the sample, set their value to 0
-        # what about probe ids not here?  Since we're appending, we could check 
-        # len(matrix[i]), take too long?
-        for gene_id in self.genes():
-            if gene_id not in sample_data:
-                i=self.gene_index[gene_id]
-                self.matrix[i].append(0.0)
-                warn("setting %s %s[%i] to zero" % (sample.geo_id, gene_id, i))
-        
-
-
-        
     def probe2gene(self, probe_id):
         return self.af2gs.p2g(probe_id)
 
@@ -157,33 +110,16 @@ class GEODataGetter(object):
     # - Add gene id to self.gene_index, probe_id to probe_index
     # Note: It's possibe that gene_id is really a probe_id for an unmapped gene
     # return new index
-    def add_gene(self, gene_id, probe_id):
-        gene_index=self.gene_index
-        i=len(gene_index)
-        gene_index[gene_id]=i   # hash assignment, not array
-        warn("add_gene: gene_index[%s]=%i" % (gene_id, i))
+    def add_gene(self, probe_id):
+        if probe_id in self.probe_index:
+            raise Exception("duplicate probe_id %s" %(probe_id))
+        i=len(self.probe_index)
 
         # add new row to self matrix:
-        new_row=[0]*self.n_samples()
+        new_row=[0]*self.n_samples
         self.matrix.append(new_row)
-#        warn("add_gene(%s): matrix has %d rows, %d samples" % (gene_id, len(self.matrix), self.n_samples()))
+        self.probe_index[probe_id]=i
 
-        # add to self.probe_index, checking for conflicts
-        if probe_id != gene_id:
-            try: probe_ids=self.g2p[gene_id]
-            except KeyError: probe_ids=[gene_id] # happens when probe_id has no mapping
-        else:
-            probe_ids=[probe_id]
-
-        for probe_id in probe_ids:
-            if probe_id in self.probe_index and self.probe_index[probe_id] != i: 
-                raise Exception("duplicate probe_index for %s(%s): old g_index=%d, new index=%d" % (gene_id, probe_id, self.probe_index[probe_id], i))
-            self.probe_index[probe_id]=i
-
-        warn("gene added: g=%s[%d], ps=%s[%s], " %(gene_id, gene_index[gene_id], 
-                                                   ",".join(probe_ids),
-                                                   ",".join([str(self.probe_index[x]) for x in probe_ids])
-                                                   ))
         return i
 
 
@@ -198,10 +134,6 @@ class GEODataGetter(object):
 
     def n_probes(self):
         return len(self.probes())
-
-    def n_samples(self):
-        return len(self.samples)
-
 
     ########################################################################
 
