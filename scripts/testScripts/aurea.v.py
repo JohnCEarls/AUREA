@@ -5,28 +5,20 @@ from AUREA.learner import ktsp, tst, dirac, tsp
 from AUREA.parser import SOFTParser, GMTParser, SettingsParser, CSVParser
 from AUREA.packager import DataCleaner, DataPackager
 from AUREA.heuristic import ResourceEstimate, LearnerQueue
+
+
 import os
 import json
 import cPickle as pickle
-def runAUREA(in1, in2, learner, config_file):
-    #check inputs
-    resultString = ""
-    if not os.path.isfile(str(in1)):
-        resultString += "ERROR: input table 1["+ str(in1)  + "] does not exist\n"
-    if not os.path.isfile(str(in2)):
-        resultString += "ERROR: input table 2["+ str(in2)  + "] does not exist\n"
-    if not os.path.isfile(str(config_file)):
-        resultString += "ERROR: config file ["+ str(config_file)  + "] does not exist\n"
-    valid_learners =  ['tsp', 'tst', 'ktsp', 'dirac', 'adaptive']
-    if learner not in valid_learners:
-        resultString +=  "ERROR: " + str(learner) + " is not a valid learner.\n"
-        resultString +=  "\tvalid options are [" + " ".join(valid_learners) + "]\n"
-    if len(resultString) > 0:
-        return resultString
-    config = SettingsParser.SettingsParser(config_file)
-    #pickle_file = open("datapackage2.pkl ", 'rb')
+from optparse import OptionParser
 
-    dp = buildData(in1, in2, config)
+def runAUREA(options):
+    dp=getData(options)
+    learner=getLearner(options)
+    config=getConfig(options)
+
+    # place holder get_data()
+
     #pickle.dump(dp, pickle_file)
     #dp = pickle.load(pickle_file)
     #pickle_file.close()
@@ -56,13 +48,56 @@ def runAUREA(in1, in2, learner, config_file):
     elif learner == 'dirac':
         trained_learner = trainDIRAC(dp, config)
 
+def getConfig(options):
+    config_file=options.config_file
+    if not os.path.isfile(str(config_file)):
+        raise Exception("ERROR: config file ["+ str(config_file)  + "] does not exist\n")
+    config = SettingsParser.SettingsParser(config_file)
+    return config
 
-def buildData(file1, file2, config):
+def getLearner(options):
+    valid_learners =  ['tsp', 'tst', 'ktsp', 'dirac', 'adaptive']
+    learner=options.learner
+    if learner not in valid_learners:
+        err =  "ERROR: " + str(learner) + " is not a valid learner.\n"
+        err +=  "\tvalid options are [" + " ".join(valid_learners) + "]\n"
+        raise Exception(err)
+    return learner
+
+def getData(options):
+    if hasattr(options, 'input_file_one') and hasattr(options, 'input_file_two'):
+        file1=options.input_file_one
+        file2=options.input_file_two
+        return getCsvData(file1, file2)
+
+    if hasattr(options, 'pheno1'):
+        return getPhenoData(options.pheno1, options.pheno2)
+
+    raise Exception(options.usage)
+
+
+
+def getCsvData(in1, in2):
+    #check inputs
+    resultString = ""
+    if not os.path.isfile(str(in1)):
+        resultString += "ERROR: input table 1["+ str(in1)  + "] does not exist\n"
+    if not os.path.isfile(str(in2)):
+        resultString += "ERROR: input table 2["+ str(in2)  + "] does not exist\n"
+
+    if len(resultString) > 0:
+        raise Exception(resultString)
+    #pickle_file = open("datapackage2.pkl ", 'rb')
+
+    dp = buildCsvData(in1, in2, config)
+    return dp
+
+def buildCsvData(file1, file2, config):
     """
     Takes the 2 csv file names and the config object and returns the datapackage
     """
-    gnfile  = "c2.biocarta.v2.5.symbols.gmt"
-    synfile = "Homo_sapiens.gene_info.gz"
+    gnffile=config.getSetting('datatable', 'gnfile')[0]
+    synfile=config.getSetting('datatable','synfile')[0]
 
     collision = config.getSetting("datatable", "Gene Collision Rule")[0]
     bad_data = config.getSetting("datatable", "Bad Data Value")[0]
@@ -100,6 +135,60 @@ def buildData(file1, file2, config):
         dp.addToClassification("f2", dt2.dt_id, samp)
     return dp
 
+
+def getPhenoData(pheno1, pheno2=None, config):
+    collision = config.getSetting("datatable", "Gene Collision Rule")[0]
+    bad_data = config.getSetting("datatable", "Bad Data Value")[0]
+    gene_column = config.getSetting("datatable", "Gene Column")[0]
+    probe_column = config.getSetting("datatable", "Probe Column")[0]
+    gnffile=config.getSetting('datatable', 'gnfile')[0]
+    synfile=config.getSetting('datatable','synfile')[0]
+
+    gdd1=GEODataGetter(pheno1)
+    geo_ids=GEO.GEOBase.ids_with_pheno(pheno1)
+    for geo_id in geo_ids:
+        gdd1.add_geo_id(geo_id)
+    dt1=DataCleaner.DataTable(probe_column, gene_column, collision, bad_data)
+    dt1.getGEOData(gdd1)
+
+    if pheno2:
+        gdd2=GEODataGetter(pheno2)
+        geo_ids=GEO.GEOBase.GEOBase.ids_with_pheno(pheno2)
+        for geo_id in geo_ids:
+            gdd2.add_geo_id(geo_id)
+    else:
+        pheno2='not '+pheno1
+        gdd2=GEODataGetter(pheno2)
+        sample_ids=GEO.Sample.Sample.all_ids(id_type='probe')
+        for sample_id in sample_ids:
+            if not gdd1.has_sample(sample_id):
+                gdd2.add_geo_id(sample_id)
+        
+    dt2=DataCleaner.DataTable(probe_column, gene_column, collision, bad_data)
+    dt2.getGEOData(gdd2)
+        
+    # now do things that buildCSVData does:
+    # begin_copy_and_paste
+    # whoops! added changes, no longer an exact copy! ha ha!
+    dp = DataPackager.dataPackager(merge_cache=".")
+    gnf = GMTParser.GMTParser(gnfile)
+    dp.addGeneNetwork(gnf.getAllNetworks())
+    dp.addSynonyms(synfile)
+    #add data table
+    dp.addDataTable(dt1)
+    dp.addDataTable(dt2)
+    
+
+    # create subsets(classes)
+    # this is where the edits are
+    dp.createClassification(pheno1)
+    for samp in gdd1.samples:
+        dp.addToClassification(pheno1, dt1.dt_id, samp)
+    dp.createClassification(pheno2)
+    for samp in gdd2.samples:
+        dp.addToClassification(pheno2, dt2.dt_id, samp)
+    return dp
+    # end_copy_and_base
 
 def extractTSP( datapackage, config, tsp):
     output_object = {}
@@ -226,9 +315,8 @@ def trainkTSP(datapackage, config ):
     
 
 
+def get_options():
 
-if __name__ == "__main__":
-    from optparse import OptionParser
     """
 sample call:   python aurea.py -anormal.csv -btumor.csv -ltsp -cconfig.xml
  """
@@ -238,6 +326,13 @@ sample call:   python aurea.py -anormal.csv -btumor.csv -ltsp -cconfig.xml
     parser.add_option("-b", "--table_2", dest="input_file_two",
                         help="csv file for class 2")
 
+    parser_add_option("-p1", "--pheno1", dest="pheno1", 
+                      help="phenotype name")
+
+    # debugging use only, I think
+    parser_add_options("-p2", "--pheno2", dest="pheno2", default=None,
+                       help="second phenotype name")
+
     parser.add_option("-l", "--learner", dest="learner",
                         help="learner to train (tsp, tst, ktsp, dirac, adaptive)")
     parser.add_option("-c", "--config", dest="config_file",
@@ -245,11 +340,13 @@ sample call:   python aurea.py -anormal.csv -btumor.csv -ltsp -cconfig.xml
     parser.add_option("-o", "--output", dest="output_file",
                         help="file in which to write output(defaults to std out)")
     
-
     (options, args) = parser.parse_args()
+    return (options, args)
     
-    if options.output_file is None:
-        print runAUREA(options.input_file_one, options.input_file_two, options.learner, options.config_file)
+if __name__ == "__main__":
+    (options, args)=get_options()
+    print runAUREA(options)
+
 
 
 
