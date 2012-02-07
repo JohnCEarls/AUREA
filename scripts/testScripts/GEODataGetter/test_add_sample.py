@@ -27,6 +27,17 @@ class TestAddSample(unittest.TestCase):
     def test_GSM254724(self):
         self._test_add_sample('GSM254724')
 
+    def test_GSM254724_masked(self):
+        global gdd
+        gdd.use_mask=True
+
+        probes=['1053_at','117_at','121_at','1255_g_at','1316_at','1320_at','1405_i_at',
+                '1431_at','1438_at','1487_at','1494_f_at','1598_g_at','160020_at','1729_at']
+        for probe in probes: gdd.mask[probe]=probe
+
+        self._test_add_sample('GSM254724')
+        self.assertEqual(len(probes), len(gdd.probes()))
+
     def _test_add_sample(self, geo_id):
         global gdd
         gdd.add_geo_id(geo_id)
@@ -38,7 +49,7 @@ class TestAddSample(unittest.TestCase):
         for id,exp_val in sample_data.items():
             if id not in gdd.probe_index: continue # some probes are skipped
             gi=gdd.probe_index[id]
-            warn("test_add_sample: matrix[%s(%d)][%s(%d)]=%f" %(id, gi, geo_id, si, matrix[gi][si]))
+#            warn("test_add_sample: matrix[%s(%d)][%s(%d)]=%f" %(id, gi, geo_id, si, matrix[gi][si]))
             self.assertAlmostEqual(matrix[gi][si], exp_val, delta=0.001,
                              msg="%s: [%s][%s]=%s, expected %s" % (id, gi,si, matrix[gi][si], exp_val))
 

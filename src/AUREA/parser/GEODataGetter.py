@@ -34,6 +34,9 @@ class GEODataGetter(object):
         self.n_samples=0
         self.samples_added=0
 
+        self.use_mask=False     # If these two hold values then only use the genes/probes listed
+        self.mask={}            # 
+
 
     def genes(self):
         return self.gene_index.keys()
@@ -107,6 +110,8 @@ class GEODataGetter(object):
         # add genes in sample to matrix, backfilling new genes, and converting types if necessary:
         (id_type, sample_data)=sample.expression_data(id_type='probe') # id_type unused
         for probe_id, exp_val in sample_data.items():
+            if self.use_mask and probe_id not in self.mask: continue
+
             try: i_row=self.probe_index[probe_id]
             except KeyError: i_row=self.add_gene(probe_id)
             row=self.matrix[i_row]

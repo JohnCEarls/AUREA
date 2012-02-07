@@ -22,7 +22,7 @@ class AffyProbe2GeneSymbol(Mongoid):
 
     def all(self):
         ''' return a dict containing all the probe->gene translations '''
-        warn("creating local dictionaries...\n")
+        warn("AffyProbe2GeneSymbol: creating local dictionaries...\n")
         cur=self.mongo().find()
         p2g=dict()
         g2p=dict()

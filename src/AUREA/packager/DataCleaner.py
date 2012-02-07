@@ -15,9 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os.path
-import copy, re, yaml, sys
-#from GEO.Sample import Sample
-print "\n".join(sys.path)
+import copy, re
 from warn import *
 
 class DataTable:

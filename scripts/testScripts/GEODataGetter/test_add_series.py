@@ -42,6 +42,21 @@ class TestGDD(unittest.TestCase):
         GEO.GEOBase.data_dir=os.path.join(os.environ['TRENDS_HOME'], 'data', 'GEO')
         self._test_add_series('GSE10072')
 
+    def test_GSE10072_masked(self):
+        GEO.GEOBase.GEOBase._data_dir=os.path.join(os.environ['TRENDS_HOME'], 'data', 'GEO')
+        GEO.GEOBase.data_dir=os.path.join(os.environ['TRENDS_HOME'], 'data', 'GEO')
+
+        gdd.use_mask=True
+        probes=['1053_at','117_at','121_at','1255_g_at','1316_at','1320_at','1405_i_at',
+                '1431_at','1438_at','1487_at','1494_f_at','1598_g_at','160020_at','1729_at']
+        for probe in probes: gdd.mask[probe]=probe
+
+        self._test_add_series('GSE10072')
+        self.assertEqual(len(gdd.probes()), len(probes))
+
+        series=GEO.Series.Series('GSE10072').populate()
+        self.assertEqual(len(series.samples()), len(gdd.samples))
+
     def _test_add_series(self, geo_id):
         gdd.add_geo_id(geo_id)
         matrix=gdd.matrix
@@ -62,7 +77,8 @@ class TestGDD(unittest.TestCase):
             # check every probe in every sample...
             for id,exp_val in sample_data.items():
                 try: gi=gdd.probe_index[id]
-                except KeyError: warn("%s: %s not found in probe index" %(sample_id, id))
+                except KeyError: continue # happens during masked test
+                    
                 self.assertAlmostEqual(matrix[gi][i_sample], exp_val, delta=0.001,
                                    msg="%s: [%s][%s]=%s, not %s (%s)" % (id, gi, i_sample, matrix[gi][i_sample], exp_val, sample_id))
 
