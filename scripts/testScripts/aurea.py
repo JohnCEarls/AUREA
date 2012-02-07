@@ -237,6 +237,7 @@ sample call:   python aurea.py -anormal.csv -btumor.csv -ltsp -cconfig.xml
                         help="csv file for class 1")
     parser.add_option("-b", "--table_2", dest="input_file_two",
                         help="csv file for class 2")
+
     parser.add_option("-l", "--learner", dest="learner",
                         help="learner to train (tsp, tst, ktsp, dirac, adaptive)")
     parser.add_option("-c", "--config", dest="config_file",

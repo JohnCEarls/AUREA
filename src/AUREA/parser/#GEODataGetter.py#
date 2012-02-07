@@ -87,8 +87,6 @@ class GEODataGetter(object):
         self.n_samples+=n_cols
 
     def add_sample(self, sample): # sample is a GEO.Sample object
-        warn("adding %s" % sample.geo_id)
-
         # ok, some sanity checking first: 
         if not isinstance(sample, Sample):
             raise Exception("%s: not a Sample object", sample)

@@ -32,7 +32,7 @@ class CSVParser:
         f.close()
         self.getData()
 
-    def getData(s):
+    def getData(self):
         """
         Called automatically by constructor.
         Parses the csv file

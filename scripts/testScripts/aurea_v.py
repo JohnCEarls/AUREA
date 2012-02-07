@@ -2,13 +2,15 @@
 Note most of this is copied from AUREA.GUI.Controller.
 """
 from AUREA.learner import ktsp, tst, dirac, tsp
-from AUREA.parser import SOFTParser, GMTParser, SettingsParser, CSVParser
+from AUREA.parser import SOFTParser, GMTParser, SettingsParser, CSVParser, GEODataGetter
 from AUREA.packager import DataCleaner, DataPackager
 from AUREA.heuristic import ResourceEstimate, LearnerQueue
+import GEO
+from warn import *
+
 import os
 import json
 import cPickle as pickle
-
 from optparse import OptionParser
 
 def runAUREA(options):
@@ -16,6 +18,8 @@ def runAUREA(options):
     learner=getLearner(options)
     config=getConfig(options)
 
+    # place holder get_data()
+    dp=getData(options)
 
     #pickle.dump(dp, pickle_file)
     #dp = pickle.load(pickle_file)
@@ -69,7 +73,7 @@ def getData(options):
         return getCsvData(file1, file2)
 
     if hasattr(options, 'pheno1'):
-        return getPhenoData(options.pheno1, options.pheno2)
+        return getPhenoData(options)
 
     raise Exception(options.usage)
 
@@ -96,7 +100,6 @@ def buildCsvData(file1, file2, config):
     """
     gnffile=config.getSetting('datatable', 'gnfile')[0]
     synfile=config.getSetting('datatable','synfile')[0]
->>>>>>> b10d420723b3a8dd35495e037303f1abb9800672:scripts/testScripts/aurea.v.py
 
     collision = config.getSetting("datatable", "Gene Collision Rule")[0]
     bad_data = config.getSetting("datatable", "Bad Data Value")[0]
@@ -135,33 +138,61 @@ def buildCsvData(file1, file2, config):
     return dp
 
 
-def getPhenoData(pheno1, pheno2=None, config):
+def getPhenoData(options):
+    config=getConfig(options)
+
+    try: pheno1=options.pheno1
+    except AttributeError: 
+        raise Exception(options.usage)
+
+    try: pheno2=options.pheno2
+    except: pheno2=None
+
     collision = config.getSetting("datatable", "Gene Collision Rule")[0]
     bad_data = config.getSetting("datatable", "Bad Data Value")[0]
     gene_column = config.getSetting("datatable", "Gene Column")[0]
     probe_column = config.getSetting("datatable", "Probe Column")[0]
-    gnffile=config.getSetting('datatable', 'gnfile')[0]
-    synfile=config.getSetting('datatable','synfile')[0]
+    gnffile=config.getSetting('datatable', 'gnfile')
+    synfile=config.getSetting('datatable','synfile')
 
-    gdd1=GEODataGetter(pheno1)
-    geo_ids=GEO.GEOBase.ids_with_pheno(pheno1)
-    for geo_id in geo_ids:
-        gdd1.add_geo_id(geo_id)
+    gdd1=GEODataGetter.GEODataGetter(pheno1)
+    samples=GEO.Sample.Sample.with_pheno(pheno1)
+    gdd1.add_cols(len(samples))
+    warn('adding %d samples to "%s"' % (len(samples), pheno1))
+    n1=1
+    for sample in samples:
+        warn("%d. adding %s to gdd1" % (n1, sample.geo_id))
+        gdd1.add_geo(sample)
+        n1+=1
     dt1=DataCleaner.DataTable(probe_column, gene_column, collision, bad_data)
     dt1.getGEOData(gdd1)
 
+    gdd2=GEODataGetter.GEODataGetter(pheno2)
     if pheno2:
-        gdd2=GEODataGetter(pheno2)
-        geo_ids=GEO.GEOBase.GEOBase.ids_with_pheno(pheno2)
-        for geo_id in geo_ids:
-            gdd2.add_geo_id(geo_id)
+        samples=GEO.Sample.Sample.with_pheno(pheno2)
+        if len(samples)==0:
+            raise Exception("No samples for pheno=%s" % pheno)
+
+        gdd2.add_cols(len(samples))
+        warn("pheno2: %s: adding %d samples" % (pheno2, len(samples)))
+        n2=1
+        for sample in samples:
+            warn("%d. adding %s to gdd2" % (n2, sample.geo_id))
+            gdd2.add_sample(sample)
+            n2+=1
     else:
         pheno2='not '+pheno1
-        gdd2=GEODataGetter(pheno2)
-        sample_ids=GEO.Sample.Sample.all_ids(id_type='probe')
+        warn("getting samples for '%s'" %(pheno2))
+        all_ids=set(GEO.Sample.Sample.all_with_data(id_type='probe', ids_only=True))
+        p1_ids=set([x.geo_id for x in gdd1.samples])
+        sample_ids=list(all_ids-p1_ids)
+        warn('adding %d samples to "not_%s"' % (len(sample_ids), pheno1))
+        gdd2.add_cols(len(sample_ids))
+        n2=0
         for sample_id in sample_ids:
-            if not gdd1.has_sample(sample_id):
-                gdd2.add_geo_id(sample_id)
+            gdd2.add_geo_id(sample_id)
+            warn("%d. adding %s to gdd2" % (n2, sample.geo_id))
+            n2+=1
         
     dt2=DataCleaner.DataTable(probe_column, gene_column, collision, bad_data)
     dt2.getGEOData(gdd2)
@@ -314,42 +345,35 @@ def trainkTSP(datapackage, config ):
     
 
 
-def get_options():
+def getOptions():
+
     """
-    sample call:   python aurea.py -anormal.csv -btumor.csv -ltsp -cconfig.xml
-    """
+sample call:   python aurea.py -anormal.csv -btumor.csv -ltsp -cconfig.xml
+ """
     parser = OptionParser()
     parser.add_option("-a", "--table_1", dest="input_file_one",
                         help="csv file for class 1")
     parser.add_option("-b", "--table_2", dest="input_file_two",
                         help="csv file for class 2")
 
-    parser_add_option("-p1", "--pheno1", dest="pheno1", 
+    parser.add_option("-p", "--pheno1", dest="pheno1", 
                       help="phenotype name")
 
     # debugging use only, I think
-    parser_add_options("-p2", "--pheno2", dest="pheno2", default=None,
+    parser.add_option("-q", "--pheno2", dest="pheno2", default=None,
                        help="second phenotype name")
 
     parser.add_option("-l", "--learner", dest="learner",
                         help="learner to train (tsp, tst, ktsp, dirac, adaptive)")
     parser.add_option("-c", "--config", dest="config_file",
-                        help="xml file containing the learner settings")
+                      default='config.xml',
+                      help="xml file containing the learner settings")
     parser.add_option("-o", "--output", dest="output_file",
                         help="file in which to write output(defaults to std out)")
     
     (options, args) = parser.parse_args()
     return (options, args)
     
-########################################################################
-
 if __name__ == "__main__":
     (options, args)=get_options()
     print runAUREA(options)
-
-
-
-
-
-    
-
