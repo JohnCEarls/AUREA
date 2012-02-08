@@ -28,7 +28,7 @@ class GEODataGetter(object):
         self.matrix=[]
         self.probe_index={}
         self.gene_index={}
-        self.samples=[]
+        self.samples=[]         # sample names, not objects
         self.sample_descriptions={}
         self.sample_index={}
         self.n_samples=0
@@ -71,10 +71,8 @@ class GEODataGetter(object):
             sample=Sample(sample_id)
             self.add_sample(sample)
 
-#        self.add_entities(geo)
-
-        
     def add_geo_id(self, geo_id):
+        warn("gdd.add_geo_id(%s) called" % (geo_id))
         geo=Factory().newGEO(geo_id).populate()
         self.add_geo(geo)
     

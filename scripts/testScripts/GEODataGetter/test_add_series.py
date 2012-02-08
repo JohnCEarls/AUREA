@@ -16,7 +16,7 @@ class TestGDD(unittest.TestCase):
         global gdd
         gdd.clear()
 
-    def test_GSE001(self):
+    def _test_GSE001(self):
         # set the data_dir to use fixtures:
         GEO.GEOBase.GEOBase._data_dir=os.path.join(os.environ['TRENDS_HOME'], 't', 'fixtures', 'data', 'GEO')
         self.assertEqual(GEO.Sample.Sample.data_dir(), GEO.GEOBase.GEOBase.data_dir())
@@ -37,7 +37,7 @@ class TestGDD(unittest.TestCase):
 
         # test ADD[123] from GSM00004:
 
-    def test_GSE10072(self):
+    def _test_GSE10072(self):
         GEO.GEOBase.GEOBase._data_dir=os.path.join(os.environ['TRENDS_HOME'], 'data', 'GEO')
         GEO.GEOBase.data_dir=os.path.join(os.environ['TRENDS_HOME'], 'data', 'GEO')
         self._test_add_series('GSE10072')

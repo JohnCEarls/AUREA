@@ -12,6 +12,7 @@ import os
 import json
 import cPickle as pickle
 from optparse import OptionParser
+import yaml
 
 def runAUREA(options):
     dp=getData(options)
@@ -52,6 +53,7 @@ def runAUREA(options):
 
 def getConfig(options):
     config_file=options.config_file
+    warn("config_file is %s" % config_file)
     if not os.path.isfile(str(config_file)):
         raise Exception("ERROR: config file ["+ str(config_file)  + "] does not exist\n")
     config = SettingsParser.SettingsParser(config_file)
@@ -152,8 +154,8 @@ def getPhenoData(options):
     bad_data = config.getSetting("datatable", "Bad Data Value")[0]
     gene_column = config.getSetting("datatable", "Gene Column")[0]
     probe_column = config.getSetting("datatable", "Probe Column")[0]
-    gnffile=config.getSetting('datatable', 'gnfile')
-    synfile=config.getSetting('datatable','synfile')
+    gnfile=config.getSetting('datatable', 'gnfile')[0]
+    synfile=config.getSetting('datatable','synfile')[0]
 
     gdd1=GEODataGetter.GEODataGetter(pheno1)
     samples=GEO.Sample.Sample.with_pheno(pheno1)
@@ -164,7 +166,9 @@ def getPhenoData(options):
         warn("%d. adding %s to gdd1" % (n1, sample.geo_id))
         gdd1.add_geo(sample)
         n1+=1
+    warn("creating dt1")
     dt1=DataCleaner.DataTable(probe_column, gene_column, collision, bad_data)
+    warn("getting GEO data from gdd1" % ())
     dt1.getGEOData(gdd1)
 
     gdd2=GEODataGetter.GEODataGetter(pheno2)
@@ -182,16 +186,15 @@ def getPhenoData(options):
             n2+=1
     else:
         pheno2='not '+pheno1
-        warn("getting samples for '%s'" %(pheno2))
-        all_ids=set(GEO.Sample.Sample.all_with_data(id_type='probe', ids_only=True))
-        p1_ids=set([x.geo_id for x in gdd1.samples])
-        sample_ids=list(all_ids-p1_ids)
-        warn('adding %d samples to "not_%s"' % (len(sample_ids), pheno1))
+        all_ids=GEO.Sample.Sample.all_with_data(id_type='probe', ids_only=True)
+        all_ids=set(all_ids)
+        p1_ids=set(gdd1.samples)
+        sample_ids=all_ids-p1_ids
         gdd2.add_cols(len(sample_ids))
         n2=0
         for sample_id in sample_ids:
-            gdd2.add_geo_id(sample_id)
             warn("%d. adding %s to gdd2" % (n2, sample.geo_id))
+            gdd2.add_geo_id(sample_id)
             n2+=1
         
     dt2=DataCleaner.DataTable(probe_column, gene_column, collision, bad_data)

@@ -53,7 +53,7 @@
 	  <name>
 	    gnfile
 	  </name>
-	  <value>
+	  <value type="string">
 	    c2.biocarta.v2.5.symbols.gmt
 	  </value>
 	</setting>
@@ -62,7 +62,7 @@
 	  <name>
 	    synfile
 	  </name>
-	  <value>
+	  <value type="string">
 	    Homo_sapiens.gene_info.gz
 	  </value>
 	</setting>

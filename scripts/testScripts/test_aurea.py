@@ -7,6 +7,7 @@ sys.path.append(os.path.join(os.environ['TRENDS_HOME'], 'pylib'))
 
 from warn import *
 import aurea_v
+import GEO
 
 class TestAurea(unittest.TestCase):
     
@@ -14,6 +15,7 @@ class TestAurea(unittest.TestCase):
         pass
         
     def test_getPhenoData(self):
+        GEO.GEOBase.GEOBase._data_dir=os.path.join(os.environ['TRENDS_HOME'], 't', 'fixtures', 'data', 'GEO')
         (options, args)=aurea_v.getOptions()
         options.pheno1='normal'
         dp=aurea_v.getPhenoData(options)
