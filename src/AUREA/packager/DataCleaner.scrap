@@ -1,0 +1,66 @@
+            
+    ########################################################################
+    # methods that access Victor's GEO database
+    # These might be factored out into some other class (like SOFTParser)
+    
+    def add_sample(self, sample, id_type): # sample is a GEO.Sample object
+        # need to populate: new column to self.data_table, self.genes or self.probes, 
+        # self.samples, self.gene_index or self.probe_index
+        # and maybe more, like self.sample_description
+        if not self.samples: self.samples=[]
+
+        # ok, some sanity checking first: 
+        if not isinstance(sample, Sample):
+            raise Exception("%s: not a Sample object", sample)
+        if not re.search('^gene|probe$', id_type):
+            raise Exception('id_type must be one of "gene" or "probe"')
+        if sample.geo_id in self.samples: # sample.geo_id is used as the sample name
+            raise Exception("%s already in data table %s" % sample.geo_id, self.dt_id)
+        
+        # set the sample list and index:
+        self.samples.append(sample.geo_id)
+        self.sample_index[sample.geo_id]=len(self.samples)-1
+        try: self.sample_description[geo_id]=sample.description
+        except AttributeError: pass
+        n_samples=len(self.samples)
+
+        # get the proper (gene or probe) id_list and index to use:
+        exp_data=sample.expression_data(id_type)
+        ids=self.genes if id_type == 'gene' else self.probes
+        if not ids: ids=[]
+        index=self.gene_index if id_type == 'gene' else self.probe_index
+        if not index: index={}
+
+        # add any of sample's genes to self.genes as needed, and rebuild the index:
+        #  fixme: have to back-fill missing genes for previous samples
+        ids_added=False
+        if not hasattr(self, 'data_table'): self.data_table=[]
+        for key_id in exp_data.keys():
+            if key_id not in index:
+                ids.append(key_id)
+                ids_added=True
+                backfill_list=[0.0]*(n_samples-1)
+                self.data_table.append(backfill_list)
+
+        if id_type == 'gene': 
+            self.genes=ids      # add additions back in
+            if ids_added: self.buildGeneIndex()
+            index=self.gene_index
+            n_ids=len(self.genes)
+        else: 
+            self.probes=ids
+            if ids_added: self.buildProbeIndex()
+            index=self.probe_index
+            n_ids=len(self.probes)
+
+        # create a column of data according to gene_ or probe_index, and add to self:
+        # self.data_table[index[gene]] [index[sample]]
+#        if not hasattr(self, 'data_table'): self.data_table=[list(x) for x in [[]]*n_ids]
+
+        for (gene_id, value) in sample.data[id_type].items(): # (gene_id might be a probe_id)
+            try: i=index[gene_id]
+            except KeyError: raise Exception("unknown gene- or probe_id %s" % gene_id)
+            gene_list=self.data_table[i]
+            gene_list.append(value)
+
+
