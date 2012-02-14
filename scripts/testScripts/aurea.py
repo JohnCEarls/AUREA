@@ -99,7 +99,7 @@ def buildData(file1, file2, config):
     return dp
 
 
-def extractTSP( datapackage, config, tsp):
+def extractTSP( datapackage, config, tsp, json_out=False):
     output_object = {}
     output_object['type'] = 'tsp'
     max_scores = tsp.getMaxScores()
@@ -111,7 +111,10 @@ def extractTSP( datapackage, config, tsp):
         #print g1_index
         #print g2_index
         output_object['gene_pairs'].append( (datapackage.getGeneName(g1_index, row_key), datapackage.getGeneName(g2_index, row_key)) )
-    return json.dumps(output_object)
+    if json_out:
+        return json.dumps(output_object)
+    else:
+        return output_object
 
 def extractkTSP( datapackage, config, ktsp):
     output_object = {}
