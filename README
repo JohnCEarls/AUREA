@@ -5,7 +5,7 @@ AUREA is a python based framework for using Relative Expression Analysis tools o
 Currently it can read SOFT (Simple Omnibus Format) files and csv files.  
 SOFT files are the preferred format of AUREA and the preferred format of GEO.
 
-Documentation is available at http://www.igb.uiuc.edu/labs/price/AUREA/.
+Documentation is available at http://price.systemsbiology.net/AUREA/ .
 
 AUREA is released under the GPL v.3 Affero license, so feel free to adapt AUREA to your needs.
 A copy of the AGPL is provided in COPYING.
