@@ -1,6 +1,6 @@
 #ifndef MATRIX_H
 #define MATRIX_H
-
+#include <cstddef>
 #include <vector>
 using std::vector;
 template <class T>

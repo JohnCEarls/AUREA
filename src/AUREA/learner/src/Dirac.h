@@ -16,6 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef DIRAC_H
 #define DIRAC_H
 
+#include <cstddef>
 #include <vector>
 #include <string>
 #include "dir_Matrix.h"

@@ -1,6 +1,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <cstddef>
 #include <algorithm>
 #include <sstream>
 #include <iostream>

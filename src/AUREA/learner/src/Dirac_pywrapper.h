@@ -1,6 +1,6 @@
 #ifndef DIRAC_PYWRAPPER_H
 #define DIRAC_PYWRAPPER_H
-
+#include <cstddef>
 #include <vector>
 #include "kfold.h"
 //using std::vector;

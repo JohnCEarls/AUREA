@@ -16,6 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef KFOLD_H
 #define KFOLD_H
 #include <vector>
+#include <cstddef>
 using std::vector;
 
 class kfold{

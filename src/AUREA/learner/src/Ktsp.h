@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define KTSP_H
 #include <vector>
 #include <queue>
+#include <cstddef>
 #include <map>
 using std::vector;
 using std::priority_queue;

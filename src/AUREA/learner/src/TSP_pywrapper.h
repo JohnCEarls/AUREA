@@ -1,6 +1,6 @@
 #ifndef TSP_PYWRAPPER_H
 #define TSP_PYWRAPPER_H
-
+#include <cstddef>
 #include "learn_classifiers.h"
 #include <vector>
 

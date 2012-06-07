@@ -1,6 +1,7 @@
 #ifndef WILCOXON_TEST
 #define WILCOXON_TEST
 #include <vector>
+#include <cstddef>
 //extern "C"{
 
 void wilcoxon_test(std::vector<double>& data,int numGenes, 
