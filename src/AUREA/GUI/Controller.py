@@ -184,10 +184,10 @@ class Controller:
         """
         adds SOFTparser objects to softparser
         """
-        for file in self.softFile:
-            self.queue.put(('statusbarset',"Parsing " + file))
-            if file[-3:] == "csv":
-                self.tmpfile = file
+        for fil in self.softFile:
+            self.queue.put(('statusbarset',"Parsing " + fil))
+            if fil[-3:] == "csv":
+                self.tmpfile = fil
                 self._done = False
                 def addCSV():
                     self.softparser.append(CSVParser(self.tmpfile, probe_column_name=self.tmp_probe_column.get(), gene_column_name=self.tmp_gene_column.get() ))
@@ -195,7 +195,7 @@ class Controller:
                 #TODO: this does not not belong here                    
                 self.d = dialog = Toplevel(self.app)
                 dialog.protocol('WM_DELETE_window', dialog.destroy)
-                Label(dialog, text="Enter settings for " + file).grid(row=0, column=0, columnspan=2)
+                Label(dialog, text="Enter settings for " + fil).grid(row=0, column=0, columnspan=2)
                 
                 Label(dialog, text="Probe Column:").grid(row=1, column=0)
                 self.tmp_probe_column=StringVar()
@@ -208,7 +208,7 @@ class Controller:
                     
                 #self.softparser.append(CSVParser(file,probe_column=probe_column.get(), gene_column=gene_column.get() ))
             else:
-                self.softparser.append(SOFTParser(file))
+                self.softparser.append(SOFTParser(fil))
             self.queue.put(('statusbarclear',None))
 
     def buildDataTables(self):
