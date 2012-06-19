@@ -187,26 +187,9 @@ class Controller:
         for fil in self.softFile:
             self.queue.put(('statusbarset',"Parsing " + fil))
             if fil[-3:] == "csv":
-                self.tmpfile = fil
-                self._done = False
-                def addCSV():
-                    self.softparser.append(CSVParser(self.tmpfile, probe_column_name=self.tmp_probe_column.get(), gene_column_name=self.tmp_gene_column.get() ))
-                    self.d.destroy()
-                #TODO: this does not not belong here                    
-                self.d = dialog = Toplevel(self.app)
-                dialog.protocol('WM_DELETE_window', dialog.destroy)
-                Label(dialog, text="Enter settings for " + fil).grid(row=0, column=0, columnspan=2)
-                
-                Label(dialog, text="Probe Column:").grid(row=1, column=0)
-                self.tmp_probe_column=StringVar()
-                Entry(dialog, textvariable=self.tmp_probe_column).grid(row=1, column=1)
-                Label(dialog, text="Gene Column:").grid(row=2, column=0)
-                self.tmp_gene_column=StringVar()
-                Entry(dialog, textvariable=self.tmp_gene_column).grid(row=2, column=1)
-                Button(dialog, text="OK", command=addCSV).grid(row=3)
-                self.app.wait_window(dialog)
-                    
-                #self.softparser.append(CSVParser(file,probe_column=probe_column.get(), gene_column=gene_column.get() ))
+                gc = self.config.getSetting("datatable",fil +  "(Gene Column)")[0]
+                pc = self.config.getSetting("datatable",fil +  "(Probe Column)")[0]
+                self.softparser.append(CSVParser(fil,probe_column_name=pc, gene_column_name=gc ))
             else:
                 self.softparser.append(SOFTParser(fil))
             self.queue.put(('statusbarclear',None))

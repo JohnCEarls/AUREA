@@ -406,6 +406,7 @@ class ImportDataPage(Page):
         for widget in self.grid_slaves():
             widget.grid_forget()
         
+
     def clearPage(self):
         self.clearGrid()
         self.grid_forget()
@@ -472,8 +473,22 @@ class ImportDataPage(Page):
         options['title'] = "AUREA - Select data file."
         response = tkFileDialog.askopenfilename(**options)
         if response:
+            if response[-3:] == 'csv':
+                self.addCSVSettingsToConfig(response)
             self.import_button.config(state=NORMAL)
             pathVariable.set(response)
+
+    def addCSVSettingsToConfig(self, file_path):
+        config_name = file_path
+        
+        def_probe = self.root.controller.config.getSetting("datatable", "Probe Column")[0]
+       
+        def_gene = self.root.controller.config.getSetting("datatable", "Gene Column")[0]
+        
+        self.root.controller.config.addSetting("datatable", config_name + "(Gene Column)", [def_gene], ["string"])
+
+        self.root.controller.config.addSetting("datatable", config_name + "(Probe Column)", [def_probe], ["string"])
+
 
     def downloadSOFTdialog(self):
         """
