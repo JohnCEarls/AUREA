@@ -75,10 +75,42 @@ class SettingsParser:
                     val.childNodes[0].data = str(value[counter])
                     counter += 1
 
+    def addSetting(self, settings_name, name, value, data_type):
+        """
+        This takes a settings name (i.e. datatable, tsp, etc.)(see workspace/data/config.xml) and adds a new setting.
+        settings_obj - (string) prexisting set of settings name
+        name - (string) the name of the new setting
+        value - (list of strings) the value of the new setting
+        data_type - (list of strings) the data type(boolean, integer, float, string) of the new setting
+        """
+        #get settings node
+        settings = self.dom.getElementsByTagName(settings_name)[0].getElementsByTagName("settings")[0]
+        #clone first node
+        new_node = settings.getElementsByTagName("setting")[0].cloneNode(True)
+        #change name
+        new_node.getElementsByTagName("name")[0].childNodes[0].data = name
+        #copy first value node
+        value_node =  new_node.getElementsByTagName("value")[0].cloneNode(True)
+        #get rid of old values
+        for val in new_node.getElementsByTagName("value"):
+            new_node.removeChild(val)
+        #now add value nodes we want
+        for i,newval in enumerate(value):
+            new_value_node = value_node.cloneNode(True)
+            new_value_node.childNodes[0].data = newval
+            new_value_node.setAttribute("type", data_type[i])
+            new_node.appendChild(new_value_node)
+        #add setting to settings
+        settings.appendChild(new_node)
+            
+
+            
 
 if __name__ == "__main__":
-    sp = SettingsParser('../data/config.xml')
-    print sp.getSettings("ktsp")
-    print sp.getSetting("ktsp","Row Key(genes/probes)")[0]
+    sp = SettingsParser('/home/earls3/Price/AUREA/workspace/data/config.xml')
+    print sp.getSettings("datatable")
+    sp.addSetting("datatable", "csvsettings", ["IDENTIFIER", "ID_REF"], ["string", "string"])
+    print sp.getSetting("datatable", "csvsettings")
+    sp.writeSettings("test.xml")
     #sp.setSetting("datatable","Gene Collision Rule", ["AVE"])
     #sp.writeSettings("test.xml")
