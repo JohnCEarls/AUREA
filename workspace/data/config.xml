@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
-<!--this is the default config file for AHREA -->
-<ahrea>
+<!--this is the default config file for AUREA -->
+<aurea>
 	
 	
 	
@@ -1934,4 +1934,4 @@ k-TSP-Only use equal filters
 	
 
 
-</ahrea>
+</aurea>
