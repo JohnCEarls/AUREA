@@ -28,13 +28,13 @@ class SettingsParser:
         f.write(self.dom.toprettyxml())
         f.close()
 
-    def getSettings(self, object):
+    def getSettings(self, settings_object):
         """
         returns an objects settings as a list of tuples (setting name, list of values)
         object == dirac, tsp, datatable, etc
         """
         settings_list = []
-        settings = self.dom.getElementsByTagName(object)[0].getElementsByTagName("settings")[0].getElementsByTagName("setting")
+        settings = self.dom.getElementsByTagName(settings_object)[0].getElementsByTagName("settings")[0].getElementsByTagName("setting")
         for setting in settings:
             name = setting.getElementsByTagName("name")[0].childNodes[0].data.strip()
             values = []
@@ -55,18 +55,18 @@ class SettingsParser:
             settings_list.append((name, values))
         return settings_list
 
-    def getSetting(self, object, setting_name):
+    def getSetting(self, settings_object, setting_name):
         """
         Returns a list of settings values for a given setting name
 
         """
-        for x in self.getSettings(object):
+        for x in self.getSettings(settings_object):
             if x[0] == setting_name:
                 return x[1]
         return None
 
-    def setSetting(self, object, setting_name, value):
-        settings = self.dom.getElementsByTagName(object)[0].getElementsByTagName("settings")[0].getElementsByTagName("setting")
+    def setSetting(self, settings_object, setting_name, value):
+        settings = self.dom.getElementsByTagName(settings_object)[0].getElementsByTagName("settings")[0].getElementsByTagName("setting")
         for setting in settings:
             name = setting.getElementsByTagName("name")[0].childNodes[0].data.strip()
             counter = 0
