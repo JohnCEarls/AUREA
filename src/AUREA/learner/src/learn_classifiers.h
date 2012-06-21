@@ -19,7 +19,7 @@
   void learn_utsp_classifier(std::vector<double> & data,int dsSize, std::vector<int> & classSizes, std::vector<int> & nvec,  vector<int> & I1LIST, vector<int> & I2LIST );
 
 //    SEXP learn_mtsp_classifier(SEXP,SEXP,SEXP);
-  std::vector< std::vector<double> > learn_tst_classifier(std::vector<double> & data,int dsSize, std::vector<int> & classSizes, std::vector<int> & nvec, std::vector<int> & I1LIST, std::vector<int> & I2LIST, std::vector<int> & I3LIST );
+  std::vector< std::vector<double> > learn_tst_classifier(std::vector<double> & data,int dsSize, std::vector<int> & classSizes, std::vector<int> & nvec, std::vector<int> & I1LIST, std::vector<int> & I2LIST, std::vector<int> & I3LIST, bool hard_limit=false );
 
   //added by j.e. in order to allow before running testing of how big
     // tsp and tst will get

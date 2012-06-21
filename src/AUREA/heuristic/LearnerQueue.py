@@ -358,25 +358,27 @@ class LearnerQueue:
             data = settings['data']
             numGenes = settings['numGenes']
             classSizes = self.data_package.getClassVector()
-            filter = settings['restrictions']
-            return tsp.TSP(data, numGenes, classSizes, filter)
+            filt = settings['restrictions']
+            return tsp.TSP(data, numGenes, classSizes, filt)
 
         if settings['learner'] == LearnerQueue.tst:
             data = settings['data']
             numGenes = settings['numGenes']
             classSizes = self.data_package.getClassVector()
-            filter = settings['restrictions']
-            return tst.TST(data, numGenes, classSizes, filter)
+            filt = settings['restrictions']
+               
+
+            return tst.TST(data, numGenes, classSizes, filt)
   
         if settings['learner'] == LearnerQueue.ktsp:
             data = settings['data']
             numGenes = settings['numGenes']
             classSizes = self.data_package.getClassVector()
-            filter = settings['restrictions']
+            filt = settings['restrictions']
             maximumK = settings['maxk']
             nleaveout = settings['num_leave_out']
             nValidationRuns = settings['num_cross_validate'] 
-            return ktsp.KTSP(data, numGenes, classSizes, filter, maximumK, nleaveout, nValidationRuns) 
+            return ktsp.KTSP(data, numGenes, classSizes, filt, maximumK, nleaveout, nValidationRuns) 
  
         if settings['learner'] == LearnerQueue.dirac:
             data = settings['data']

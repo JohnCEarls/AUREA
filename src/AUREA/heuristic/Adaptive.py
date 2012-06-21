@@ -75,6 +75,9 @@ class Adaptive:
                 
                 #training
                 learner = self.lq.trainLearner(settings, complexity)
+                
+                self._progress_report(tl_str + msg + " CrossValidating " + str_learner)
+
                 accuracy = learner.crossValidate()
                 msg = str_learner + " achieved " + str(accuracy)[:4]
 
@@ -124,8 +127,10 @@ class Adaptive:
         """
         Takes the msg and displays it in the status bar if provided and/or prints it if print_status is True.
         """
+        import time
         if self.app_status_bar is not None:
             self.app_status_bar.put( ('statusbarset', msg) )
+            time.sleep(0.01)
         if self.print_status:
             print msg
 

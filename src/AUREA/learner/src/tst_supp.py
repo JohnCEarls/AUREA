@@ -13,7 +13,7 @@ class TST:
     https://jshare.johnshopkins.edu/dnaiman1/public_html/rxa/ which is 
     the code described in the above mentioned paper.
     """
-    def __init__(self, data, numGenes, classSizes, filter):
+    def __init__(self, data, numGenes, classSizes, filtr):
         """
         Initializes the object. 
         data is an IntVector containing the microarray data and should be
@@ -24,10 +24,10 @@ class TST:
         self.data = data
         self.numGenes = numGenes
         self.classSizes = classSizes
-        for i, x in enumerate(sorted([x for x in filter])):
-            #sort filters for c code
-            filter[i] = x
-        self.filter = filter
+        for i, x in enumerate(sorted([x for x in filtr])):
+            #sort filtrs for c code
+            filtr[i] = x
+        self.filtr = filtr
         self.numSamples = 0
         for i in xrange(0,len(classSizes)):
             self.numSamples += classSizes[i]
@@ -43,7 +43,7 @@ class TST:
         self.maxScore1 = IntVector()
         self.maxScore2 = IntVector()
         self.maxScore3 = IntVector()
-        runTST(self.data, self.numGenes, self.classSizes, self.filter, self.maxScore1, self.maxScore2, self.maxScore3)
+        runTST(self.data, self.numGenes, self.classSizes, self.filtr, self.maxScore1, self.maxScore2, self.maxScore3)
         self.compute_ptable()
 
     def compute_ptable(self):
@@ -180,7 +180,7 @@ class TST:
         Performs k-fold cross validation (k is an integer [2,samplesize])
         Returns the Matthews correlation coefficient.(-1.0, 1.0)
         """
-        return crossValidate(self.data, self.numGenes, self.classSizes, self.filter, k)
+        return crossValidate(self.data, self.numGenes, self.classSizes, self.filtr, k)
 
     def distance(self, v1, v2):
         """

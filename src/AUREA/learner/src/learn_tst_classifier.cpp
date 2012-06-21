@@ -1,10 +1,10 @@
 #include "learn_classifiers.h"
 #include <stdio.h>
-#include <iostream>
-using std::cout;
-using std::endl;
+//#include <iostream>
+//using std::cout;
+//using std::endl;
 //extern "C" {
-vector< vector<double> > learn_tst_classifier(vector<double> & data,int dsSize, vector<int> & classSizes, vector<int> & nvec, vector<int> & I1LIST, vector<int> & I2LIST, vector<int> & I3LIST)
+vector< vector<double> > learn_tst_classifier(vector<double> & data,int dsSize, vector<int> & classSizes, vector<int> & nvec, vector<int> & I1LIST, vector<int> & I2LIST, vector<int> & I3LIST, bool hard_limit)
 {
 
  
@@ -98,8 +98,11 @@ vector< vector<double> > learn_tst_classifier(vector<double> & data,int dsSize, 
 
   //
   // Some wilcoxon stats could be tied, so extent the search range as necessary.
-  //
+  // JE - added a switch(hard_limit) so this can be skipped.  This is especially
+  //        useful if the number of samples is very small ~10
   int f;
+    //DEBUG
+  if(hard_limit == false){
   double wmax=w[filternumber1];
   for (f=filternumber1+1;f<ngenes;f++)
     {
@@ -129,7 +132,7 @@ vector< vector<double> > learn_tst_classifier(vector<double> & data,int dsSize, 
       filternumber3--;
     }  
 
-
+    }
   //
   // For each 3-tuple, compute counts and maintain a list of 3-tuples 
   // with maximum score. 

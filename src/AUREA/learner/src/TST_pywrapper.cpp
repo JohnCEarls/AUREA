@@ -1,9 +1,17 @@
 #include "learn_classifiers.h"
 #include "kfold.h"
 #include <math.h>
+
+
 void runTST(std::vector<double> & data, int dsSize, std::vector<int> & classSizes, std::vector<int> & nvec, std::vector<int> & I1LIST, std::vector<int> & I2LIST, std::vector<int> & I3LIST ){
-    learn_tst_classifier( data, dsSize,  classSizes,  nvec,I1LIST,I2LIST,I3LIST );
+    bool hard_limit = false;
+    if(classSizes[0] + classSizes[1] < 20){
+        hard_limit = true;
+    }
+    
+    learn_tst_classifier( data, dsSize,  classSizes,  nvec,I1LIST,I2LIST,I3LIST, hard_limit );
 }
+
 //build the scores on a single sample
 std::vector<double> sample_ptable(std::vector<double> &xmat, int i1, int i2, int i3){
     int icount = 0;
@@ -49,8 +57,11 @@ std::vector<double> sample_ptable(std::vector<double> &xmat, int i1, int i2, int
 }
 
 
+
+
 double crossValidate(std::vector<double> & data, int dsSize, std::vector<int> & classSizes, std::vector<int> & nvec, int k){
     kfold kfGen(data, dsSize, classSizes, k);
+    
     vector<double> * ts;
     vector<double> * ls;
      //moving to a Matthews correlation coefficient
@@ -68,11 +79,11 @@ double crossValidate(std::vector<double> & data, int dsSize, std::vector<int> & 
         std::vector<int> I2List;
         std::vector<int> I3List;
         std::vector<int> tsCs = kfGen.getClassSizes();
-        //runTST( (*ts),dsSize,tsCs,nvec,I1List, I2List, I3List);
+
         vector<int> y;
         for(int i=0;i<tsCs[0];i++) y.push_back(0);
         for(int i=0;i<tsCs[1];i++) y.push_back(1);
-        std::vector< std::vector<double> > xmat = learn_tst_classifier( (*ts), dsSize,  tsCs,  nvec,I1List,I2List,I3List);    
+        std::vector< std::vector<double> > xmat = learn_tst_classifier( (*ts), dsSize,  tsCs,  nvec,I1List,I2List,I3List, true);    
         ls = kfGen.getNextTestVector();
         while(ls != NULL){//for each learned vector
             double sum = 0.0;
@@ -102,23 +113,18 @@ double crossValidate(std::vector<double> & data, int dsSize, std::vector<int> & 
             if(2*sum > I1List.size()){
                 classifyAs = 1;
             }
-            int actual_class = kfGen.getTestVectorClass();
+       int actual_class = kfGen.getTestVectorClass();
             if (actual_class == 0 && classifyAs == 0) truePositive++;
             if (actual_class == 0 && classifyAs == 1) falseNegative++;
             if (actual_class == 1 && classifyAs == 0) falsePositive++;
             if (actual_class == 1 && classifyAs == 1) trueNegative++;
-
-       /**
-            if (kfGen.getTestVectorClass() == classifyAs){
-                numCorrect++;
-            }**/
 
             ls = kfGen.getNextTestVector();
 
 
         }
         ts = kfGen.getNextTrainingSet();
-    }
+           }
     double numerator =  ((truePositive*trueNegative) - (falsePositive*falseNegative));
     double denominator = sqrt((double)
         ((truePositive+falsePositive )* (truePositive+falseNegative) *
