@@ -83,7 +83,7 @@ ext_mod = [ buildExtension(name, src_dir, src_files) for name, src_files in getE
 
 #run setup
 setup (name = 'AUREA',
-        version='1.6.3', #edit AUREA/__init__.py
+        version='1.6.4', #edit AUREA/__init__.py
         author ='The Nathan Price Lab',
         author_email = 'john.c.earls@gmail.com',
         url= 'http://price.systemsbiology.net/AUREA/',
