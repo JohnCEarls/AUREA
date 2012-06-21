@@ -266,7 +266,7 @@ class App(Frame):
         Label(t,text=msg).pack()
         import os
         errmsg = 'Please save this error to a text file and go to https://github.com/JohnCEarls/AUREA/issues to report it.'+ os.linesep
-        errmsg += 'If you do not want to create a github account, you may email the error file to earls3@illinois.edu.' + os.linesep
+        errmsg += 'If you do not want to create a github account, you may email the error file to john.c.earls+aurea@gmail.com.' + os.linesep
         errmsg +=os.linesep.join(err)
         errmsg += getSysInfo()
         errmsg += getInstanceInfo(self)
