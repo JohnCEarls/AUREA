@@ -62,6 +62,8 @@ class SettingsParser:
         """
         for x in self.getSettings(settings_object):
             if x[0] == setting_name:
+                if setting_name == 'Row Key(genes/probes)':
+                    return self._genesProbesCleaner(x[1])
                 return x[1]
         return None
 
@@ -103,7 +105,18 @@ class SettingsParser:
         #add setting to settings
         settings.appendChild(new_node)
             
-
+    def _genesProbesCleaner(self, row_key):
+        """
+        K, this is a dumb hack. Apparently whether a row_key should be 
+        'gene' or 'genes' is causing confusion.  I decided to just sanitize
+        the output.
+        """
+        
+        if len(row_key) and row_key[0] == 'genes':
+            return ['gene']
+        if len(row_key) and row_key[0] == 'probes':
+            return ['probe']
+        return row_key
             
 
 if __name__ == "__main__":
