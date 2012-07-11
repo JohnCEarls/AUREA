@@ -56,7 +56,7 @@ def createDataPackage(dataFile, subset1, subset2 ):
     
     
 def adaptiveGetLearnerQueue(dataPackage):
-    import AUREA.heuristic.LearnerQueue as lq
+    import AUREA.adaptive.LearnerQueue as lq
     #build training package
     
     learner_queue = lq.LearnerQueue(dataPackage, scale=[5741.666666666449, 35880937.02218559, 41600.0, 43098104.318478584])
@@ -107,7 +107,7 @@ def testDirac(dataPackage, numNets, kfold):
 
 def testAdaptive(dataPackage, time, target_acc, kfold):
     from copy import deepcopy
-    from AUREA.heuristic.Adaptive import Adaptive
+    from AUREA.adaptive.Adaptive import Adaptive
     #partition the samples
     lq = adaptiveGetLearnerQueue(dataPackage)
     adaptive = Adaptive(lq)

@@ -1,7 +1,7 @@
 from learner import ktsp, tst, dirac, tsp
 from parser import SOFTParser, GMTParser
-from heuristic import ResourceEstimate
-from heuristic import LearnerQueue
+from adaptive import ResourceEstimate
+from adaptive import LearnerQueue
 import random
 from testScripts import testTemplate
 

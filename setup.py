@@ -17,13 +17,13 @@ def getAUREApyModules():
     """
     #defining the modules
     GUI_mod = [ 'AUREA.GUI.'+x for x in ['App', 'Controller', 'Page', 'Results']] 
-    heuristic_mod = ['AUREA.heuristic.'+x for x in ['LearnerQueue', 'ResourceEstimate']]
+    adaptive_mod = ['AUREA.adaptive.'+x for x in ['LearnerQueue', 'ResourceEstimate']]
     packager_mod = ['AUREA.packager.'+x for x in ['DataCleaner','DataPackager']]
     parser_mod = ['AUREA.parser.' + x for x in  ['CSVParser', 'GMTParser', 'SettingsParser', 'SOFTParser', 'SynonymParser']]
     learner_mod = ["AUREA.learner.dirac", "AUREA.learner.tsp","AUREA.learner.tst", "AUREA.learner.ktsp", "AUREA.learner.wilcoxon"]
     #putting all of the python modules in oneList
     a_modules = []
-    for mod_list in [GUI_mod, heuristic_mod, packager_mod, parser_mod, learner_mod]:
+    for mod_list in [GUI_mod, adaptive_mod, packager_mod, parser_mod, learner_mod]:
         for mod in mod_list:
             a_modules.append(mod)
     return a_modules
@@ -88,7 +88,7 @@ setup (name = 'AUREA',
         author_email = 'john.c.earls@gmail.com',
         url= 'http://price.systemsbiology.net/AUREA/',
         description="""AUREA is a software suite that makes finding Relative Expression Learners easy.""",
-        packages=['AUREA','AUREA.GUI', 'AUREA.learner', 'AUREA.packager', 'AUREA.parser','AUREA.heuristic', 'pyBabel'],
+        packages=['AUREA','AUREA.GUI', 'AUREA.learner', 'AUREA.packager', 'AUREA.parser','AUREA.adaptive', 'pyBabel'],
         package_dir={'AUREA': 'src/AUREA', 'pyBabel': 'src/pyBabel'},
         ext_modules = ext_mod, 
         py_modules = getAUREApyModules(),

@@ -1,8 +1,8 @@
 from AUREA.learner import ktsp, tst, dirac, tsp
 from AUREA.parser import SOFTParser, GMTParser
 from AUREA.packager import DataCleaner, DataPackager
-from AUREA.heuristic import ResourceEstimate
-from AUREA.heuristic import LearnerQueue
+from AUREA.adaptive import ResourceEstimate
+from AUREA.adaptive import LearnerQueue
 import random
 import string
 def getDataPackage():

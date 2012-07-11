@@ -15,8 +15,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from AUREA.learner import ktsp, tst, dirac, tsp
-from AUREA.heuristic.LearnerQueue import LearnerQueue 
-from AUREA.heuristic.Adaptive import Adaptive
+from AUREA.adaptive.LearnerQueue import LearnerQueue 
+from AUREA.adaptive.Adaptive import Adaptive
 from AUREA.parser.SOFTParser import *
 from AUREA.parser.CSVParser import *
 from AUREA.parser.GMTParser import *

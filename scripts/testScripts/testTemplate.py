@@ -1,8 +1,8 @@
 from learner import ktsp, tst, dirac, tsp
 from parser import SOFTParser, GMTParser
 from packager import DataCleaner, DataPackager
-from heuristic import ResourceEstimate
-from heuristic import LearnerQueue
+from adaptive import ResourceEstimate
+from adaptive import LearnerQueue
 import random
 import string
 def getDataPackage():

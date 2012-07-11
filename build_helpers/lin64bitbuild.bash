@@ -2,7 +2,7 @@
 
 #A little script to help automating building
 #settings
-version=1.6.1
+version=1.6.4
 
 #64bit workstation
 arch=x86_64

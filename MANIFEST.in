@@ -78,10 +78,10 @@ include  src/AUREA/learner/src/Dirac_pywrapper.i
 include  src/AUREA/learner/src/Dirac.h
 include  src/AUREA/learner/src/Dirac_pywrapper.h
 include  src/AUREA/learner/src/KTSP_pywrapper.h
-include  src/AUREA/heuristic/Adaptive.py
-include  src/AUREA/heuristic/LearnerQueue.py
-include  src/AUREA/heuristic/__init__.py
-include  src/AUREA/heuristic/ResourceEstimate.py
+include  src/AUREA/adaptive/Adaptive.py
+include  src/AUREA/adaptive/LearnerQueue.py
+include  src/AUREA/adaptive/__init__.py
+include  src/AUREA/adaptive/ResourceEstimate.py
 include  src/AUREA/packager/DataCleaner.py
 include  src/AUREA/packager/DataPackager.py
 include  src/AUREA/packager/__init__.py

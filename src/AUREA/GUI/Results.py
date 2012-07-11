@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from Tkinter import *
 import tkFileDialog
 import os
-from AUREA.heuristic.LearnerQueue import LearnerQueue
+from AUREA.adaptive.LearnerQueue import LearnerQueue
 class Results(Toplevel):
     """
     Base class for the results popups

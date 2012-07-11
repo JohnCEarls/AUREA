@@ -4,7 +4,7 @@ Note most of this is copied from AUREA.GUI.Controller.
 from AUREA.learner import ktsp, tst, dirac, tsp
 from AUREA.parser import SOFTParser, GMTParser, SettingsParser, CSVParser
 from AUREA.packager import DataCleaner, DataPackager
-from AUREA.heuristic import ResourceEstimate, LearnerQueue
+from AUREA.adaptive import ResourceEstimate, LearnerQueue
 import os
 import json
 import cPickle as pickle
