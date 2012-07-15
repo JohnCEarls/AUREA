@@ -2,7 +2,7 @@
 
 #A little script to help automating building
 #settings
-version=1.6.1
+version=1.6.5
 
 #32bit vm
 arch=i686
