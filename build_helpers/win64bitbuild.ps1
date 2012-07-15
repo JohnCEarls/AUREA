@@ -2,6 +2,8 @@
 Get-ChildItem Env:
 $pyVs = @(6,7)
 $origPath = $env:Path
+$version = '1.6.5'
+
 foreach($v in $pyVs){
 
 $env:PYTHON_LIB = "C:\Python2"+$v+"\libs\Python2" + $v +".lib"
@@ -19,8 +21,8 @@ Building ...
 python setup.py bdist_egg
 python setup.py bdist_wininst
 python setup.py bdist
-cp C:\Users\earls3\AUREA\dist\AUREA-1.6.3.win-amd64.zip C:\Users\earls3\AUREA\dist\AUREA-1.6.3.win-amd64-py2.$v.zip 
-rm C:\Users\earls3\AUREA\dist\AUREA-1.6.3.win-amd64.zip
+cp C:\Users\earls3\AUREA\dist\AUREA-$version.win-amd64.zip C:\Users\earls3\AUREA\dist\AUREA-$version.win-amd64-py2.$v.zip 
+rm C:\Users\earls3\AUREA\dist\AUREA-$version.win-amd64.zip
 }
 $env:Path = $origPath
 $env:Path
