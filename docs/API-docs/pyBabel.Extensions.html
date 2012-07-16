@@ -1,0 +1,127 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module pyBabel.Extensions</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="pyBabel.html"><font color="#ffffff">pyBabel</font></a>.Extensions</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/earls3/Price/AUREA/build/lib.linux-x86_64-2.7/pyBabel/Extensions.py">/home/earls3/Price/AUREA/build/lib.linux-x86_64-2.7/pyBabel/Extensions.py</a></font></td></tr></table>
+    <p></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="cPickle.html">cPickle</a><br>
+</td><td width="25%" valign=top><a href="os.html">os</a><br>
+</td><td width="25%" valign=top><a href="re.html">re</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="exceptions.html#Exception">exceptions.Exception</a>(<a href="exceptions.html#BaseException">exceptions.BaseException</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="pyBabel.Extensions.html#pyBabelError">pyBabelError</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="pyBabel.Extensions.html#ext">ext</a>
+</font></dt></dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="ext">class <strong>ext</strong></a></font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>These&nbsp;are&nbsp;some&nbsp;helper&nbsp;extensions&nbsp;pretty&nbsp;specific&nbsp;to&nbsp;<br>
+what&nbsp;I&nbsp;have&nbsp;been&nbsp;working&nbsp;on.<br>
+May&nbsp;be&nbsp;useful&nbsp;to&nbsp;someone&nbsp;else?&nbsp;Maybe&nbsp;not.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="ext-__init__"><strong>__init__</strong></a>(self, cache_dir<font color="#909090">='data'</font>, base_url<font color="#909090">='http://babel.gdxbase.org/cgi-bin/translate.cgi'</font>)</dt></dl>
+
+<dl><dt><a name="ext-discoverID"><strong>discoverID</strong></a>(self, ids, base_idTypes, numIDs<font color="#909090">=10</font>)</dt><dd><tt>Given&nbsp;a&nbsp;subset&nbsp;of&nbsp;base_idTypes&nbsp;check&nbsp;which&nbsp;<br>
+id&nbsp;type&nbsp;a&nbsp;set&nbsp;of&nbsp;ids&nbsp;come&nbsp;from</tt></dd></dl>
+
+<dl><dt><a name="ext-getAllTable"><strong>getAllTable</strong></a>(self, idtypes)</dt></dl>
+
+<dl><dt><a name="ext-getControls"><strong>getControls</strong></a>(self, ids)</dt><dd><tt>returns&nbsp;a&nbsp;list&nbsp;of&nbsp;indices&nbsp;that&nbsp;are&nbsp;controls<br>
+#have&nbsp;no&nbsp;gene&nbsp;entrez_id</tt></dd></dl>
+
+<dl><dt><a name="ext-getMap"><strong>getMap</strong></a>(self, idtypes, usePickle<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="ext-mergeProbes"><strong>mergeProbes</strong></a>(self, idLists)</dt><dd><tt>Returns&nbsp;a&nbsp;list&nbsp;of&nbsp;2-tuples&nbsp;(i,j)&nbsp;where&nbsp;i&nbsp;is&nbsp;the&nbsp;index&nbsp;in&nbsp;ids1&nbsp;that&nbsp;matches&nbsp;ids2</tt></dd></dl>
+
+<dl><dt><a name="ext-prettyPrint"><strong>prettyPrint</strong></a>(self, table)</dt><dd><tt>Little&nbsp;helper&nbsp;function&nbsp;that&nbsp;takes&nbsp;a&nbsp;table&nbsp;and&nbsp;returns&nbsp;a&nbsp;print&nbsp;friendly<br>
+string.</tt></dd></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="pyBabelError">class <strong>pyBabelError</strong></a>(<a href="exceptions.html#Exception">exceptions.Exception</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="pyBabel.Extensions.html#pyBabelError">pyBabelError</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="pyBabelError-__init__"><strong>__init__</strong></a>(self, value)</dt></dl>
+
+<dl><dt><a name="pyBabelError-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#pyBabelError-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;object&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="pyBabelError-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#pyBabelError-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="pyBabelError-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#pyBabelError-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="pyBabelError-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#pyBabelError-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="pyBabelError-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#pyBabelError-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="pyBabelError-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="pyBabelError-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#pyBabelError-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="pyBabelError-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#pyBabelError-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="pyBabelError-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="pyBabelError-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>
