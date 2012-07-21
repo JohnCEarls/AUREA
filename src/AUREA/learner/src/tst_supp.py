@@ -31,6 +31,9 @@ class TST:
         self.numSamples = 0
         for i in xrange(0,len(classSizes)):
             self.numSamples += classSizes[i]
+        self.truth_table = IntVector()
+        for i in range(4):
+            self.truth_table.push_back(0)
 
     def train(self):
         """
@@ -181,7 +184,7 @@ class TST:
         Returns the Matthews correlation coefficient.(-1.0, 1.0) if use_acc is false, Accuracy otherwise
         
         """
-        return crossValidate(self.data, self.numGenes, self.classSizes, self.filtr, k, use_acc)
+        return crossValidate(self.data, self.numGenes, self.classSizes, self.filtr, k, self.truth_table, use_acc)
 
     def distance(self, v1, v2):
         """

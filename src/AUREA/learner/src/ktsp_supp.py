@@ -21,6 +21,10 @@ class KTSP:
         self.nValidationRuns = nValidationRuns
         self.topKPairs = []
         self._checkFilters()
+        self.truth_table = IntVector()
+        for i in range(4):
+            self.truth_table.push_back(0)
+
 
     def _checkFilters(self):
         """
@@ -87,6 +91,6 @@ class KTSP:
         Runs the C-based cross validation
         K-fold testing of the given data, returns the percent classified correctly if use_acc true, MCC if false
         """
-        return crossValidate(self.data, self.numGenes, self.classSizes,self.filters, self.maximumK, self.nleaveout, self.nValidationRuns, k, use_acc)
+        return crossValidate(self.data, self.numGenes, self.classSizes,self.filters, self.maximumK, self.nleaveout, self.nValidationRuns, k,self.truth_table, use_acc)
 
 }

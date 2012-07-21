@@ -42,7 +42,9 @@ class TSP:
         self.unclassified_data_vector = None
         self.maxScore1 = None
         self.maxScore2 = None
-
+        self.truth_table = IntVector()
+        for i in range(4):
+            self.truth_table.push_back(0)
     def train(self):
         """
         Trains on the given data.
@@ -87,7 +89,7 @@ class TSP:
         Runs the C-based cross validation
         K-fold testing of the given data, returns the Matthews correlation coefficient [-1.0, 1.0].
         """
-        return crossValidate(self.data, self.numGenes, self.classSizes, self.filter, k)
+        return crossValidate(self.data, self.numGenes, self.classSizes, self.filter,self.truth_table, k)
 
     def _makeList(self, vector):
         temp_list = []

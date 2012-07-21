@@ -51,7 +51,9 @@ Creates a Dirac learner object
         self.rank_templates = None
         #lists the starting locations of each geneNetwork in the data matrix
         self.unclassifiedRankMatrix = None
-
+        self.truth_table = IntVector()
+        for i in range(4):
+            self.truth_table.push_back(0)
     def train(self):
         """
         This is the method that performs the training from the provided data
@@ -308,7 +310,7 @@ Creates a Dirac learner object
         """
         numTopNetworks = self.numTopNetworks
         
-        return crossValidate(self.data, self.numGenes, self.classSizes, self.geneNet, self.geneNetSize, numTopNetworks, k, use_acc) 
+        return crossValidate(self.data, self.numGenes, self.classSizes, self.geneNet, self.geneNetSize, numTopNetworks, k,self.truth_table, use_acc) 
 
     def testAll(self):
         """

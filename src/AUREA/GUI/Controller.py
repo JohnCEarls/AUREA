@@ -78,6 +78,13 @@ class Controller:
         self.dirac_cv = None
         self.adaptive_cv = None
 
+        self.tsp_tt = None
+        self.ktsp_tt = None
+        self.tst_tt = None
+        self.dirac_tt = None
+        self.adaptive_tt = None
+
+
        
 
         self.dependency_state = [0 for x in range(AUREARemote.NumStates)]#see App.AUREARemote for mappings
@@ -250,7 +257,8 @@ class Controller:
         #TODO
         return (self.tsp_cv,self.ktsp_cv,self.tst_cv,self.dirac_cv,self.adaptive_cv)
 
-
+    def getCVTruthTables(self):
+        return (self.tsp_tt,self.ktsp_cv,self.tst_cv,self.dirac_cv,self.adaptive_cv)
     def parseNetworkFile(self):
         """
         Parse network file and add networks to datapackage
@@ -691,24 +699,28 @@ class Controller:
         dirac = self.trainDirac(crossValidate = True)
         self.queue.put(('statusbarset',"Cross Validating"))
         self.dirac_cv = dirac.crossValidate(use_acc=True)
+        self.dirac_tt = [x for x in dirac.truth_table]
         self.queue.put(('statusbarset',"Dirac had an Accuracy of " + str(self.dirac_cv)[:4]))
 
     def crossValidateTSP(self):
         tsp = self.trainTSP(crossValidate = True)
         self.queue.put(('statusbarset',"Cross Validating"))
         self.tsp_cv = tsp.crossValidate(use_acc=True)
+        self.tsp_tt = [x for x in tsp.truth_table]
         self.queue.put(('statusbarset',"TSP had an Accuracy of " + str(self.tsp_cv)[:4]))
 
     def crossValidateTST(self):
         tst = self.trainTST(crossValidate = True)
         self.queue.put(('statusbarset',"Cross Validating"))
         self.tst_cv = tst.crossValidate(use_acc=True)
+        self.tst_tt = [x for x in tst.truth_table]
         self.queue.put(('statusbarset',"TST had an Accuracy of " + str(self.tst_cv)[:4]))
 
     def crossValidateKTSP(self):
         ktsp = self.trainkTSP(crossValidate = True)
         self.queue.put(('statusbarset',"Cross Validating"))
         self.ktsp_cv = ktsp.crossValidate(use_acc=True )
+        self.ktsp_tt = [x for x in ktsp.truth_table]
         self.queue.put(('statusbarset',"KTSP had an Accuracy of " + str(self.ktsp_cv)[:4]))
   
     def crossValidateAdaptive(self, target_acc, maxtime):
@@ -717,6 +729,7 @@ class Controller:
         adaptive = Adaptive(self.learnerqueue, app_status_bar = self.queue)
         #using accuracy, because we are reporting accuracy - acc is not used to choose learner
         self.adaptive_cv = adaptive.crossValidate(target_acc, maxtime, use_acc=True)
+        self.adaptive_tt = adaptive.truth_table[:]
         self.queue.put(('statusbarset',"Adaptive had an Accuracy of " + str(self.adaptive_cv)[:4]))
 
  

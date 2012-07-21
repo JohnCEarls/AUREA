@@ -10,7 +10,7 @@ void runKTSP(std::vector<double> & data, int nGenes, std::vector<int> & classSiz
     ourKtsp.getTopK( topKPairs );
 }
 
-double crossValidate( std::vector<double> & data, int nGenes, std::vector<int> & classSizes,vector<int> filters, int maxK, int n, int m, int kFoldk, bool use_accuracy){
+double crossValidate( std::vector<double> & data, int nGenes, std::vector<int> & classSizes,vector<int> filters, int maxK, int n, int m, int kFoldk,std::vector<int> & truth_table, bool use_accuracy){
     kfold kfGen(data, nGenes, classSizes, kFoldk);
     vector<double> * ts;
     vector<double> * ls;
@@ -75,6 +75,11 @@ double crossValidate( std::vector<double> & data, int nGenes, std::vector<int> &
         (trueNegative+falsePositive ) * (trueNegative+falseNegative))
     );
     }
+    truth_table[0] =  truePositive;
+    truth_table[1] = trueNegative;
+    truth_table[2] = falsePositive;
+    truth_table[3] = falseNegative;
+
     if (denominator == 0.0) denominator = 1;
     
     return numerator/denominator; 

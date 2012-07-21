@@ -34,7 +34,7 @@ int classify( std::vector<bool> & rankMatrix, int class1Size, int class2size,
 double crossValidate(std::vector<double> & data, int dsSize, 
         std::vector<int> & classSizes,std::vector<int> & geneNet, 
         std::vector<int> & geneNetSize,
-        int numTopNetworks, int k, bool use_accuracy){
+        int numTopNetworks, int k, std::vector<int> & truth_table, bool use_accuracy){
     kfold kfGen(data, dsSize, classSizes, k);
     vector<double> * ts;
     vector<double> * ls;
@@ -107,6 +107,10 @@ double crossValidate(std::vector<double> & data, int dsSize,
             (trueNegative+falsePositive ) * (trueNegative+falseNegative))
         );
     }
+    truth_table[0] =  truePositive;
+    truth_table[1] = trueNegative;
+    truth_table[2] = falsePositive;
+    truth_table[3] = falseNegative;
     if (denominator == 0.0) denominator = 1.0;
 
     return numerator/denominator; 

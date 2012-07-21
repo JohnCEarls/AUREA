@@ -35,6 +35,7 @@ class Adaptive:
         self.app_status_bar = app_status_bar
         self.print_status = print_status
         self.history = []
+        self.truth_table = None
 
     def getLearner(self, target_acc, maxTime):
         """
@@ -236,6 +237,7 @@ class Adaptive:
         #put things back the way they were
         self._genLearnerQueue( dp ,classifications)
         self.lq = base_lq
+        self.truth_table = [T0,T1,F0,F1]
         if use_acc:
             return float(T0 + T1)/(T0+T1+F0+F1)
         else:
