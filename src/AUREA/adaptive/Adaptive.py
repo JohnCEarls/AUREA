@@ -41,7 +41,7 @@ class Adaptive:
         """
         target_acc - float from (0,1] that says to stop when apparent accuracy of a model reaches that accuracy
         maxTime - maximum time in seconds to search model space
-        Returns a tuple containing (achieved accuracy (float), settings(dict), learner (a learner object)) the best achieved accuracy for the given parameters
+        Returns a tuple containing (achieved MCC (float), settings(dict), learner (a learner object)) the best achieved MCC for the given parameters
         """
         BAD_ACC = -.99999999
 
@@ -78,7 +78,6 @@ class Adaptive:
                 learner = self.lq.trainLearner(settings, complexity)
                 
                 self._progress_report(tl_str + msg + " CrossValidating " + str_learner)
-                #getting the accuracy as MCC
                 learner.crossValidate()
                 accuracy = learner.getCVAccuracy()
                 mcc = learner.getCVMCC()
@@ -94,13 +93,13 @@ class Adaptive:
             else: #our estimate says we would go over  
                 timeout = True
                 tl_str = str_learner + " estimated to go over time limit: "
-                accuracy = BAD_ACC
+                mcc = BAD_ACC
                 learner = None
                 settings = None
 
             #update if better
-            if accuracy > top_acc:
-                top_acc = accuracy
+            if mcc > top_acc:
+                top_acc = mcc
                 top_learner = learner
                 top_settings = settings
                 tl_str = str_learner + " current best at " + str(top_acc)[:4] + " :"
@@ -110,7 +109,7 @@ class Adaptive:
             if timeout or time.clock() > self.endTime:
                 self._progress_report(tl_str + "Adaptive Finished.  Out of time.")
                 finished = True
-            if accuracy >= self.target_accuracy:
+            if mcc >= self.target_accuracy:
                 self._progress_report(tl_str + "Adaptive Finished.  Achieved Desired MCC.")
                 finished = True
 
