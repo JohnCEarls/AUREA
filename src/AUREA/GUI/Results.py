@@ -309,6 +309,7 @@ class ClassificationResults(Results):
         sString += "True class 2: " + str(T1) + os.linesep
         sString += "False class 2: " + str(F1) + os.linesep
         sString += "Matthew's Correlation: " + str(mcc)[:5] + os.linesep
+        sString += "Accuracy: " + str(float(T0+T1)/(T0+T1+F0+F1))[:5] + os.linesep
         return sString
     
     def getOutputString(self, res):
