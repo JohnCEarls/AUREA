@@ -79,12 +79,16 @@ class Adaptive:
                 
                 self._progress_report(tl_str + msg + " CrossValidating " + str_learner)
                 #getting the accuracy as MCC
-                accuracy = learner.crossValidate(use_acc=False)
-                msg = str_learner + " achieved " + str(accuracy)[:4] + "(MCC) "
+                learner.crossValidate()
+                accuracy = learner.getCVAccuracy()
+                mcc = learner.getCVMCC()
+                
+                msg = str_learner + " achieved " + str(accuracy)[:4] + "(acc) and  "
+                msg += str(mcc)[:4] + "(MCC)"
 
                 #shift accuracy to [0.0,1.0] for feedback
                 #let queue know how this learner did
-                self.lq.feedback(settings['learner'], (1.0+accuracy)/2)
+                self.lq.feedback(settings['learner'], (1.0+mcc)/2)
                 #keep track of history for logs
                 self.history.append((accuracy, settings))
             else: #our estimate says we would go over  
@@ -172,7 +176,7 @@ class Adaptive:
                 myStr += os.linesep
         return myStr
 
-    def crossValidate(self, target_acc, maxtime, k=10, use_acc=False):
+    def crossValidate(self, target_acc, maxtime, k=10):
         """
         performs kfold crossvalidation on the adaptive algorithm 
         returns the Matthews correlation coefficient
@@ -191,12 +195,13 @@ class Adaptive:
         dp = base_lq.data_package
         classifications = dp.getClassifications()
         train, test= self._partition(classifications, k)
-        T0 = 0
-        F0 = 0
-        T1 = 0
-        F1 = 0
         msg = ""
+        self.truth_table = [0,0,0,0]
         for i, training_set in enumerate(train):
+            T0 = 0
+            F0 = 0
+            T1 = 0
+            F1 = 0
             #set up adaptive for this training set
             test_set = test[i]
             nLQ = self._genLearnerQueue(dp ,training_set)
@@ -228,20 +233,45 @@ class Adaptive:
                     T1 += 1
                 else:
                     F0 += 1
-            if use_acc:
-                myacc =  float(T0 + T1)/(T0+T1+F0+F1)
-                msg =  "Validating at " + str(myacc)
-            else:
-                msg = "Validating at " + str(MCC(T0,F0, T1, F1)) 
+            accuracy = float(T0+T1)/(T0+T1+F0+F1)
+            mcc = MCC(T0,F0,T1,F1) 
+            msg = str_learner + " achieved " + str(accuracy)[:4] + "(acc) and  "
+            msg += str(mcc)[:4] + "(MCC)"
+
+            self.truth_table[0] += T0
+            self.truth_table[1] += T1
+            self.truth_table[2] += F0
+            self.truth_table[3] += F1
+    
             self._progress_report(msg)
         #put things back the way they were
         self._genLearnerQueue( dp ,classifications)
         self.lq = base_lq
-        self.truth_table = [T0,T1,F0,F1]
-        if use_acc:
-            return float(T0 + T1)/(T0+T1+F0+F1)
-        else:
-            return MCC(T0, F0, T1, F1)
+    
+           
+    def getCVAccuracy(self):
+        """
+        Returns the Accuracy of the last crossValidate
+        """
+        tpos = self.truth_table[0]
+        tneg = self.truth_table[1]
+        fpos = self.truth_table[2]
+        fneg = self.truth_table[3] 
+        return float((tpos+tneg))/(tpos+tneg+fpos+fneg)
+
+    def getCVMCC(self):
+        """
+        Returns the Matthews Correlation Coefficient of the last crossValidate
+        """
+        import math
+        tpos = self.truth_table[0]
+        tneg = self.truth_table[1]
+        fpos = self.truth_table[2]
+        fneg = self.truth_table[3] 
+        den = math.sqrt(float((tpos+fpos)*(tpos+fneg)*(tneg+fpos)*(tneg+fneg)))
+        if den < .000001:#see wikipedia
+            den = 1.0
+        return float(tpos*tneg - fpos*fneg)/den
 
 
     def _copyLQParams(self, new_lq, base_lq):

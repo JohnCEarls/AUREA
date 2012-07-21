@@ -84,12 +84,38 @@ class TSP:
         else:
             return 0
 
-    def crossValidate(self, k=10, use_acc=True):
+    def crossValidate(self, k=10):
         """
         Runs the C-based cross validation
         K-fold testing of the given data, returns the Matthews correlation coefficient [-1.0, 1.0].
         """
-        return crossValidate(self.data, self.numGenes, self.classSizes, self.filter,self.truth_table, k)
+        crossValidate(self.data, self.numGenes, self.classSizes, self.filter,k, self.truth_table)
+
+       
+    def getCVAccuracy(self):
+        """
+        Returns the Accuracy of the last crossValidate
+        """
+        tpos = self.truth_table[0]
+        tneg = self.truth_table[1]
+        fpos = self.truth_table[2]
+        fneg = self.truth_table[3] 
+        return float((tpos+tneg))/(tpos+tneg+fpos+fneg)
+
+    def getCVMCC(self):
+        """
+        Returns the Matthews Correlation Coefficient of the last crossValidate
+        """
+        import math
+        tpos = self.truth_table[0]
+        tneg = self.truth_table[1]
+        fpos = self.truth_table[2]
+        fneg = self.truth_table[3] 
+        den = math.sqrt(float((tpos+fpos)*(tpos+fneg)*(tneg+fpos)*(tneg+fneg)))
+        if den < .000001:
+            den = 1.0
+        return float(tpos*tneg - fpos*fneg)/den
+
 
     def _makeList(self, vector):
         temp_list = []

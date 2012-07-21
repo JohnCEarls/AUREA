@@ -86,11 +86,36 @@ class KTSP:
         else:
             return 0
 
-    def crossValidate(self, k=10, use_acc=True):
+    def crossValidate(self, k=10):
         """
         Runs the C-based cross validation
-        K-fold testing of the given data, returns the percent classified correctly if use_acc true, MCC if false
+        K-fold testing of the given data        
         """
-        return crossValidate(self.data, self.numGenes, self.classSizes,self.filters, self.maximumK, self.nleaveout, self.nValidationRuns, k,self.truth_table, use_acc)
+        crossValidate(self.data, self.numGenes, self.classSizes,self.filters, self.maximumK, self.nleaveout, self.nValidationRuns, k, self.truth_table)
+           
+    def getCVAccuracy(self):
+        """
+        Returns the Accuracy of the last crossValidate
+        """
+        tpos = self.truth_table[0]
+        tneg = self.truth_table[1]
+        fpos = self.truth_table[2]
+        fneg = self.truth_table[3] 
+        return float((tpos+tneg))/(tpos+tneg+fpos+fneg)
+
+    def getCVMCC(self):
+        """
+        Returns the Matthews Correlation Coefficient of the last crossValidate
+        """
+        import math
+        tpos = self.truth_table[0]
+        tneg = self.truth_table[1]
+        fpos = self.truth_table[2]
+        fneg = self.truth_table[3] 
+        den = math.sqrt(float((tpos+fpos)*(tpos+fneg)*(tneg+fpos)*(tneg+fneg)))
+        if den < .000001:
+            den = 1.0
+        return float(tpos*tneg - fpos*fneg)/den
+
 
 }

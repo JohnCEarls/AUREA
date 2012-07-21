@@ -178,14 +178,38 @@ class TST:
         else:
             return 0
 
-    def crossValidate(self, k=10, use_acc=True):
+    def crossValidate(self, k=10):
         """
         Performs k-fold cross validation (k is an integer [2,samplesize])
         Returns the Matthews correlation coefficient.(-1.0, 1.0) if use_acc is false, Accuracy otherwise
         
         """
-        return crossValidate(self.data, self.numGenes, self.classSizes, self.filtr, k, self.truth_table, use_acc)
+        crossValidate(self.data, self.numGenes, self.classSizes, self.filtr, k, self.truth_table)
+       
+    def getCVAccuracy(self):
+        """
+        Returns the Accuracy of the last crossValidate
+        """
+        tpos = self.truth_table[0]
+        tneg = self.truth_table[1]
+        fpos = self.truth_table[2]
+        fneg = self.truth_table[3] 
+        return float((tpos+tneg))/(tpos+tneg+fpos+fneg)
 
+    def getCVMCC(self):
+        """
+        Returns the Matthews Correlation Coefficient of the last crossValidate
+        """
+        import math
+        tpos = self.truth_table[0]
+        tneg = self.truth_table[1]
+        fpos = self.truth_table[2]
+        fneg = self.truth_table[3] 
+        den = math.sqrt(float((tpos+fpos)*(tpos+fneg)*(tneg+fpos)*(tneg+fneg)))
+        if den < .000001:#see wikipedia
+            den = 1.0
+        return float(tpos*tneg - fpos*fneg)/den
+        
     def distance(self, v1, v2):
         """
         Returns the square of the euclidian distance between v1 and v2
