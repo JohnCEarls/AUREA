@@ -14,9 +14,9 @@ int classify( std::vector<bool> & rankMatrix, int class1Size, int class2size,
             int geneNetRankStart, int geneNetRankSize, int geneNetStart,
             int geneNetSize, std::vector<double> & score);
 
-double crossValidate(std::vector<double> & data, int dsSize,
-        std::vector<int> & classSizes,std::vector<int> & geneNet,
-        std::vector<int> & geneNetSize,
-        int numTopNetworks, int k);
+double crossValidate(std::vector<double> & data, int dsSize,  
+        std::vector<int> & classSizes,std::vector<int> & geneNet,  
+        std::vector<int> & geneNetSize, 
+        int numTopNetworks, int k, bool use_accuracy=false);
 #endif
  

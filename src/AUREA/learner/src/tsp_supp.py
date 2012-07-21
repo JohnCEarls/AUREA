@@ -82,7 +82,7 @@ class TSP:
         else:
             return 0
 
-    def crossValidate(self, k=10):
+    def crossValidate(self, k=10, use_acc=True):
         """
         Runs the C-based cross validation
         K-fold testing of the given data, returns the Matthews correlation coefficient [-1.0, 1.0].

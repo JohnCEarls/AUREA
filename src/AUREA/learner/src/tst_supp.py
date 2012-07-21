@@ -175,12 +175,13 @@ class TST:
         else:
             return 0
 
-    def crossValidate(self, k=10):
+    def crossValidate(self, k=10, use_acc=True):
         """
         Performs k-fold cross validation (k is an integer [2,samplesize])
-        Returns the Matthews correlation coefficient.(-1.0, 1.0)
+        Returns the Matthews correlation coefficient.(-1.0, 1.0) if use_acc is false, Accuracy otherwise
+        
         """
-        return crossValidate(self.data, self.numGenes, self.classSizes, self.filtr, k)
+        return crossValidate(self.data, self.numGenes, self.classSizes, self.filtr, k, use_acc)
 
     def distance(self, v1, v2):
         """

@@ -82,11 +82,11 @@ class KTSP:
         else:
             return 0
 
-    def crossValidate(self, k=10):
+    def crossValidate(self, k=10, use_acc=True):
         """
         Runs the C-based cross validation
-        K-fold testing of the given data, returns the percent classified correctly.
+        K-fold testing of the given data, returns the percent classified correctly if use_acc true, MCC if false
         """
-        return crossValidate(self.data, self.numGenes, self.classSizes,self.filters, self.maximumK, self.nleaveout, self.nValidationRuns, k)
+        return crossValidate(self.data, self.numGenes, self.classSizes,self.filters, self.maximumK, self.nleaveout, self.nValidationRuns, k, use_acc)
 
 }

@@ -7,7 +7,7 @@ void runTSP(std::vector<double> & data, int dsSize, vector<int> & classSizes, ve
 /**
 Returns the percent correct using k-fold crossvalidation (given k)
 **/
-double crossValidate(std::vector<double> & data, int dsSize, std::vector<int> & classSizes, std::vector<int> & nvec, int k){
+double crossValidate(std::vector<double> & data, int dsSize, std::vector<int> & classSizes, std::vector<int> & nvec, int k, bool use_accuracy){
     kfold kfGen(data, dsSize, classSizes, k);
     vector<double> * ts;
     vector<double> * ls;
@@ -56,13 +56,20 @@ double crossValidate(std::vector<double> & data, int dsSize, std::vector<int> & 
         }
         ts = kfGen.getNextTrainingSet();
     }
+    double numerator, denominator;
+    if(use_accuracy){
+        //return accuracy not MCC
+        numerator = truePositive + trueNegative;
+        denominator = truePositive + trueNegative + falsePositive + falseNegative;
+    } else{
 
     //find matthews corr. coef.
-    double numerator =  ((truePositive*trueNegative) - (falsePositive*falseNegative));
-    double denominator = sqrt((double)
+        numerator =  ((truePositive*trueNegative) - (falsePositive*falseNegative));
+        denominator = sqrt((double)
         ((truePositive+falsePositive )* (truePositive+falseNegative) *
         (trueNegative+falsePositive ) * (trueNegative+falseNegative))
     );
+    }
     if (denominator == 0.0) denominator = 1;
 
     return numerator/denominator; 

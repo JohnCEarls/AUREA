@@ -301,14 +301,14 @@ Creates a Dirac learner object
         else:
             return 0
 
-    def crossValidate(self,k=10):
+    def crossValidate(self,k=10, use_acc=True):
         """
         Runs the C-based cross validation
         K-Fold testing of the given data, returns Matthews correlation coefficient.
         """
         numTopNetworks = self.numTopNetworks
         
-        return crossValidate(self.data, self.numGenes, self.classSizes, self.geneNet, self.geneNetSize, numTopNetworks, k) 
+        return crossValidate(self.data, self.numGenes, self.classSizes, self.geneNet, self.geneNetSize, numTopNetworks, k, use_acc) 
 
     def testAll(self):
         """

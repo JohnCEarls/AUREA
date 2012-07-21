@@ -72,36 +72,48 @@
             <li><a class="textlink" href="/AUREA/faq.html#gui">Graphical Interface</a>
                 <ol>
                     
-                    <li>What are SOFT files?</li>
-                    <li>How can I find compatible data files at the Gene Expression Omnibus?</li>
-                    <li>Where can I find different gene network files?</li>
-
-                    <li>How should I format a custom gene network file?</li>
-                    <li>Where can I find different synonym files?</li>
-                    <li>How should I format my own synonym file?</li>
+                    <li><a class="textlink" href="/AUREA/faq.html#soft">What are SOFT files?</a></li>
+                    <li><a class="textlink" href="/AUREA/faq.html#comp">How can I find compatible data files at the Gene Expression Omnibus?</a></li>
+                    <li><a class="textlink" href="/AUREA/faq.html#gnf">Where can I find different gene network files?</a></li>
                 </ol>
             </li>
             <li><a class="textlink" href="/AUREA/faq.php#lib">Library</a></li>
             
         </ol>
 
-            <h3><a name="gen">General Questions</a></h3><a name="gen">
-            </a><h3><a name="gen"></a><a name="inst">Installation</a></h3><a name="inst">
-            </a><ol><a name="inst">
-                </a><li><a name="inst"></a><a name="path">Why do I have to add python to my system path?
+            <h3><a name="gen">General Questions</a></h3>
+            <h3<a name="inst">Installation</a></h3>
+            <ol>
+               <li><a name="path">Why do I have to add python to my system path?</a>
                     <ul>
                         <li>Your system path tells your system where to look for executable programs.  AUREA needs the python interpreter to run.  In order for the system to know where the python interpreter is, you have to add its location to the system path.</li>
                     </ul>
-                </a></li><a name="path">
+                </a></li></ol>
+            <h3><a name="gui">Graphical Interface</a></h3>
+            <ol>
+                <li><a name="soft">What are SOFT files?</a>
+                    <ul>
+                        <li>SOFT(Simple Omnibus Format in Text) is a format used by NCBI for storing transcriptomic data in GEO.  The format is described at <a href="http://www.ncbi.nlm.nih.gov/geo/info/soft2.html">http://www.ncbi.nlm.nih.gov/geo/info/soft2.html</a>.
+                            AUREA allows the importing of SOFT files from GEO of the GDS type.  GDS (GEO Dataset) files are curated microarray data files that contain expression values and meta-data from the experiments that generated the data.
+                        </li>
+                    </ul>
 
-                
-            </a></ol><a name="path">
-            </a><h3><a name="path"></a><a name="gui">Graphical Interface</a></h3><a name="gui">
-            </a><h3><a name="gui"></a><a name="lib">Library</a></h3><a name="lib">
-            
+                </li>
+                <li><a name="comp">How can I find compatible data files at the Gene Expression Omnibus?</a>
+                    <ul>
+                        <li>You can visit the NCBI GEO Dataset browse at <a href="http://www.ncbi.nlm.nih.gov/sites/GDSbrowser/"> http://www.ncbi.nlm.nih.gov/sites/GDSbrowser/</a> and search for datasets relevant to your research.  Once you have identified Datasets you are interested in, you can either download the GDS####.soft.gz files associated with them or click download on the area Data screen and enter the number associated with the dataset. </li>
+                    </ul>
+                </li>
+                <li><a name="gnf">Where can I find different gene network files?</a>
+                    <ul>
+                        <li><a href="http://www.broadinstitute.org/gsea/msigdb/collections.jsp">The Broad</a></li>
+                    </ul>
+                </li>
+            </ol>
+            <h3><a name="lib">Library</a></h3>
 
 
-      </a></div>
+    </div>
 <p class="text">
  
 
