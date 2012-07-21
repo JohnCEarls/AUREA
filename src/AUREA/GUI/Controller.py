@@ -424,8 +424,8 @@ class Controller:
             else:
                 F0 += 1  
         dp.clearUnclassified()
-        
-        return (T0,F0, T1, F1, MCC(T0,F0, T1,F1))
+        myacc =  float(T0+T1)/(T0+T1+F0+F1)
+        return (T0,F0, T1, F1, myacc)
 
 
 
@@ -690,33 +690,34 @@ class Controller:
     def crossValidateDirac(self):
         dirac = self.trainDirac(crossValidate = True)
         self.queue.put(('statusbarset',"Cross Validating"))
-        self.dirac_cv = dirac.crossValidate()
-        self.queue.put(('statusbarset',"Dirac had an MCC of " + str(self.dirac_cv)[:4]))
+        self.dirac_cv = dirac.crossValidate(use_acc=True)
+        self.queue.put(('statusbarset',"Dirac had an Accuracy of " + str(self.dirac_cv)[:4]))
 
     def crossValidateTSP(self):
         tsp = self.trainTSP(crossValidate = True)
         self.queue.put(('statusbarset',"Cross Validating"))
-        self.tsp_cv = tsp.crossValidate()
-        self.queue.put(('statusbarset',"TSP had an MCC of " + str(self.tsp_cv)[:4]))
+        self.tsp_cv = tsp.crossValidate(use_acc=True)
+        self.queue.put(('statusbarset',"TSP had an Accuracy of " + str(self.tsp_cv)[:4]))
 
     def crossValidateTST(self):
         tst = self.trainTST(crossValidate = True)
         self.queue.put(('statusbarset',"Cross Validating"))
-        self.tst_cv = tst.crossValidate()
-        self.queue.put(('statusbarset',"TST had an MCC of " + str(self.tst_cv)[:4]))
+        self.tst_cv = tst.crossValidate(use_acc=True)
+        self.queue.put(('statusbarset',"TST had an Accuracy of " + str(self.tst_cv)[:4]))
 
     def crossValidateKTSP(self):
         ktsp = self.trainkTSP(crossValidate = True)
         self.queue.put(('statusbarset',"Cross Validating"))
-        self.ktsp_cv = ktsp.crossValidate()
-        self.queue.put(('statusbarset',"KTSP had an MCC of " + str(self.ktsp_cv)[:4]))
+        self.ktsp_cv = ktsp.crossValidate(use_acc=True )
+        self.queue.put(('statusbarset',"KTSP had an Accuracy of " + str(self.ktsp_cv)[:4]))
   
     def crossValidateAdaptive(self, target_acc, maxtime):
         self._adaptiveSetup()
         #create adaptive object
         adaptive = Adaptive(self.learnerqueue, app_status_bar = self.queue)
-        self.adaptive_cv = adaptive.crossValidate(target_acc, maxtime)
-        self.queue.put(('statusbarset',"Adaptive had an MCC of " + str(self.adaptive_cv)[:4]))
+        #using accuracy, because we are reporting accuracy - acc is not used to choose learner
+        self.adaptive_cv = adaptive.crossValidate(target_acc, maxtime, use_acc=True)
+        self.queue.put(('statusbarset',"Adaptive had an Accuracy of " + str(self.adaptive_cv)[:4]))
 
  
     def _checkRowKey(self, row_key, srcStr="Not Given"):

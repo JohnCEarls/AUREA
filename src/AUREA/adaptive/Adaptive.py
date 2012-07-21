@@ -77,9 +77,9 @@ class Adaptive:
                 learner = self.lq.trainLearner(settings, complexity)
                 
                 self._progress_report(tl_str + msg + " CrossValidating " + str_learner)
-
-                accuracy = learner.crossValidate()
-                msg = str_learner + " achieved " + str(accuracy)[:4]
+                #getting the accuracy as MCC
+                accuracy = learner.crossValidate(use_acc=False)
+                msg = str_learner + " achieved " + str(accuracy)[:4] + "(MCC) "
 
                 #shift accuracy to [0.0,1.0] for feedback
                 #let queue know how this learner did
@@ -171,7 +171,7 @@ class Adaptive:
                 myStr += os.linesep
         return myStr
 
-    def crossValidate(self, target_acc, maxtime, k=10):
+    def crossValidate(self, target_acc, maxtime, k=10, use_acc=False):
         """
         performs kfold crossvalidation on the adaptive algorithm 
         returns the Matthews correlation coefficient
@@ -227,12 +227,19 @@ class Adaptive:
                     T1 += 1
                 else:
                     F0 += 1
-            msg = "Validating at " + str(MCC(T0,F0, T1, F1)) 
+            if use_acc:
+                myacc =  float(T0 + T1)/(T0+T1+F0+F1)
+                msg =  "Validating at " + str(myacc)
+            else:
+                msg = "Validating at " + str(MCC(T0,F0, T1, F1)) 
             self._progress_report(msg)
         #put things back the way they were
         self._genLearnerQueue( dp ,classifications)
         self.lq = base_lq
-        return MCC(T0, F0, T1, F1)
+        if use_acc:
+            return float(T0 + T1)/(T0+T1+F0+F1)
+        else:
+            return MCC(T0, F0, T1, F1)
 
 
     def _copyLQParams(self, new_lq, base_lq):
