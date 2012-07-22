@@ -232,9 +232,12 @@ class Adaptive:
                     T1 += 1
                 else:
                     F0 += 1
+            viewable = ['dirac', 'tsp', 'tst', 'ktsp']
+            
+            str_learner = viewable[settings['learner']]
             accuracy = float(T0+T1)/(T0+T1+F0+F1)
             mcc = MCC(T0,F0,T1,F1) 
-            msg = str_learner + " achieved " + str(accuracy)[:4] + "(acc) and  "
+            msg = "Adaptive(" + str_learner + ") achieved " + str(accuracy)[:4] + "(acc) and  "
             msg += str(mcc)[:4] + "(MCC)"
 
             self.truth_table[0] += T0

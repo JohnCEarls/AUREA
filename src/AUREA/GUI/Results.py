@@ -57,10 +57,11 @@ class DiracResults(Results):
 
 
     def getData(self):
-        self.dirac = self.root.root.controller.dirac
-        self.accuracy = self.root.root.controller.dirac_acc
-        self.datapackage = self.root.root.controller.datapackage
-        self.config = self.root.root.controller.config
+        c = self.root.root.controller
+        self.dirac = c.dirac
+        self.accuracy = c._acc(c.dirac_acc)
+        self.datapackage = c.datapackage
+        self.config = c.config
         
         
     def displayTopNetworks(self):
@@ -88,11 +89,12 @@ class TSPResults(Results):
         self.displayData()
     
     def getData(self):
-        self.tsp = self.root.root.controller.tsp
-        self.datapackage = self.root.root.controller.datapackage
-        self.config = self.root.root.controller.config
-        self.accuracy = self.root.root.controller.tsp_acc
-
+        c = self.root.root.controller
+        self.tsp = c.tsp
+        self.accuracy = c._acc(c.tsp_acc)
+        self.datapackage = c.datapackage
+        self.config = c.config
+        
     def displayData(self):
         ms = self.tsp.getMaxScores()
         row = 1
@@ -126,11 +128,12 @@ class TSTResults(Results):
         self.displayData()
 
     def getData(self):
-        self.tst = self.root.root.controller.tst
-        self.datapackage = self.root.root.controller.datapackage
-        self.config = self.root.root.controller.config
-        self.accuracy = self.root.root.controller.tst_acc
-
+        c = self.root.root.controller
+        self.tst = c.tst
+        self.accuracy = c._acc(c.tst_acc)
+        self.datapackage = c.datapackage
+        self.config = c.config
+ 
     def getPtableString(self):
         ptable = self.tst.ptable
         ptStr = 'order\tclass1\tclass2 ' + os.linesep
@@ -179,13 +182,13 @@ class KTSPResults(Results):
         self.root = root
         self.getData()
         self.displayData()
-
     def getData(self):
-        self.ktsp = self.root.root.controller.ktsp
-        self.datapackage = self.root.root.controller.datapackage
-        self.config = self.root.root.controller.config
-        self.accuracy = self.root.root.controller.ktsp_acc
-
+        c = self.root.root.controller
+        self.ktsp = c.ktsp
+        self.accuracy = c._acc(c.ktsp_acc)
+        self.datapackage = c.datapackage
+        self.config = c.config
+ 
     def displayData(self):
         topk = self.ktsp.getMaxScores()
         row = 1
@@ -226,7 +229,7 @@ class AdaptiveResults(Results):
         c = self.root.root.controller
         self.history = c.adaptive_history
         winner = c.adaptive_settings['learner']
-        resultStr = "Top Learner : " + learnerMap[winner] + "@acc: " + str(c.adaptive_acc) + os.linesep
+        resultStr = "Top Learner : " + learnerMap[winner] + "@acc: " + str(c.adaptive_top_acc) + os.linesep
         resultStr += "="*30
         resultStr += os.linesep
         if winner == LearnerQueue.dirac:

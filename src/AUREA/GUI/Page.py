@@ -248,8 +248,8 @@ class HomePage(Page):
 
         c = self.root.controller
         lf = self.learningAlgorithmFrame = Frame(self)
-        bc = Label(lf, text="Best Classifiers(T1,F1,T2,F2, Acc / MCC):")
-        cp = Label(lf, text="CV Performance(MCC/Acc):")
+        bc = Label(lf, text="Best Classifiers(T1,T2,F1,F2, Acc / MCC):")
+        cp = Label(lf, text="CV Performance( Acc / MCC):")
         self._boldFont(cp)
         self._boldFont(bc)
 
@@ -291,24 +291,19 @@ class HomePage(Page):
                 bd[l].configure(state=DISABLED)
                 nt.grid(row=i+1, column=1,sticky=W)
             else:
-                import math
-                def MCC(TP,FP, TN, FN):
-                    den = math.sqrt(float((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN)))
-                    if den < .000001:
-                        #http://en.wikipedia.org/wiki/Matthews_correlation_coefficient
-                        den = 1.0
-                    return float(TP*TN - FP*FN)/den
-
                 toStr = ','.join([str(x)[:4] for x in acc[i][:4]])
-                toStr += "( " + str(acc[i][4])[1:4]
-                toStr += " / " + str(MCC(acc[i][0], acc[i][1], acc[i][2], acc[i][3]))[1:4] + " )"
+                toStr += "( " + str(c._acc(acc[i]) )[1:4] #accuracy
+                toStr += " / " + str(c._mcc(acc[i]))[1:4] + " )"#mcc
                 lab = Label(lf, text=toStr, padx=5 )
                 lab.grid(row=i+1, column=1,sticky=W)
             #handle cross validation
             if cv[i] is None:
                 nc.grid(row=i+1, column=3)
             else:
-                lab = Label(lf, text=str(cv[i])[:4])
+                toStr = "( " + str(c._acc(cv[i]) )[1:4] #accuracy
+                toStr += " / " + str(c._mcc(cv[i]))[1:4] + " )"#mcc
+                
+                lab = Label(lf, text=toStr)
                 lab.grid(row=i+1, column=3)
         bc.grid(row=0, column=0,columnspan=3, sticky=W)
         cp.grid(row=0, column=3)
