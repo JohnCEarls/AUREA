@@ -309,11 +309,11 @@ class Adaptive:
             kfold = min(c1_size, c2_size)
 
         #first partition using indices
-        c1_training_list = [[] for x in range(len(kfold))
-        c1_testing_list = [[] for x in range(len(kfold))
+        c1_training_list = [[] for x in range(kfold)]
+        c1_testing_list = [[] for x in range(kfold)]
         
-        c2_training_list = [[] for x in range(len(kfold))
-        c2_testing_list = [[] for x in range(len(kfold))
+        c2_training_list = [[] for x in range(kfold)]
+        c2_testing_list = [[] for x in range(kfold)]
 
         #shuffle samples
         r1_list = range(c1_size)       
@@ -326,21 +326,21 @@ class Adaptive:
             list_pos = tl_pos%kfold
             c1_testing_list[list_pos].append(r1_index)
 
-         for tl_pos, r2_index in enumerate(r2_list):
+        for tl_pos, r2_index in enumerate(r2_list):
             list_pos = tl_pos%kfold
             c2_testing_list[list_pos].append(r2_index)
         #make training lists
-
-        for training_list, testing_list in izip(c1_training_list, c1_testing_list):
+        #TODO better names
+        for training_list1, testing_list1 in izip(c1_training_list, c1_testing_list):
             for i in r1_list:
-                if i not in testing_list:
-                    training_list.append(i)
+                if i not in testing_list1:
+                    training_list1.append(i)
 
  
-        for training_list, testing_list in izip(c2_training_list, c2_testing_list):
+        for training_list2, testing_list2 in izip(c2_training_list, c2_testing_list):
             for i in r2_list:
-                if i not in testing_list:
-                    training_list.append(i)
+                if i not in testing_list2:
+                    training_list2.append(i)
 
         #check no bad sets
         assert(len(c1_training_list) == len(c1_testing_list))
@@ -371,12 +371,12 @@ class Adaptive:
             c2_train_i = c2_training_list[i]
             for j in c2_train_i:
                 training_ss[1][1].append(c2_samples[j])
-            c1_test_i = c1_testing_list[i]
-            for j in c1_test_i:
+            c2_test_i = c2_testing_list[i]
+            for j in c2_test_i:
                 testing_ss[1][1].append(c2_samples[j])
             training_list.append(training_ss)
             testing_list.append(testing_ss)
-        return (training_list, validating_list)
+        return (training_list, testing_list)
 
        
     def _genLearnerQueue(self, dataPackage, training_set):
