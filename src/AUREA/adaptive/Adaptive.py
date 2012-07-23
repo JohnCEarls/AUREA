@@ -294,86 +294,88 @@ class Adaptive:
         based on k
         ts = [[(classname1, [list of (tablename, sampname) from c1]), (2 name, [list of (name, sampname) from c2])], ...]
         """
-     
-        def checkShuffle(r_list, kfold, c1size, c2size):
-            """
-            Checks that we do not end up with an empty class
-            in a training set
-            """
-            foldsize = len(r_list)/kfold
-            if c1size > foldsize and c2size > foldsize:
-                #can't have a bad shuffle
-                return True
-            if len(r_list)%kfold > 0:
-                foldsize += 1
-            c1count = 0
-            c2count = 0
-            for i,element in enumerate(r_list):
-                if i%foldsize == 0:
-                    c1count = 0
-                    c2count = 0
-                if element < c1size:#class1
-                    c1count += 1
-                else:
-                    c2count += 1
-                if c1count == c1size or c2count == c2size:
-                    return False
-            return True
-
         import random
+        from itertools import izip
         #initialize variables
         kfold = k
+        #the ulimate returned lists
         training_list = []
-        validating_list = []
+        testing_list = []
         c1_size = len(c[0][1])
         c2_size = len(c[1][1])
         c1_key = c[0][0]
         c2_key = c[1][0]
+        if min(c1_size, c2_size) < kfold:
+            kfold = min(c1_size, c2_size)
 
-        #check if we need to adjust k downward
-        if c1_size +c2_size < kfold:
-            #k too large do loocv
-            kfold = c1_size +c2_size
+        #first partition using indices
+        c1_training_list = [[] for x in range(len(kfold))
+        c1_testing_list = [[] for x in range(len(kfold))
+        
+        c2_training_list = [[] for x in range(len(kfold))
+        c2_testing_list = [[] for x in range(len(kfold))
 
-        #build random list of indices for partitioning
-        r_list = range(c1_size + c2_size)
-        goodShuffle  = False
-        while not goodShuffle:        
-            random.shuffle(r_list)
-            #check that the shuffle did not put all of one class into one fold
-            goodShuffle = checkShuffle(r_list, kfold, c1_size, c2_size)
-        foldsize = len(r_list)/kfold
-        if len(r_list)%kfold > 0:
-            foldsize += 1
-        steps =[x for x in range(0, kfold*foldsize , foldsize)]
-        for i in steps:
-            training = []
-            validating = []
-            for j in steps:
-                if i==j:
-                    validating = r_list[j: j+foldsize]
-                else:
-                    for valu in r_list[j:j+foldsize]:
-                        training.append( valu )
-                      
+        #shuffle samples
+        r1_list = range(c1_size)       
+        r2_list = range(c2_size)
+        random.shuffle(r1_list)
+        random.shuffle(r2_list)
+        
+        #make testing lists
+        for tl_pos, r1_index in enumerate(r1_list):
+            list_pos = tl_pos%kfold
+            c1_testing_list[list_pos].append(r1_index)
 
+         for tl_pos, r2_index in enumerate(r2_list):
+            list_pos = tl_pos%kfold
+            c2_testing_list[list_pos].append(r2_index)
+        #make training lists
+
+        for training_list, testing_list in izip(c1_training_list, c1_testing_list):
+            for i in r1_list:
+                if i not in testing_list:
+                    training_list.append(i)
+
+ 
+        for training_list, testing_list in izip(c2_training_list, c2_testing_list):
+            for i in r2_list:
+                if i not in testing_list:
+                    training_list.append(i)
+
+        #check no bad sets
+        assert(len(c1_training_list) == len(c1_testing_list))
+        assert(len(c2_training_list) == len(c2_testing_list))
+        def testList(tlist):
+            for l in tlist:
+                assert(len(l) > 0)
+        testList(c1_training_list)
+        testList(c1_testing_list)
+
+        testList(c2_training_list)
+        testList(c2_testing_list)
+
+        #make actual values for return
+        c1_samples = c[0][1]
+        c2_samples = c[1][1]
+        for i in range(kfold):
             training_ss = [(c1_key, []), (c2_key, [])]
-            validating_ss = [(c1_key, []), (c2_key, [])]
-            c1_training = False
-            c2_training = False
-     
-            for item in training:
-                if item < c1_size:
-                    training_ss[0][1].append(c[0][1][item])
-                else:
-                    training_ss[1][1].append(c[1][1][item - c1_size])
-            for item in validating:
-                if item < c1_size:
-                    validating_ss[0][1].append(c[0][1][item])
-                else:    
-                    validating_ss[1][1].append(c[1][1][item - c1_size])
+            testing_ss = [(c1_key, []), (c2_key, [])]
+            #class 1 set i
+            c1_train_i = c1_training_list[i]
+            for j in c1_train_i:
+                training_ss[0][1].append(c1_samples[j])
+            c1_test_i = c1_testing_list[i]
+            for j in c1_test_i:
+                testing_ss[0][1].append(c1_samples[j])
+            #class 2 set i
+            c2_train_i = c2_training_list[i]
+            for j in c2_train_i:
+                training_ss[1][1].append(c2_samples[j])
+            c1_test_i = c1_testing_list[i]
+            for j in c1_test_i:
+                testing_ss[1][1].append(c2_samples[j])
             training_list.append(training_ss)
-            validating_list.append(validating_ss)
+            testing_list.append(testing_ss)
         return (training_list, validating_list)
 
        
