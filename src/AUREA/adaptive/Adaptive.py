@@ -83,7 +83,7 @@ class Adaptive:
                 mcc = learner.getCVMCC()
                 
                 msg = str_learner + " achieved " + str(accuracy)[:4] + "(acc) and  "
-                msg += str(mcc)[:4] + "(MCC)"
+                msg += str(mcc)[:4] + "(MCC): "
 
                 #shift accuracy to [0.0,1.0] for feedback
                 #let queue know how this learner did
@@ -102,7 +102,7 @@ class Adaptive:
                 top_acc = mcc
                 top_learner = learner
                 top_settings = settings
-                tl_str = str_learner + " current best at " + str(top_acc)[:4] + " :"
+                tl_str = str_learner + " current best MCC at " + str(top_acc)[:4] + " :"
                 msg += " new top learner : "
                 
             #tell why we are done

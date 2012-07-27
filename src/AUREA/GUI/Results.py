@@ -136,8 +136,8 @@ class TSTResults(Results):
  
     def getPtableString(self):
         ptable = self.tst.ptable
-        ptStr = 'order\tclass1\tclass2 ' + os.linesep
-        ord = ['g1,g2,g3', 'g1,g3,g2', 'g2,g1,g3', 'g2,g3,g1', 'g3,g1,g2', 'g3,g2,g1']
+        ptStr = 'ordertclass1\tclass2 ' + os.linesep
+        ord = ['g1<g2<g3', 'g1<g3<g2', 'g2<g1<g3', 'g2<g3<g1', 'g3<g1<g2', 'g3<g2<g1']
         for t, triplet in enumerate(ptable):
             ptStr += "Triplet " + str(t+1) + os.linesep
             c1 = triplet[0]
@@ -229,7 +229,7 @@ class AdaptiveResults(Results):
         c = self.root.root.controller
         self.history = c.adaptive_history
         winner = c.adaptive_settings['learner']
-        resultStr = "Top Learner : " + learnerMap[winner] + "@acc: " + str(c.adaptive_top_acc) + os.linesep
+        resultStr = "Top Learner : " + learnerMap[winner] + "@acc: " + str(c.adaptive_acc) + os.linesep
         resultStr += "="*30
         resultStr += os.linesep
         if winner == LearnerQueue.dirac:
