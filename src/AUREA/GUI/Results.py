@@ -74,10 +74,9 @@ class DiracResults(Results):
         network_listbox = Listbox(self)
         for net in tn:
             network_listbox.insert(END, net)
-            resultString += "*"*20
+            resultString += "*"*20 + os.linesep
             resultString += net + os.linesep
-            resultString += "Genes used: " + ','.join(self.datapackage.getGeneNamesFromNetwork(net)+os.linesep
-            
+            resultString += "Genes used: " + ','.join(self.datapackage.getGeneNamesFromNetwork(net))+os.linesep
         network_listbox.pack()
         save_button = Button(self, text="Save...", command=lambda:self.saveResults(resultString))
         save_button.pack()
