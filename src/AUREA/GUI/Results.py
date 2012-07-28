@@ -229,7 +229,9 @@ class AdaptiveResults(Results):
         c = self.root.root.controller
         self.history = c.adaptive_history
         winner = c.adaptive_settings['learner']
-        resultStr = "Top Learner : " + learnerMap[winner] + "@acc: " + str(c.adaptive_acc) + os.linesep
+        t1, t2, f1,f2 = c.adaptive_acc
+        strAcc = str(float(t1+t2)/(t1+t2+f1+f2))
+        resultStr = "Top Learner : " + learnerMap[winner] + "@acc: " +strAcc + os.linesep
         resultStr += "="*30
         resultStr += os.linesep
         if winner == LearnerQueue.dirac:
@@ -254,6 +256,7 @@ class AdaptiveResults(Results):
         #self.resultString gets displayed
         #resultStr (with history) gets Saved
         for acc, txt in self.history:
+            resultStr += "*"*30 + os.linesep
             resultStr += "@accuracy:"+str(acc) + os.linesep
             resultStr += txt
              
