@@ -548,7 +548,7 @@ class Controller:
         self.adaptive_history.reverse()
         self.adaptive = top_learner
         self.adaptive_settings = top_settings
-        self.adaptive_top_acc = top_acc
+        self.adaptive_top_mcc = top_acc
         self.adaptive_setting_string  = adaptive.getSettingString(top_settings)
         if self.adaptive is not None:
             row_key = top_settings['data_type']
