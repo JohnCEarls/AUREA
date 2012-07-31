@@ -38,6 +38,7 @@ This class takes a set of data tables and generates data vectors and class vecto
         self.unclassified_data_vector = None
         self.merge_cache = merge_cache
 
+        self.gene_net_to_genes_map = None #maps a geneNetwork name to a list of gene names that are in the dataset
     def setMergeCache(self, cache_dir): 
         """
 This is for setting the directory that stores cached merge-tables.
@@ -113,8 +114,18 @@ Given an index into either the probe or gene array(determined by the type parame
         #not storing it here so we have to go back to the data tables
         dt1 = self.data_tables[dt_indx]
         return dt1.genes[dt1.probe_index[probe_name]]
-        
 
+    def getGeneNamesFromNetwork(self, network_name):
+        """
+        This returns a list of the genes that were used by dirac (i.e. are available on the microarray) for classifying
+        this network.
+        Throws error if networks were never built
+        """
+        if self.gene_net_to_genes_map is None:
+            raise Exception("Attempt to look up network genes without building networks")        
+        return self.gene_net_to_genes_map[network_name] 
+
+        
     def getClassVector(self):
         """
         This returns an intVector with the number of genes in each class.  This should map to columns in the dataVector, for example a vector containing (4,5,8) means that the first class is the first 4 columns, the second class is the 5th-8th column, etc.)  Bear in mind I'm a programmer and count from zero. 
@@ -312,10 +323,14 @@ This builds the geneNet Vector from the provided information.  It uses gene syno
         self.gene_net_map = []#a list of the geneNetNames in the order they are sent to Dirac        
         self.gene_net_data_matrix_start = []
         dmstart_counter = 0
+        #creating a map between gene network names and the gene names they contain
+        gene_net_to_genes_map = {}
         for net_name, network in self.gene_networks.iteritems():#4each net
+            gene_net_to_genes_map[net_name] = []
             network_size_counter = 0#since not all genes in network are in data
             for gene in network:#4each gene in net
                 if gene in self.gene_index:#if the gene is in our data
+                    gene_net_to_genes_map[net_name].append(gene)
                     row_number = self.gene_index[gene]
                     self.gene_net_vector.push_back(row_number)
                     network_size_counter += 1
@@ -326,6 +341,7 @@ This builds the geneNet Vector from the provided information.  It uses gene syno
                         for syngene in ourSyn:#go through the synonyms for the gene
                             if syngene in self.gene_index:
                                 #we found a match in the index so add it
+                                gene_net_to_genes_map[net_name].append(gene)
                                 row_number = self.gene_index[syngene]
                                 self.gene_net_vector.push_back(row_number)
                                 network_size_counter += 1
@@ -341,6 +357,8 @@ This builds the geneNet Vector from the provided information.  It uses gene syno
                 while network_size_counter > 0:
                     self.gene_net_vector.pop_back()
                     network_size_counter -= 1
+        
+        self.gene_net_to_genes_map = gene_net_to_genes_map
         self.gene_net_data_matrix_start.append(dmstart_counter)
 
     def mergeTables(self):
