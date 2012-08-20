@@ -59,12 +59,6 @@ class Controller:
         self.tst = None
         self.adaptive = None
 
-        self.tsp_acc = None
-        self.ktsp_acc = None
-        self.tst_acc = None
-        self.dirac_acc = None
-        self.adaptive_acc_tuple = None
-
         #for classification page
         self.tsp_classified_results = []
         self.ktsp_classified_results = []
@@ -72,13 +66,19 @@ class Controller:
         self.dirac_classified_results = []
         self.adaptive_classified_results = []
 
-        self.tsp_cv = None
-        self.ktsp_cv = None
-        self.tst_cv = None
-        self.dirac_cv = None
-        self.adaptive_cv = None
+        #stores truth tables from crossValidation
+        self.tsp_tt = None
+        self.ktsp_tt = None
+        self.tst_tt = None
+        self.dirac_tt = None
+        self.adaptive_tt = None
 
-       
+        #stores tuples with apparent accuracy of learners
+        self.tsp_acc = None
+        self.ktsp_acc = None
+        self.tst_acc = None
+        self.dirac_acc = None
+        self.adaptive_acc = None       
 
         self.dependency_state = [0 for x in range(AUREARemote.NumStates)]#see App.AUREARemote for mappings
 
@@ -238,8 +238,9 @@ class Controller:
         Returns the apparent accuracy of the learners over the training set
         (TSP,kTSP,TST,DiRaC, Adaptive)
         """
-        
-        return (self.tsp_acc, self.ktsp_acc,self.tst_acc,self.dirac_acc,self.adaptive_acc_tuple)
+       
+ 
+        return (self.tsp_acc, self.ktsp_acc,self.tst_acc,self.dirac_acc,self.adaptive_acc)
 
     def getCrossValidationResults(self):
         """
@@ -248,9 +249,10 @@ class Controller:
         (TSP,kTSP,TST,DiRaC, Adaptive)
         """
         #TODO
-        return (self.tsp_cv,self.ktsp_cv,self.tst_cv,self.dirac_cv,self.adaptive_cv)
+        return (self.tsp_tt,self.ktsp_tt,self.tst_tt,self.dirac_tt,self.adaptive_tt)
 
-
+    def getCVTruthTables(self):
+        return (self.tsp_tt,self.ktsp_cv,self.tst_cv,self.dirac_cv,self.adaptive_cv)
     def parseNetworkFile(self):
         """
         Parse network file and add networks to datapackage
@@ -390,16 +392,10 @@ class Controller:
         Takes a trained learner (and its row_key gene/probe)
          and returns the results of
         classifying the Trained Data
-        Returns a tuple (T0,F0, T1, F1, MCC)
+        Returns a tuple (T0,T1,F0, F1)
         Note T0 = True Positive = True class 1
         """
         import math
-        def MCC(TP,FP, TN, FN):
-            den = math.sqrt(float((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN)))
-            if den < .000001:
-                #http://en.wikipedia.org/wiki/Matthews_correlation_coefficient
-                den = 1.0
-            return float(TP*TN - FP*FN)/den
         dp = self.datapackage
         class1, class2 = dp.getClassifications()
         T0 = 0
@@ -424,8 +420,9 @@ class Controller:
             else:
                 F0 += 1  
         dp.clearUnclassified()
-        
-        return (T0,F0, T1, F1, MCC(T0,F0, T1,F1))
+        myacc =  float(T0+T1)/(T0+T1+F0+F1)
+        return (T0,T1,F0, F1)
+
 
 
 
@@ -551,12 +548,12 @@ class Controller:
         self.adaptive_history.reverse()
         self.adaptive = top_learner
         self.adaptive_settings = top_settings
-        self.adaptive_acc = top_acc
+        self.adaptive_top_mcc = top_acc
         self.adaptive_setting_string  = adaptive.getSettingString(top_settings)
         if self.adaptive is not None:
             row_key = top_settings['data_type']
             self.queue.put(('statusbarset',"Training Complete, Checking Accuracy"))
-            self.adaptive_acc_tuple = self._getLearnerAccuracy(self.adaptive, row_key)
+            self.adaptive_acc = self._getLearnerAccuracy(self.adaptive, row_key)
             self.queue.put(('statusbarset',"Accuracy Check Complete"))
         else:
             #none of the algorithms ran, maybe timeout is to low
@@ -637,12 +634,12 @@ class Controller:
         self.ktsp_acc = None
         self.tst_acc = None
         self.dirac_acc = None
-        self.adaptive_acc_tuple = None
-        self.tsp_cv = None
-        self.ktsp_cv = None
-        self.tst_cv = None
-        self.dirac_cv = None
-        self.adaptive_cv = None
+        self.adaptive_acc = None
+        self.tsp_tt = None
+        self.ktsp_tt = None
+        self.tst_tt = None
+        self.dirac_tt = None
+        self.adaptive_tt = None
 
 
 
@@ -686,37 +683,73 @@ class Controller:
         learner.addUnclassified(dp.getUnclassifiedDataVector(row_key))
         self.adaptive_classification = learner.classify()
         return self.adaptive_classification
- 
+
+    def _acc(self, truth_table):
+        """
+        Given truth_table compute accuracy
+        """
+        tpos = truth_table[0]
+        tneg = truth_table[1]
+        fpos = truth_table[2]
+        fneg = truth_table[3]
+        return float(tpos+tneg)/(tpos+tneg+fpos+fneg)
+
+    def _mcc(self, truth_table):
+        """
+        Given truth_table, compute MCC
+        """
+        import math
+        tpos = truth_table[0]
+        tneg = truth_table[1]
+        fpos = truth_table[2]
+        fneg = truth_table[3]
+
+        den = math.sqrt(float((tpos+fpos)*(tpos+fneg)*(tneg+fpos)*(tneg+fneg)))
+        if den < .000001:
+            den = 1.0
+        return float(tpos*tneg - fpos*fneg)/den
+
     def crossValidateDirac(self):
         dirac = self.trainDirac(crossValidate = True)
         self.queue.put(('statusbarset',"Cross Validating"))
-        self.dirac_cv = dirac.crossValidate()
-        self.queue.put(('statusbarset',"Dirac had an MCC of " + str(self.dirac_cv)[:4]))
+        dirac.crossValidate()
+        tt = dirac.truth_table
+        self.dirac_tt = [tt[0],tt[1],tt[2], tt[3]]#sometimes intvectors do not want to iterate
+        self.queue.put(('statusbarset',"Dirac had an Accuracy of " + str(self._acc(self.dirac_tt))[:4]))
 
     def crossValidateTSP(self):
         tsp = self.trainTSP(crossValidate = True)
         self.queue.put(('statusbarset',"Cross Validating"))
-        self.tsp_cv = tsp.crossValidate()
-        self.queue.put(('statusbarset',"TSP had an MCC of " + str(self.tsp_cv)[:4]))
+        tsp.crossValidate()
+        tt = tsp.truth_table
+        self.tsp_tt = [tt[0],tt[1],tt[2], tt[3]]#sometimes intvectors do not want to iterate
+        self.queue.put(('statusbarset',"TSP had an Accuracy of " + str(self._acc(self.tsp_tt))[:4]))
 
     def crossValidateTST(self):
         tst = self.trainTST(crossValidate = True)
         self.queue.put(('statusbarset',"Cross Validating"))
-        self.tst_cv = tst.crossValidate()
-        self.queue.put(('statusbarset',"TST had an MCC of " + str(self.tst_cv)[:4]))
+        tst.crossValidate()
+        tt = tst.truth_table
+        self.tst_tt = [tt[0],tt[1],tt[2], tt[3]]#sometimes intvectors do not want to iterate
+        self.queue.put(('statusbarset',"TST had an Accuracy of " + str(self._acc(self.tst_tt))[:4]))
 
     def crossValidateKTSP(self):
         ktsp = self.trainkTSP(crossValidate = True)
         self.queue.put(('statusbarset',"Cross Validating"))
-        self.ktsp_cv = ktsp.crossValidate()
-        self.queue.put(('statusbarset',"KTSP had an MCC of " + str(self.ktsp_cv)[:4]))
+        ktsp.crossValidate()
+        tt = ktsp.truth_table
+        self.ktsp_tt = [tt[0],tt[1],tt[2], tt[3]]#sometimes intvectors do not want to iterate
+        self.queue.put(('statusbarset',"kTSP had an Accuracy of " + str(self._acc(self.ktsp_tt))[:4]))
+        
   
     def crossValidateAdaptive(self, target_acc, maxtime):
         self._adaptiveSetup()
         #create adaptive object
         adaptive = Adaptive(self.learnerqueue, app_status_bar = self.queue)
-        self.adaptive_cv = adaptive.crossValidate(target_acc, maxtime)
-        self.queue.put(('statusbarset',"Adaptive had an MCC of " + str(self.adaptive_cv)[:4]))
+        #using accuracy, because we are reporting accuracy - acc is not used to choose learner
+        adaptive.crossValidate(target_acc, maxtime)
+        self.adaptive_tt = adaptive.truth_table[:]
+        self.queue.put(('statusbarset',"Adaptive had an Accuracy of " + str(self._acc(self.adaptive_tt))[:4]))
 
  
     def _checkRowKey(self, row_key, srcStr="Not Given"):

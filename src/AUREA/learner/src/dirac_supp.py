@@ -51,7 +51,9 @@ Creates a Dirac learner object
         self.rank_templates = None
         #lists the starting locations of each geneNetwork in the data matrix
         self.unclassifiedRankMatrix = None
-
+        self.truth_table = IntVector()
+        for i in range(4):
+            self.truth_table.push_back(0)
     def train(self):
         """
         This is the method that performs the training from the provided data
@@ -301,14 +303,40 @@ Creates a Dirac learner object
         else:
             return 0
 
-    def crossValidate(self,k=10):
+    def crossValidate(self,k=10, use_acc=True):
         """
         Runs the C-based cross validation
         K-Fold testing of the given data, returns Matthews correlation coefficient.
         """
         numTopNetworks = self.numTopNetworks
         
-        return crossValidate(self.data, self.numGenes, self.classSizes, self.geneNet, self.geneNetSize, numTopNetworks, k) 
+        crossValidate(self.data, self.numGenes, self.classSizes, self.geneNet, self.geneNetSize, numTopNetworks, k, self.truth_table) 
+
+       
+    def getCVAccuracy(self):
+        """
+        Returns the Accuracy of the last crossValidate
+        """
+        tpos = self.truth_table[0]
+        tneg = self.truth_table[1]
+        fpos = self.truth_table[2]
+        fneg = self.truth_table[3] 
+        return float((tpos+tneg))/(tpos+tneg+fpos+fneg)
+
+    def getCVMCC(self):
+        """
+        Returns the Matthews Correlation Coefficient of the last crossValidate
+        """
+        import math
+        tpos = self.truth_table[0]
+        tneg = self.truth_table[1]
+        fpos = self.truth_table[2]
+        fneg = self.truth_table[3] 
+        den = math.sqrt(float((tpos+fpos)*(tpos+fneg)*(tneg+fpos)*(tneg+fneg)))
+        if den < .000001:
+            den = 1.0
+        return float(tpos*tneg - fpos*fneg)/den
+
 
     def testAll(self):
         """

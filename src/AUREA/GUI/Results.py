@@ -57,10 +57,11 @@ class DiracResults(Results):
 
 
     def getData(self):
-        self.dirac = self.root.root.controller.dirac
-        self.accuracy = self.root.root.controller.dirac_acc
-        self.datapackage = self.root.root.controller.datapackage
-        self.config = self.root.root.controller.config
+        c = self.root.root.controller
+        self.dirac = c.dirac
+        self.accuracy = c._acc(c.dirac_acc)
+        self.datapackage = c.datapackage
+        self.config = c.config
         
         
     def displayTopNetworks(self):
@@ -73,8 +74,9 @@ class DiracResults(Results):
         network_listbox = Listbox(self)
         for net in tn:
             network_listbox.insert(END, net)
+            resultString += "*"*20 + os.linesep
             resultString += net + os.linesep
-            
+            resultString += "Genes used: " + ','.join(self.datapackage.getGeneNamesFromNetwork(net))+os.linesep
         network_listbox.pack()
         save_button = Button(self, text="Save...", command=lambda:self.saveResults(resultString))
         save_button.pack()
@@ -88,11 +90,12 @@ class TSPResults(Results):
         self.displayData()
     
     def getData(self):
-        self.tsp = self.root.root.controller.tsp
-        self.datapackage = self.root.root.controller.datapackage
-        self.config = self.root.root.controller.config
-        self.accuracy = self.root.root.controller.tsp_acc
-
+        c = self.root.root.controller
+        self.tsp = c.tsp
+        self.accuracy = c._acc(c.tsp_acc)
+        self.datapackage = c.datapackage
+        self.config = c.config
+        
     def displayData(self):
         ms = self.tsp.getMaxScores()
         row = 1
@@ -126,15 +129,16 @@ class TSTResults(Results):
         self.displayData()
 
     def getData(self):
-        self.tst = self.root.root.controller.tst
-        self.datapackage = self.root.root.controller.datapackage
-        self.config = self.root.root.controller.config
-        self.accuracy = self.root.root.controller.tst_acc
-
+        c = self.root.root.controller
+        self.tst = c.tst
+        self.accuracy = c._acc(c.tst_acc)
+        self.datapackage = c.datapackage
+        self.config = c.config
+ 
     def getPtableString(self):
         ptable = self.tst.ptable
-        ptStr = 'order\tclass1\tclass2 ' + os.linesep
-        ord = ['g1,g2,g3', 'g1,g3,g2', 'g2,g1,g3', 'g2,g3,g1', 'g3,g1,g2', 'g3,g2,g1']
+        ptStr = 'ordertclass1\tclass2 ' + os.linesep
+        ord = ['g1<g2<g3', 'g1<g3<g2', 'g2<g1<g3', 'g2<g3<g1', 'g3<g1<g2', 'g3<g2<g1']
         for t, triplet in enumerate(ptable):
             ptStr += "Triplet " + str(t+1) + os.linesep
             c1 = triplet[0]
@@ -179,13 +183,13 @@ class KTSPResults(Results):
         self.root = root
         self.getData()
         self.displayData()
-
     def getData(self):
-        self.ktsp = self.root.root.controller.ktsp
-        self.datapackage = self.root.root.controller.datapackage
-        self.config = self.root.root.controller.config
-        self.accuracy = self.root.root.controller.ktsp_acc
-
+        c = self.root.root.controller
+        self.ktsp = c.ktsp
+        self.accuracy = c._acc(c.ktsp_acc)
+        self.datapackage = c.datapackage
+        self.config = c.config
+ 
     def displayData(self):
         topk = self.ktsp.getMaxScores()
         row = 1
@@ -226,7 +230,9 @@ class AdaptiveResults(Results):
         c = self.root.root.controller
         self.history = c.adaptive_history
         winner = c.adaptive_settings['learner']
-        resultStr = "Top Learner : " + learnerMap[winner] + "@acc: " + str(c.adaptive_acc) + os.linesep
+        t1, t2, f1,f2 = c.adaptive_acc
+        strAcc = str(float(t1+t2)/(t1+t2+f1+f2))
+        resultStr = "Top Learner : " + learnerMap[winner] + "@acc: " +strAcc + os.linesep
         resultStr += "="*30
         resultStr += os.linesep
         if winner == LearnerQueue.dirac:
@@ -251,6 +257,7 @@ class AdaptiveResults(Results):
         #self.resultString gets displayed
         #resultStr (with history) gets Saved
         for acc, txt in self.history:
+            resultStr += "*"*30 + os.linesep
             resultStr += "@accuracy:"+str(acc) + os.linesep
             resultStr += txt
              
@@ -309,6 +316,7 @@ class ClassificationResults(Results):
         sString += "True class 2: " + str(T1) + os.linesep
         sString += "False class 2: " + str(F1) + os.linesep
         sString += "Matthew's Correlation: " + str(mcc)[:5] + os.linesep
+        sString += "Accuracy: " + str(float(T0+T1)/(T0+T1+F0+F1))[:5] + os.linesep
         return sString
     
     def getOutputString(self, res):

@@ -59,7 +59,7 @@ std::vector<double> sample_ptable(std::vector<double> &xmat, int i1, int i2, int
 
 
 
-double crossValidate(std::vector<double> & data, int dsSize, std::vector<int> & classSizes, std::vector<int> & nvec, int k){
+double crossValidate(std::vector<double> & data, int dsSize, std::vector<int> & classSizes, std::vector<int> & nvec, int k,std::vector<int> & truth_table, bool use_accuracy){
     kfold kfGen(data, dsSize, classSizes, k);
     
     vector<double> * ts;
@@ -125,11 +125,25 @@ double crossValidate(std::vector<double> & data, int dsSize, std::vector<int> & 
         }
         ts = kfGen.getNextTrainingSet();
            }
-    double numerator =  ((truePositive*trueNegative) - (falsePositive*falseNegative));
-    double denominator = sqrt((double)
+
+    double numerator, denominator;
+    if(use_accuracy){
+        //return accuracy not MCC
+        numerator = truePositive + trueNegative;
+        denominator = truePositive + trueNegative + falsePositive + falseNegative;
+    } else{
+
+        numerator =  ((truePositive*trueNegative) - (falsePositive*falseNegative));
+        denominator = sqrt((double)
         ((truePositive+falsePositive )* (truePositive+falseNegative) *
         (trueNegative+falsePositive ) * (trueNegative+falseNegative))
-    );
+        );
+    }
+    truth_table[0] =  truePositive;
+    truth_table[1] = trueNegative;
+    truth_table[2] = falsePositive;
+    truth_table[3] = falseNegative;
+
     if (denominator == 0.0) denominator = 1;
 
     return numerator/denominator; 

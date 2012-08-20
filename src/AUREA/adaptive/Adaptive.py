@@ -35,12 +35,13 @@ class Adaptive:
         self.app_status_bar = app_status_bar
         self.print_status = print_status
         self.history = []
+        self.truth_table = None
 
     def getLearner(self, target_acc, maxTime):
         """
         target_acc - float from (0,1] that says to stop when apparent accuracy of a model reaches that accuracy
         maxTime - maximum time in seconds to search model space
-        Returns a tuple containing (achieved accuracy (float), settings(dict), learner (a learner object)) the best achieved accuracy for the given parameters
+        Returns a tuple containing (achieved MCC (float), settings(dict), learner (a learner object)) the best achieved MCC for the given parameters
         """
         BAD_ACC = -.99999999
 
@@ -77,35 +78,38 @@ class Adaptive:
                 learner = self.lq.trainLearner(settings, complexity)
                 
                 self._progress_report(tl_str + msg + " CrossValidating " + str_learner)
-
-                accuracy = learner.crossValidate()
-                msg = str_learner + " achieved " + str(accuracy)[:4]
+                learner.crossValidate()
+                accuracy = learner.getCVAccuracy()
+                mcc = learner.getCVMCC()
+                
+                msg = str_learner + " achieved " + str(accuracy)[:4] + "(acc) and  "
+                msg += str(mcc)[:4] + "(MCC): "
 
                 #shift accuracy to [0.0,1.0] for feedback
                 #let queue know how this learner did
-                self.lq.feedback(settings['learner'], (1.0+accuracy)/2)
+                self.lq.feedback(settings['learner'], (1.0+mcc)/2)
                 #keep track of history for logs
                 self.history.append((accuracy, settings))
             else: #our estimate says we would go over  
                 timeout = True
                 tl_str = str_learner + " estimated to go over time limit: "
-                accuracy = BAD_ACC
+                mcc = BAD_ACC
                 learner = None
                 settings = None
 
             #update if better
-            if accuracy > top_acc:
-                top_acc = accuracy
+            if mcc > top_acc:
+                top_acc = mcc
                 top_learner = learner
                 top_settings = settings
-                tl_str = str_learner + " current best at " + str(top_acc)[:4] + " :"
+                tl_str = str_learner + " current best MCC at " + str(top_acc)[:4] + " :"
                 msg += " new top learner : "
                 
             #tell why we are done
             if timeout or time.clock() > self.endTime:
                 self._progress_report(tl_str + "Adaptive Finished.  Out of time.")
                 finished = True
-            if accuracy >= self.target_accuracy:
+            if mcc >= self.target_accuracy:
                 self._progress_report(tl_str + "Adaptive Finished.  Achieved Desired MCC.")
                 finished = True
 
@@ -190,12 +194,13 @@ class Adaptive:
         dp = base_lq.data_package
         classifications = dp.getClassifications()
         train, test= self._partition(classifications, k)
-        T0 = 0
-        F0 = 0
-        T1 = 0
-        F1 = 0
         msg = ""
+        self.truth_table = [0,0,0,0]
         for i, training_set in enumerate(train):
+            T0 = 0
+            F0 = 0
+            T1 = 0
+            F1 = 0
             #set up adaptive for this training set
             test_set = test[i]
             nLQ = self._genLearnerQueue(dp ,training_set)
@@ -227,12 +232,48 @@ class Adaptive:
                     T1 += 1
                 else:
                     F0 += 1
-            msg = "Validating at " + str(MCC(T0,F0, T1, F1)) 
+            viewable = ['dirac', 'tsp', 'tst', 'ktsp']
+            
+            str_learner = viewable[settings['learner']]
+            accuracy = float(T0+T1)/(T0+T1+F0+F1)
+            mcc = MCC(T0,F0,T1,F1) 
+            msg = "Adaptive(" + str_learner + ") achieved " + str(accuracy)[:4] + "(acc) and  "
+            msg += str(mcc)[:4] + "(MCC)"
+
+            self.truth_table[0] += T0
+            self.truth_table[1] += T1
+            self.truth_table[2] += F0
+            self.truth_table[3] += F1
+    
             self._progress_report(msg)
         #put things back the way they were
         self._genLearnerQueue( dp ,classifications)
         self.lq = base_lq
-        return MCC(T0, F0, T1, F1)
+    
+           
+    def getCVAccuracy(self):
+        """
+        Returns the Accuracy of the last crossValidate
+        """
+        tpos = self.truth_table[0]
+        tneg = self.truth_table[1]
+        fpos = self.truth_table[2]
+        fneg = self.truth_table[3] 
+        return float((tpos+tneg))/(tpos+tneg+fpos+fneg)
+
+    def getCVMCC(self):
+        """
+        Returns the Matthews Correlation Coefficient of the last crossValidate
+        """
+        import math
+        tpos = self.truth_table[0]
+        tneg = self.truth_table[1]
+        fpos = self.truth_table[2]
+        fneg = self.truth_table[3] 
+        den = math.sqrt(float((tpos+fpos)*(tpos+fneg)*(tneg+fpos)*(tneg+fneg)))
+        if den < .000001:#see wikipedia
+            den = 1.0
+        return float(tpos*tneg - fpos*fneg)/den
 
 
     def _copyLQParams(self, new_lq, base_lq):
@@ -253,87 +294,89 @@ class Adaptive:
         based on k
         ts = [[(classname1, [list of (tablename, sampname) from c1]), (2 name, [list of (name, sampname) from c2])], ...]
         """
-     
-        def checkShuffle(r_list, kfold, c1size, c2size):
-            """
-            Checks that we do not end up with an empty class
-            in a training set
-            """
-            foldsize = len(r_list)/kfold
-            if c1size > foldsize and c2size > foldsize:
-                #can't have a bad shuffle
-                return True
-            if len(r_list)%kfold > 0:
-                foldsize += 1
-            c1count = 0
-            c2count = 0
-            for i,element in enumerate(r_list):
-                if i%foldsize == 0:
-                    c1count = 0
-                    c2count = 0
-                if element < c1size:#class1
-                    c1count += 1
-                else:
-                    c2count += 1
-                if c1count == c1size or c2count == c2size:
-                    return False
-            return True
-
         import random
+        from itertools import izip
         #initialize variables
         kfold = k
+        #the ulimate returned lists
         training_list = []
-        validating_list = []
+        testing_list = []
         c1_size = len(c[0][1])
         c2_size = len(c[1][1])
         c1_key = c[0][0]
         c2_key = c[1][0]
+        if min(c1_size, c2_size) < kfold:
+            kfold = min(c1_size, c2_size)
 
-        #check if we need to adjust k downward
-        if c1_size +c2_size < kfold:
-            #k too large do loocv
-            kfold = c1_size +c2_size
+        #first partition using indices
+        c1_training_list = [[] for x in range(kfold)]
+        c1_testing_list = [[] for x in range(kfold)]
+        
+        c2_training_list = [[] for x in range(kfold)]
+        c2_testing_list = [[] for x in range(kfold)]
 
-        #build random list of indices for partitioning
-        r_list = range(c1_size + c2_size)
-        goodShuffle  = False
-        while not goodShuffle:        
-            random.shuffle(r_list)
-            #check that the shuffle did not put all of one class into one fold
-            goodShuffle = checkShuffle(r_list, kfold, c1_size, c2_size)
-        foldsize = len(r_list)/kfold
-        if len(r_list)%kfold > 0:
-            foldsize += 1
-        steps =[x for x in range(0, kfold*foldsize , foldsize)]
-        for i in steps:
-            training = []
-            validating = []
-            for j in steps:
-                if i==j:
-                    validating = r_list[j: j+foldsize]
-                else:
-                    for valu in r_list[j:j+foldsize]:
-                        training.append( valu )
-                      
+        #shuffle samples
+        r1_list = range(c1_size)       
+        r2_list = range(c2_size)
+        random.shuffle(r1_list)
+        random.shuffle(r2_list)
+        
+        #make testing lists
+        for tl_pos, r1_index in enumerate(r1_list):
+            list_pos = tl_pos%kfold
+            c1_testing_list[list_pos].append(r1_index)
 
+        for tl_pos, r2_index in enumerate(r2_list):
+            list_pos = tl_pos%kfold
+            c2_testing_list[list_pos].append(r2_index)
+        #make training lists
+        #TODO better names
+        for training_list1, testing_list1 in izip(c1_training_list, c1_testing_list):
+            for i in r1_list:
+                if i not in testing_list1:
+                    training_list1.append(i)
+
+ 
+        for training_list2, testing_list2 in izip(c2_training_list, c2_testing_list):
+            for i in r2_list:
+                if i not in testing_list2:
+                    training_list2.append(i)
+
+        #check no bad sets
+        assert(len(c1_training_list) == len(c1_testing_list))
+        assert(len(c2_training_list) == len(c2_testing_list))
+        def testList(tlist):
+            for l in tlist:
+                assert(len(l) > 0)
+        testList(c1_training_list)
+        testList(c1_testing_list)
+
+        testList(c2_training_list)
+        testList(c2_testing_list)
+
+        #make actual values for return
+        c1_samples = c[0][1]
+        c2_samples = c[1][1]
+        for i in range(kfold):
             training_ss = [(c1_key, []), (c2_key, [])]
-            validating_ss = [(c1_key, []), (c2_key, [])]
-            c1_training = False
-            c2_training = False
-     
-            for item in training:
-                if item < c1_size:
-                    training_ss[0][1].append(c[0][1][item])
-                else:
-                    training_ss[1][1].append(c[1][1][item - c1_size])
-            for item in validating:
-                if item < c1_size:
-                    validating_ss[0][1].append(c[0][1][item])
-                else:    
-                    validating_ss[1][1].append(c[1][1][item - c1_size])
+            testing_ss = [(c1_key, []), (c2_key, [])]
+            #class 1 set i
+            c1_train_i = c1_training_list[i]
+            for j in c1_train_i:
+                training_ss[0][1].append(c1_samples[j])
+            c1_test_i = c1_testing_list[i]
+            for j in c1_test_i:
+                testing_ss[0][1].append(c1_samples[j])
+            #class 2 set i
+            c2_train_i = c2_training_list[i]
+            for j in c2_train_i:
+                training_ss[1][1].append(c2_samples[j])
+            c2_test_i = c2_testing_list[i]
+            for j in c2_test_i:
+                testing_ss[1][1].append(c2_samples[j])
             training_list.append(training_ss)
-            validating_list.append(validating_ss)
-        return (training_list, validating_list)
+            testing_list.append(testing_ss)
+        return (training_list, testing_list)
 
        
     def _genLearnerQueue(self, dataPackage, training_set):

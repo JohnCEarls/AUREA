@@ -320,7 +320,7 @@ class entity:
     """
     A container for meta-data provided by the soft file.
     Type: the type of entity (Database, subset, etc)
-    Value: usually a unique id
+    Value: usually a unique id (like the subset name)
     attributes: a dict with related attributes where each key points to a list if provided values
     """
     def __init__(self, type, value):
