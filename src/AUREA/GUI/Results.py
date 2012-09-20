@@ -66,6 +66,11 @@ class DiracResults(Results):
         
     def displayTopNetworks(self):
         tn = self.dirac.getTopNetworks()
+        rc = self.dirac.getRankConservation()
+        rc_dict = {}
+        for i, rcs in enumerate(rc):
+            rc_dict[self.dirac.netMap[i]] = map(str,rcs)
+        #print rc
         resultString = ""
         resultString += "@acc: " + str(self.accuracy) + os.linesep
         num_net = self.config.getSetting("dirac","Number of Top Networks")[0]
@@ -76,7 +81,9 @@ class DiracResults(Results):
             network_listbox.insert(END, net)
             resultString += "*"*20 + os.linesep
             resultString += net + os.linesep
+            resultString += "Rank Conservation Scores: " + ','.join(map(str,rc_dict[net])) + os.linesep
             resultString += "Genes used: " + ','.join(self.datapackage.getGeneNamesFromNetwork(net))+os.linesep
+            
         network_listbox.pack()
         save_button = Button(self, text="Save...", command=lambda:self.saveResults(resultString))
         save_button.pack()
