@@ -140,4 +140,4 @@ class CSVParser:
             val = val[1:]
         if val[-1] == '"' or val[-1] == "'":
             val = val[:-1]
-        return val
+        return val.strip()
