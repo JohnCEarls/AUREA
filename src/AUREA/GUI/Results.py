@@ -18,6 +18,7 @@ from Tkinter import *
 import tkFileDialog
 import os
 from AUREA.adaptive.LearnerQueue import LearnerQueue
+from itertools import izip_longest
 class Results(Toplevel):
     """
     Base class for the results popups
@@ -32,6 +33,54 @@ class Results(Toplevel):
         self.geometry("+%d+%d" % (self.root.winfo_rootx()+50,
         self.root.winfo_rooty()+50))
 
+    def getDataInfoString(self):
+        """
+        Generating some more text information for the saved output
+        This is general stuff, sample names, classes
+
+        returns formatted string 
+        """
+        cont = self.root.root.controller
+        dp = cont.datapackage
+        #describe input data
+        classifications = dp.getClassifications()
+        retStr = '\nTraining Samples\n'
+        if len(classifications) > 0:
+            c1, c2 = classifications
+            retStr += c1[0] + '\t' + c2[0] + '\n'#class names
+            retStr += '='*10 + '\t' + '='*10 + '\n'
+            for c1_samp, c2_samp in izip_longest(c1[1], c2[1], fillvalue=('-','-')):
+                retStr += c1_samp[0] + '.'+ c1_samp[1] + '\t'
+                retStr += c2_samp[0] + '.'+ c2_samp[1] + '\n'
+            retStr += '\n' 
+
+        return retStr
+
+    def getSettingsInfoString(self, learner=None):
+        """
+        This returns the settings information for the data and a learner
+        
+        """
+        retStr = ''
+        retStr += '\n\nSettings\n'
+        retStr += '='*20 + '\n'
+        retStr += 'Data Settings' + '\n'
+        
+        cont = self.root.root.controller
+        for name, values in cont.config.getSettings('datatable'):
+            v = ','.join(map(str,values))
+            retStr += name + ':' + v + '\n'
+        if learner is not None:
+            retStr += '\n' + learner.upper() + ' Settings\n'
+            retStr += '='*20 + '\n'
+            for name, values in cont.config.getSettings(learner):
+                v = ','.join(map(str,values))
+                retStr += name + ':' + v + '\n'
+        return retStr 
+
+        
+
+
     def saveResults(self, resultString):
         """
         Given a resultstring write the results out to file
@@ -45,7 +94,7 @@ class Results(Toplevel):
         filename = tkFileDialog.asksaveasfilename(**options)
         if filename:
             o = open(filename, 'w')
-            o.write(resultString)
+            o.write(resultString + '\n' + self.getDataInfoString())
             o.close()
 
 class DiracResults(Results):
@@ -85,6 +134,7 @@ class DiracResults(Results):
             resultString += "Genes used: " + ','.join(self.datapackage.getGeneNamesFromNetwork(net))+os.linesep
             
         network_listbox.pack()
+        resultString += self.getSettingsInfoString('dirac')
         save_button = Button(self, text="Save...", command=lambda:self.saveResults(resultString))
         save_button.pack()
 
@@ -125,7 +175,9 @@ class TSPResults(Results):
             row += 1
         Label(self, text="Note: Assigns to class 1 if gene1 is more expressed than gene2").grid(row=row, column=0, columnspan=2)
         row += 1
+        resultString += self.getSettingsInfoString('tsp')
         save_button = Button(self, text="Save...", command=lambda:self.saveResults(resultString))
+ 
         save_button.grid(row=row, column=1, sticky=E)
 
  
@@ -144,7 +196,7 @@ class TSTResults(Results):
  
     def getPtableString(self):
         ptable = self.tst.ptable
-        ptStr = 'ordertclass1\tclass2 ' + os.linesep
+        ptStr = 'order\tP(order|class1)\tP(order|class2) ' + os.linesep
         ord = ['g1<g2<g3', 'g1<g3<g2', 'g2<g1<g3', 'g2<g3<g1', 'g3<g1<g2', 'g3<g2<g1']
         for t, triplet in enumerate(ptable):
             ptStr += "Triplet " + str(t+1) + os.linesep
@@ -179,6 +231,7 @@ class TSTResults(Results):
         resultString += self.getPtableString()
         Label(self, text="Note: Save and view created file to see the probability tables used for classification.").grid(row=row, column=0, columnspan=3)
         row += 1
+        resultString += self.getSettingsInfoString('tst')
         save_button = Button(self, text="Save...", command=lambda:self.saveResults(resultString))
         save_button.grid(row=row, column=2, sticky=E)
 
@@ -218,6 +271,7 @@ class KTSPResults(Results):
             row += 1
         Label(self, text="Note: Assigns to class 1 if gene1 is more expressed than gene2").grid(row=row, column=0, columnspan=2)
         row += 1
+        resultString += self.getSettingsInfoString('ktsp')
         save_button = Button(self, text="Save...", command=lambda:self.saveResults(resultString))
         save_button.grid(row=row, column=1, sticky=E)
 
@@ -267,6 +321,8 @@ class AdaptiveResults(Results):
             resultStr += "*"*30 + os.linesep
             resultStr += "@accuracy:"+str(acc) + os.linesep
             resultStr += txt
+        
+        resultStr += self.getSettingsInfoString('adaptive')
              
         self.save_button = Button(self, text="Save...", command=lambda:self.saveResults(resultStr))
 
