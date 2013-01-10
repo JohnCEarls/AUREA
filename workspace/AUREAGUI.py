@@ -39,7 +39,7 @@ if re.compile('Application').search(init_workspace):
     if not os.path.exists(workspace):
         os.mkdir(workspace)
     #create data folder
-    if not os.path.exists(workspace, 'data'):
+    if not os.path.exists(os.path.join(workspace, 'data')):
         os.mkdir(os.path.join(workspace, 'data'))
     #copy files
     needful_things = ['config.xml', 'AUREA-logo-200.pgm', 'Homo_sapiens.gene_info.gz','c2.biocarta.v2.5.symbols.gmt' ]
