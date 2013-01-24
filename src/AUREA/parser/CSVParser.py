@@ -27,7 +27,7 @@ class CSVParser:
         self.lock = False
         self.probe_column_name = probe_column_name
         self.gene_column_name = gene_column_name
-        f = open(filename, 'r')
+        f = open(filename, 'rU')
         self.raw_content = f.readlines()
         f.close()
         self.getData()
@@ -140,4 +140,4 @@ class CSVParser:
             val = val[1:]
         if val[-1] == '"' or val[-1] == "'":
             val = val[:-1]
-        return val
+        return val.strip()

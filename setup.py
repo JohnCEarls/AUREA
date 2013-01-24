@@ -83,7 +83,7 @@ ext_mod = [ buildExtension(name, src_dir, src_files) for name, src_files in getE
 
 #run setup
 setup (name = 'AUREA',
-        version='1.6.5', #edit AUREA/__init__.py
+        version='1.6.6', #edit AUREA/__init__.py
         author ='The Nathan Price Lab',
         author_email = 'john.c.earls@gmail.com',
         url= 'http://price.systemsbiology.net/AUREA/',
@@ -98,6 +98,10 @@ setup (name = 'AUREA',
             'Intended Audience :: Science/Research', 
             'Topic :: Scientific/Engineering :: Bio-Informatics', 
             'Topic :: Scientific/Engineering :: Medical Science Apps.'],
+            #uncomment to use py2app
+            #app=["workspace/AUREAGUI.py"],
+            #data_files=["workspace/data"],
+
 )
 
 
