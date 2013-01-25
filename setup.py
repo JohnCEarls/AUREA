@@ -82,6 +82,10 @@ except Exception as e:
 ext_mod = [ buildExtension(name, src_dir, src_files) for name, src_files in getExtensionModuleSettings()]
 
 #run setup
+from glob import glob
+import sys
+#sys.path.append(r'C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\redist\amd64\Microsoft.VC90.CRT')
+#import py2exe
 setup (name = 'AUREA',
         version='1.6.6', #edit AUREA/__init__.py
         author ='The Nathan Price Lab',
@@ -100,7 +104,11 @@ setup (name = 'AUREA',
             'Topic :: Scientific/Engineering :: Medical Science Apps.'],
             #uncomment to use py2app
             #app=["workspace/AUREAGUI.py"],
+	    
             #data_files=["workspace/data"],
+            #windows=[{"script":"workspace/AUREAGUI.py", "icon_resources":[(1,"workspace/data/AUREA.ico")]}],
+            #data_files=[('data',glob(r"C:\Users\earls3\AUREA\workspace\data\*")), ("Microsoft.VC90.CRT", glob(r'C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\redist\amd64\Microsoft.VC90.CRT\*')) ],
+	    #zipfile="libdir\\library.zip"
 
 )
 
