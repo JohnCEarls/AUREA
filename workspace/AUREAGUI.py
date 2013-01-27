@@ -7,7 +7,7 @@ import tkFileDialog
 from tkMessageBox import *
 import re
 import platform
-
+import shutil
 import imp, os, sys
 
 def main_is_frozen():
