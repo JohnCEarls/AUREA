@@ -34,50 +34,50 @@ def newWorkspace(root):
 
 
 
+def checkLastWorkspace():
+    last_workspace = None
+    if os.path.exists(os.path.join(os.getcwd(), '.previous_workspace')):
+        with open(os.path.join(os.getcwd(), '.previous_workspace'), 'rU') as pw:
+            last_workspace = pw.readline().strip()
+            if len(last_workspace) == 0:
+                last_workspace = None
+    return last_workspace
+
+def prepareWorkspace(old_workspace, workspace, needful_things):
+    if not os.path.exists(workspace):
+        os.mkdir(workspace)
+    if not os.path.exists(os.path.join(workspace, 'data')):
+        os.mkdir(os.path.join(workspace, 'data'))
+    #copy files
+    for thing in needful_things:
+        if not os.path.exists( os.path.join(workspace, 'data', thing)):
+            shutil.copy(os.path.join(old_workspace, 'data',thing), os.path.join(workspace, 'data'))
+
+            
+
+
 # if you are running this somewhere other than the workspace folder
 # set workspace to the path of the directory that contains data/config.xml
 
+needful_things = ['config.xml', 'AUREA-logo-200.pgm', 'Homo_sapiens.gene_info.gz','c2.biocarta.v2.5.symbols.gmt' ]
 root = Tkinter.Tk()
 init_workspace =  os.getcwd()
 
-if platform.system() == 'Windows' and main_is_frozen():
+if platform.system() == 'Windows' and main_is_frozen() and os.getenv('APPDATA') is not None:
     #py2exe standalone
     appdata = os.getenv('APPDATA')
-    if appdata is not None:
+    if appdata is not None and os.path.exists(appdata):
         workspace = os.path.join(appdata, 'AUREA')
-        
-        if not os.path.exists(workspace):
-            os.mkdir(workspace)
-        if not os.path.exists(os.path.join(workspace, 'data')):
-            os.mkdir(os.path.join(workspace, 'data'))
-        #copy files
-        needful_things = ['config.xml', 'AUREA-logo-200.pgm', 'Homo_sapiens.gene_info.gz','c2.biocarta.v2.5.symbols.gmt' ]
-        for thing in needful_things:
-            if not os.path.exists( os.path.join(workspace, 'data', thing)):
-                shutil.copy(os.path.join(old_workspace, 'data',thing), os.path.join(workspace, 'data'))
-        os.chdir(workspace)
+        prepareWorkspace(init_workspace, workspace, needful_things)
 
 
 elif platform.system() == 'Darwin' and re.compile(r'AUREA\.app').search(init_workspace):
     #this is a py2app build
     #move workspace out of the application folder
     import shutil
-    old_workspace = init_workspace
-    new_ws_location = newWorkspace(root)
-    
-    workspace = os.path.join(new_ws_location, 'workspace')
-    #create workspace folder
-    if not os.path.exists(workspace):
-        os.mkdir(workspace)
-    #create data folder
-    if not os.path.exists(os.path.join(workspace, 'data')):
-        os.mkdir(os.path.join(workspace, 'data'))
-    #copy files
-    needful_things = ['config.xml', 'AUREA-logo-200.pgm', 'Homo_sapiens.gene_info.gz','c2.biocarta.v2.5.symbols.gmt' ]
-    for thing in needful_things:
-        if not os.path.exists( os.path.join(workspace, 'data', thing)):
-            shutil.copy(os.path.join(old_workspace, 'data',thing), os.path.join(workspace, 'data'))
-    os.chdir(workspace)
+    appdata = os.path.expanduser('~/Library/Application Support/')
+    workspace = os.path.join(appdata, 'AUREA')
+    prepareWorkspace(init_workspace, workspace, needful_things)    
 else:
     workspace = init_workspace
     

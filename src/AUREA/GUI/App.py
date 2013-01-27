@@ -42,12 +42,15 @@ class App(Frame):
         self.root = root
         self.root.title( "AUREA - Adaptive Unified Relative Expression Analyser")
         self.controller = controller
+        if os.path.exists(self.controller.config.getSetting("datatable", "Data Folder")[0]):
+            self.data_dir = self.controller.config.getSetting("datatable", "Data Folder")[0]
+        else:
+            self.data_dir = os.path.join(controller.workspace, 'data')
         self.curr_page = None
         self.pages = []
         self._initApp()
         self.rowconfigure( 1, weight = 1 )
         self.columnconfigure( 1, weight = 1 )
-        
         self.checkTMQ()
         
 
@@ -240,7 +243,7 @@ class App(Frame):
             today = '-'.join(dt.today().isoformat('-').split(':')[:2])
             options = {}
             options['defaultextension'] = '' # couldn't figure out how this works
-            options['initialdir'] = 'data'
+            options['initialdir'] = self.data_dir
             options['initialfile'] = 'AHREA-Error-' + today + '.txt'
             options['parent'] = self
             options['title'] = 'Save Results'
@@ -542,6 +545,7 @@ class AUREAMenu(Menu):
     def __init__(self, daRoot):
         Menu.__init__(self, daRoot)
         self.root = daRoot
+        self.data_dir = self.root.data_dir
         self.buildFile()
         #self.buildSettings()
         self.buildHelp()
@@ -576,16 +580,16 @@ class AUREAMenu(Menu):
         helpmenu.add_command(label="About", command=self.about)
 
     def reportProblem(self):
-        msg = "Please go to https://github.com/JohnCEarls/AUREA/issues to report any bugs. Thank you for helping make AUREA better."
+        msg = "Please go to https://github.com/JohnCEarls/AUREA/issues to report any bugs or make any feature requests. Thank you for helping make AUREA better."
         tkMessageBox.showinfo("AUREA: report error", msg)
 
     def getHelp(self):
-        msg = "Please go to [http://www.igb.uiuc.edu/labs/price/AUREA/] for documentation."
+        msg = "Please go to [http://price.systemsbiology.net/AUREA/] for documentation."
         tkMessageBox.showinfo("AUREA: get help", msg)
  
     def about(self):
         msg = "AUREA v. " + AUREA.__version__
-        msg += " Copyright (c) 2010-2011 The N.D. Price Lab"
+        msg += " Copyright (c) 2010-2013 The N.D. Price Lab @ ISB"
         tkMessageBox.showinfo("AUREA", msg)
         
 
@@ -600,6 +604,8 @@ class AUREAMenu(Menu):
     def data_settings_write(self):
         self.settings_write("datatable")
         self.dialog.destroy()
+        self.root.data_dir = self.root.controller.config.getSetting("datatable", "Data Folder")[0]
+        self.data_dir = self.root.data_dir
         self.dialog = None
 
     
@@ -684,7 +690,7 @@ class AUREAMenu(Menu):
         options['defaultextension'] = '' # couldn't figure out how this works
         if platform.platform()[0:3] != 'Dar':#mac does not like this
             options['filetypes'] = [('xml config', '.xml')]
-        options['initialdir'] = 'data'
+        options['initialdir'] = self.data_dir
         options['initialfile'] = ''
         options['parent'] = self
         options['title'] = 'Save config'
@@ -697,7 +703,7 @@ class AUREAMenu(Menu):
         options['defaultextension'] = '' # couldn't figure out how this works
         if platform.platform()[0:3] != 'Dar':#mac does not like this
             options['filetypes'] = [('xml config', '.xml')]
-        options['initialdir'] = 'data'
+        options['initialdir'] = self.data_dir
         options['initialfile'] = 'config.xml'
         options['parent'] = self
         options['title'] = 'Load config'
@@ -705,6 +711,7 @@ class AUREAMenu(Menu):
         if filename:
             self.root.controller.config = SettingsParser(filename)
 
+            self.root.data_dir = self.root.controller.config.getSetting("datatable", "Data Folder")[0]
 
     def unImplemented(self):
         print "unimplemented"

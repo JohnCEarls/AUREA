@@ -473,11 +473,13 @@ class ImportDataPage(Page):
         if platform.platform()[0:3] != 'Dar':#mac no like 
             options['filetypes'] = [('gzipped SOFT', '.soft.gz'), ('SOFT', '.soft'),('Comma Separated', '.csv')]
         options['parent'] = self
-        options['initialdir'] = 'data'
+        options['initialdir'] = self.root.data_dir
 
         options['title'] = "AUREA - Select data file."
         response = tkFileDialog.askopenfilename(**options)
+        
         if response:
+            self.root.data_dir = os.path.split(response)[0]
             if response[-3:] == 'csv':
                 self.addCSVSettingsToConfig(response)
             self.import_button.config(state=NORMAL)
@@ -548,24 +550,26 @@ class ImportDataPage(Page):
         if platform.platform()[0:3] != 'Dar':#mac no like 
             options['filetypes'] = [('Gene Matrix Transposed file format', '.gmt')]
         options['parent'] = self
-        options['initialdir'] = 'data'
+        options['initialdir'] = self.root.data_dir
         options['initialfile'] = 'c2.biocarta.v2.5.symbols.gmt'
         options['title'] = "AUREA - Select network file."
         response = tkFileDialog.askopenfilename(**options)
         if response:
-           self.import_button.config(state=NORMAL)
-           self.gnPath.set(response)
+            self.root.data_dir = os.path.split(response)[0]
+            self.import_button.config(state=NORMAL)
+            self.gnPath.set(response)
 
     def gsynfiledialog(self):
         file_opt = options =  {}
         if platform.platform()[0:3] != 'Dar':
             options['filetypes'] = [('NCBI gene_info file', '.gz')]
         options['parent'] = self
-        options['initialdir'] = 'data'
+        options['initialdir'] = self.root.data_dir
         options['initialfile'] = 'Homo_sapiens.gene_info.gz'
         options['title'] = "AUREA - Select synonym file."
         response = tkFileDialog.askopenfilename(**options)
         if response:
+            self.root.data_dir = os.path.split(response)[0]
             self.import_button.config(state=NORMAL)
             self.gsynPath.set(response)
     

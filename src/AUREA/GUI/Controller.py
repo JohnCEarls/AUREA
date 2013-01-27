@@ -140,7 +140,7 @@ class Controller:
         """
         self.queue.put(('statusbarclear',None))
         self.queue.put(('statusbarset',"Downloading " + softfilename))
-        dl = SOFTDownloader(softfilename, output_directory=self.config.getSetting("datatable", "Data Folder")[0])
+        dl = SOFTDownloader(softfilename, output_directory=self.app.data_dir)
         self.queue.put(('statusbarclear',None))
         return dl.getFilePath()
 
