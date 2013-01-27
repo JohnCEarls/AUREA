@@ -71,16 +71,17 @@ if platform.system() == 'Windows' and main_is_frozen() and os.getenv('APPDATA') 
         prepareWorkspace(init_workspace, workspace, needful_things)
 
 
-elif platform.system() == 'Darwin' and re.compile(r'AUREA\.app').search(init_workspace):
+elif platform.system() == 'Darwin' and re.compile(r'AUREA.app').search(init_workspace):
     #this is a py2app build
     #move workspace out of the application folder
+
     import shutil
     appdata = os.path.expanduser('~/Library/Application Support/')
     workspace = os.path.join(appdata, 'AUREA')
     prepareWorkspace(init_workspace, workspace, needful_things)    
 else:
     workspace = init_workspace
-    
+os.chdir(workspace)
 cont = Controller(workspace=workspace)
 app = App(root, cont)
 cont.setApp(app)
