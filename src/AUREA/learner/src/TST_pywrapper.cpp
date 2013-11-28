@@ -1,7 +1,7 @@
 #include "learn_classifiers.h"
 #include "kfold.h"
 #include <math.h>
-
+#include <iostream>
 
 void runTST(std::vector<double> & data, int dsSize, std::vector<int> & classSizes, std::vector<int> & nvec, std::vector<int> & I1LIST, std::vector<int> & I2LIST, std::vector<int> & I3LIST ){
     bool hard_limit = false;
@@ -64,7 +64,6 @@ double crossValidate(std::vector<double> & data, int dsSize, std::vector<int> & 
     
     vector<double> * ts;
     vector<double> * ls;
-     //moving to a Matthews correlation coefficient
     //let class 1 be positive [0]
     int truePositive = 0;
     int falsePositive = 0;
@@ -87,44 +86,44 @@ double crossValidate(std::vector<double> & data, int dsSize, std::vector<int> & 
         ls = kfGen.getNextTestVector();
         while(ls != NULL){//for each learned vector
             double sum = 0.0;
-            
             for(int i=0;i<I1List.size();i++){
                 int i1=I1List[i];
                 int i2=I2List[i];
-                int i3=I3List[i];                
+                int i3=I3List[i];
+                //probability table for each ordering
                 std::vector< std::vector<double> > ftab=compute_triple_ptable(xmat,y,i1,i2,i3);
+                //weight vector for observed ordering
+                //mainly necessary to deal with ties,  if you have a tie
+                //you give a uniform proportion of the probability to
+                //each valid ordering
                 std::vector<double> stab = sample_ptable((*ls), i1, i2, i3);
                 double d1 = 0.0;
                 double d2 = 0.0;
                 for(int j=0;j<6;j++){
-                    int score = (stab[j] - ftab[0][j]);
-                    d1 += score*score;
-                    score = (stab[j] - ftab[1][j]);
-                    d2 += score*score;                   
+                    d1 +=  (stab[j] * ftab[0][j]);
+                    d2 +=  (stab[j] * ftab[1][j]);
                 }
-                if(d1>d2){
+                if(d1<d2){
                     sum += 1.0;
                 } else if (d1==d2){
                     sum += .5;//tie
-                }           
-
-            }    
+                }
+            }
             int classifyAs = 0;
             if(2*sum > I1List.size()){
                 classifyAs = 1;
             }
-       int actual_class = kfGen.getTestVectorClass();
+            int actual_class = kfGen.getTestVectorClass();
+            //could put directly in truth_table but this is clearer
             if (actual_class == 0 && classifyAs == 0) truePositive++;
             if (actual_class == 0 && classifyAs == 1) falseNegative++;
             if (actual_class == 1 && classifyAs == 0) falsePositive++;
             if (actual_class == 1 && classifyAs == 1) trueNegative++;
 
             ls = kfGen.getNextTestVector();
-
-
         }
         ts = kfGen.getNextTrainingSet();
-           }
+    }//for each training set
 
     double numerator, denominator;
     if(use_accuracy){
@@ -143,9 +142,7 @@ double crossValidate(std::vector<double> & data, int dsSize, std::vector<int> & 
     truth_table[1] = trueNegative;
     truth_table[2] = falsePositive;
     truth_table[3] = falseNegative;
-
     if (denominator == 0.0) denominator = 1;
-
     return numerator/denominator; 
      //return (double)numCorrect/(double)(classSizes[0] + classSizes[1]);   
 }
