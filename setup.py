@@ -87,7 +87,7 @@ import sys
 #sys.path.append(r'C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\redist\amd64\Microsoft.VC90.CRT')
 #import py2exe
 setup (name = 'AUREA',
-        version='1.6.6', #edit AUREA/__init__.py
+        version='1.6.7', #edit AUREA/__init__.py
         author ='The Nathan Price Lab',
         author_email = 'john.c.earls@gmail.com',
         url= 'http://price.systemsbiology.net/AUREA/',
