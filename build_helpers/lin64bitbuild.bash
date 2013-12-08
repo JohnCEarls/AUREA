@@ -2,11 +2,11 @@
 
 #A little script to help automating building
 #settings
-version=1.6.4
+version=1.6.7
 
 #64bit workstation
 arch=x86_64
-base_dir=/home/earls3/Price
+base_dir=/home/earls3/secondary/Price/AUREA
 drop_dir=/home/earls3/Dropbox/Price/builds
 
 cd $base_dir/AUREA
