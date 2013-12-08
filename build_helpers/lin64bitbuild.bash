@@ -6,7 +6,7 @@ version=1.6.7
 
 #64bit workstation
 arch=x86_64
-base_dir=/home/earls3/secondary/Price/AUREA
+base_dir=/home/earls3/secondary/Price
 drop_dir=/home/earls3/Dropbox/Price/builds
 
 cd $base_dir/AUREA
@@ -16,6 +16,7 @@ git pull
 rm -rf $base_dir/AUREA/dist/*
 rm -rf $base_dir/AUREA/build/*
 
+#see: https://www.evernote.com/shard/s21/sh/c51b3bbe-a343-444b-82a0-a4aba5ac6a33/ac395eb1e0e90b6243f4235d094e58ca
 source ~/env/AUREA27/bin/activate
 python setup.py sdist 
 python setup.py bdist
